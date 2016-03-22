@@ -46,7 +46,7 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             Application.SetCompatibleTextRenderingDefault(true);
             Application.EnableVisualStyles();
-            Application.Run(new ExtractForm(@"C:\Users\m.meitinger\Downloads\einkommensteuer2014.pdf"));
+            Application.Run(new CombineForm());
         }
     }
 }
