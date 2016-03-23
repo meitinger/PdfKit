@@ -45,7 +45,7 @@ namespace Aufbauwerk.Tools.PdfKit
             rasterizer = new GhostscriptRasterizer();
             rasterizer.Open(Program.GetShortPathName(path), version, false);
             cache = new Image[rasterizer.PageCount];
-           
+
             // intialize the components
             InitializeComponent();
             InitializeAdditionalComponents();
@@ -93,56 +93,31 @@ namespace Aufbauwerk.Tools.PdfKit
             statusStrip.PerformLayout();
         }
 
-        private bool IsBetter(Size maxSize)
-        {
-            // remove the border from the max size and ensure its positive
-            maxSize.Width -= 2;
-            maxSize.Height -= 2;
-            if (maxSize.Width <= 0 || maxSize.Height <= 0)
-                return false;
-
-            // calculate the factor and size
-            var factor = Math.Min((float)maxSize.Width / (float)imagePreview.Size.Width, (float)maxSize.Height / (float)imagePreview.Size.Height);
-            var size = new Size((int)(imagePreview.Size.Width * factor), (int)(imagePreview.Size.Height * factor));
-
-            // test if the size is larger
-            if (size.Width * size.Height > sizePreview.Width * sizePreview.Height)
-            {
-                sizePreview = size;
-                return true;
-            }
-            else
-                return false;
-        }
-
         private void SetTooltip(ListViewItem item)
         {
             // check if a tooltip should be shown
             if (item != null)
             {
-                // do nothing if already shown
+                // do nothing if it is already shown
                 if (imagePreview == cache[item.Index])
                     return;
 
-                // store the image, reset the size and get the bounds
+                // store the image and calculate the best size
                 imagePreview = cache[item.Index];
-                sizePreview = Size.Empty;
                 var screenRect = Screen.FromControl(listViewPages).Bounds;
                 var itemRect = listViewPages.RectangleToScreen(item.Bounds);
+                var factor = Math.Min(1, Math.Min((float)((screenRect.Width - 2 - itemRect.Width) / 2) / (float)imagePreview.Size.Width, (float)(screenRect.Height - 2) / (float)imagePreview.Size.Height));
+                sizePreview = new Size((int)(imagePreview.Size.Width * factor), (int)(imagePreview.Size.Height * factor));
 
-                // find the best sector
-                var pointPreview = Point.Empty;
-                if (IsBetter(new Size(itemRect.Left - screenRect.Left, screenRect.Height)))
-                    pointPreview = new Point(itemRect.Left - sizePreview.Width, screenRect.Top + (screenRect.Height - sizePreview.Height) / 2);
-                if (IsBetter(new Size(screenRect.Width, itemRect.Top - screenRect.Top)))
-                    pointPreview = new Point(screenRect.Left + (screenRect.Width - sizePreview.Width) / 2, itemRect.Top - sizePreview.Height);
-                if (IsBetter(new Size(screenRect.Right - itemRect.Right, screenRect.Height)))
-                    pointPreview = new Point(itemRect.Right, screenRect.Top + (screenRect.Height - sizePreview.Height) / 2);
-                if (IsBetter(new Size(screenRect.Width, screenRect.Bottom - itemRect.Bottom)))
-                    pointPreview = new Point(screenRect.Left + (screenRect.Width - sizePreview.Width) / 2, itemRect.Bottom);
+                // calculate the location (prefer the right top corner)
+                var pointPreview = new Point()
+                {
+                    X = itemRect.Right + sizePreview.Width > screenRect.Right ? itemRect.Left - sizePreview.Width : itemRect.Right,
+                    Y = Math.Min(itemRect.Top, screenRect.Bottom - sizePreview.Height)
+                };
 
                 // show the tooltip
-                toolTipPreview.Show("-", listViewPages, listViewPages.PointToClient(pointPreview));
+                toolTipPreview.Show(">", listViewPages, listViewPages.PointToClient(pointPreview));
             }
             else
             {
@@ -187,10 +162,10 @@ namespace Aufbauwerk.Tools.PdfKit
                 var image = cache[e.ItemIndex];
                 if (image == null)
                     cache[e.ItemIndex] = image = rasterizer.GetPage(96, 96, e.ItemIndex + 1);
-                
+
                 // draw the icon
                 var icon = new Bitmap(imageList.ImageSize.Width, imageList.ImageSize.Height, PixelFormat.Format32bppArgb);
-                var factor = Math.Min((float)icon.Size.Width / (float)image.Size.Width, (float)icon.Size.Height / (float)image.Size.Height);
+                var factor = Math.Min(1, Math.Min((float)icon.Size.Width / (float)image.Size.Width, (float)icon.Size.Height / (float)image.Size.Height));
                 var sizef = new SizeF(image.Size.Width * factor, image.Size.Height * factor);
                 var rectf = new RectangleF((icon.Width - sizef.Width) / 2, (icon.Height - sizef.Height) / 2, sizef.Width, sizef.Height);
                 using (var graphics = Graphics.FromImage(icon))
