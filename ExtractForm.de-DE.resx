@@ -117,52 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="listViewPages.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
+  <data name="saveFileDialog.Filter" xml:space="preserve">
+    <value>PDF-Dokumente (*.pdf)|*.pdf</value>
   </data>
-  <metadata name="imageList.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>401, 17</value>
-  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="imageList.ImageSize" type="System.Drawing.Size, System.Drawing">
-    <value>16, 16</value>
-  </data>
-  <data name="listViewPages.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="listViewPages.Size" type="System.Drawing.Size, System.Drawing">
-    <value>632, 431</value>
-  </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="listViewPages.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;listViewPages.Name" xml:space="preserve">
-    <value>listViewPages</value>
-  </data>
-  <data name="&gt;&gt;listViewPages.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;listViewPages.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;listViewPages.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <metadata name="folderBrowserDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
-  <metadata name="saveFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>175, 17</value>
-  </metadata>
-  <metadata name="statusStrip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>297, 17</value>
-  </metadata>
   <data name="toolStripDropDownButtonZoomIn.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAHWSURBVDhPfZM/ayJRFMWFsB8hhA0BP0oaO7NIhpjUQorA
+        YQUAAAAJcEhZcwAADsAAAA7AAWrWiQkAAAHWSURBVDhPfZM/ayJRFMWFsB8hhA0BP0oaO7NIhpjUQorA
         mibNLAsWViEhrZ0gJN9Bi6BB7JYY3GBhI2jhn6DDjCKKOszLOdf3jGaXXPjN3Ln3nPvmjc/Q5wiHw/vg
         GNjgTsOctX0t+zfQ3AFWLBa7LxaLL8Ph0FE6mLPGHjRn4Ju2rUKbf2az2RINQRAo3/e3YI2Ry+WeoL3c
         GoKHE5opWi6XarFYyN2YTY1Qo4ecGfN3cAthQMFsNhNoTKfTAnNTN0Msy3qA74ADrFKpVKNoOp2u4aqp
@@ -173,13 +135,13 @@
         u+AHuALm78yctV0t0xEKvQOF712MsXtdqAAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="toolStripDropDownButtonZoomIn.Size" type="System.Drawing.Size, System.Drawing">
-    <value>20, 20</value>
+  <data name="toolStripDropDownButtonZoomIn.ToolTipText" xml:space="preserve">
+    <value>Vergrößern</value>
   </data>
   <data name="toolStripDropDownButtonZoomOut.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAGdSURBVDhPjZPPSgJRFMaF6BEkksBH6QUKcYh8gRZBBNLG
+        YQUAAAAJcEhZcwAADsAAAA7AAWrWiQkAAAGdSURBVDhPjZPPSgJRFMaF6BEkksBH6QUKcYh8gRZBBNLG
         6AUicetOEOoddBFOiLvImMKFG0EX/gkdZhRR1GFO33e9U1Q2eOAnZ879vnPnXO9Efkc8Ho+BJMiAnIY5
         azEt+xtY3AFGIpG4r1Qqr6PRyBYdzFnjGjQpsKtt69Dmi0KhYNLg+754nvcD1hjFYvEJ2ssfTfBwQjNF
         q9VKlsvlv1Cjm6QC8z7IYhefgvl8HkrQxDCMB/gO2MAwTdPia85ms62gtlarvau3wM+1bdsOF4IdwqCG
@@ -189,16 +151,13 @@
         fHNAEAXH4AoEnzNz1qJapiMS+QQIRm0WyO6TFQAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="toolStripDropDownButtonZoomOut.Size" type="System.Drawing.Size, System.Drawing">
-    <value>20, 20</value>
-  </data>
-  <data name="toolStripDropDownButtonSave.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
+  <data name="toolStripDropDownButtonZoomOut.ToolTipText" xml:space="preserve">
+    <value>Verkleinern</value>
   </data>
   <data name="toolStripDropDownButtonSave.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAL9SURBVDhPjZFZTxNRGIbnV/gPXKLEEA1R44UXCEgwBIGw
+        YQUAAAAJcEhZcwAADsAAAA7AAWrWiQkAAAL9SURBVDhPjZFZTxNRGIbnV/gPXKLEEA1R44UXCEgwBIGw
         lU3ZkSUDWBEEQ2MJBUsrpcqw27ALCBTKDgVBUHChSDQx3oJs0zJt6bSQvJ4ZqBKvnOTJmZx87/O9k6HW
         9OurxldfILDy7ud/Icwa8r/bg65G51DK7Mah+wFSNEj7wLtcsNodsHA27Jit2NyxYGPbjHU3W2ZsW/bQ
         VjYFIRN6LU5J6Svfr6ytrYkCFxE4nS5RxJPT4TzAPjntPBETOAe5OzwUBUIm/HqSipp98YMbUC2IAicJ
@@ -214,44 +173,17 @@
         aTzxRsHHM6c8834D3XEJwr8/cZ0AAAAASUVORK5CYII=
 </value>
   </data>
-  <data name="toolStripDropDownButtonSave.Size" type="System.Drawing.Size, System.Drawing">
-    <value>20, 20</value>
+  <data name="toolStripDropDownButtonSave.ToolTipText" xml:space="preserve">
+    <value>Seiten speichern...</value>
   </data>
   <data name="toolStripStatusLabelSingleFiles.Size" type="System.Drawing.Size, System.Drawing">
-    <value>0, 17</value>
+    <value>101, 17</value>
   </data>
-  <data name="statusStrip.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 431</value>
+  <data name="toolStripStatusLabelSingleFiles.Text" xml:space="preserve">
+    <value>Dokument pro Seite</value>
   </data>
-  <data name="statusStrip.Size" type="System.Drawing.Size, System.Drawing">
-    <value>632, 22</value>
-  </data>
-  <data name="statusStrip.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;statusStrip.Name" xml:space="preserve">
-    <value>statusStrip</value>
-  </data>
-  <data name="&gt;&gt;statusStrip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.StatusStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;statusStrip.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;statusStrip.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <metadata name="toolTipPreview.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>500, 17</value>
-  </metadata>
-  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>6, 13</value>
-  </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>632, 453</value>
+  <data name="toolStripStatusLabelSingleFiles.ToolTipText" xml:space="preserve">
+    <value>Ein Dokument pro Seite generieren</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -1010,58 +942,7 @@
         AIADAACABwAAgAcAAIAHAACABwAAgAcAAIAHAADwBwAA8AcAAPAHAAA=
 </value>
   </data>
-  <data name="&gt;&gt;imageList.Name" xml:space="preserve">
-    <value>imageList</value>
-  </data>
-  <data name="&gt;&gt;imageList.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;folderBrowserDialog.Name" xml:space="preserve">
-    <value>folderBrowserDialog</value>
-  </data>
-  <data name="&gt;&gt;folderBrowserDialog.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FolderBrowserDialog, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;saveFileDialog.Name" xml:space="preserve">
-    <value>saveFileDialog</value>
-  </data>
-  <data name="&gt;&gt;saveFileDialog.Type" xml:space="preserve">
-    <value>System.Windows.Forms.SaveFileDialog, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripDropDownButtonZoomIn.Name" xml:space="preserve">
-    <value>toolStripDropDownButtonZoomIn</value>
-  </data>
-  <data name="&gt;&gt;toolStripDropDownButtonZoomIn.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripDropDownButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripDropDownButtonZoomOut.Name" xml:space="preserve">
-    <value>toolStripDropDownButtonZoomOut</value>
-  </data>
-  <data name="&gt;&gt;toolStripDropDownButtonZoomOut.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripDropDownButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripDropDownButtonSave.Name" xml:space="preserve">
-    <value>toolStripDropDownButtonSave</value>
-  </data>
-  <data name="&gt;&gt;toolStripDropDownButtonSave.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripDropDownButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusLabelSingleFiles.Name" xml:space="preserve">
-    <value>toolStripStatusLabelSingleFiles</value>
-  </data>
-  <data name="&gt;&gt;toolStripStatusLabelSingleFiles.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolTipPreview.Name" xml:space="preserve">
-    <value>toolTipPreview</value>
-  </data>
-  <data name="&gt;&gt;toolTipPreview.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>ExtractForm</value>
-  </data>
-  <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Seiten extrahieren von {0}</value>
   </data>
 </root>

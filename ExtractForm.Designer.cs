@@ -28,33 +28,44 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExtractForm));
             this.listViewPages = new System.Windows.Forms.ListView();
+            this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripDropDownButtonZoomIn = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripDropDownButtonZoomOut = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripDropDownButtonSave = new System.Windows.Forms.ToolStripDropDownButton();
-            this.toolStripStatusLabelInfo = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabelSingleFiles = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolTipPreview = new System.Windows.Forms.ToolTip(this.components);
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // listViewPages
             // 
-            this.listViewPages.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewPages.Location = new System.Drawing.Point(0, 0);
+            resources.ApplyResources(this.listViewPages, "listViewPages");
+            this.listViewPages.HideSelection = false;
+            this.listViewPages.LargeImageList = this.imageList;
             this.listViewPages.Name = "listViewPages";
-            this.listViewPages.Size = new System.Drawing.Size(632, 431);
-            this.listViewPages.TabIndex = 0;
             this.listViewPages.UseCompatibleStateImageBehavior = false;
             this.listViewPages.VirtualMode = true;
             this.listViewPages.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.listViewPages_ItemDrag);
             this.listViewPages.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.listViewPages_RetrieveVirtualItem);
-            this.listViewPages.VirtualItemsSelectionRangeChanged += new System.Windows.Forms.ListViewVirtualItemsSelectionRangeChangedEventHandler(this.listViewPages_VirtualItemsSelectionRangeChanged);
+            this.listViewPages.SelectedIndexChanged += new System.EventHandler(this.listViewPages_SelectedIndexChanged);
+            this.listViewPages.MouseLeave += new System.EventHandler(this.listViewPages_MouseLeave);
+            this.listViewPages.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listViewPages_MouseMove);
+            // 
+            // imageList
+            // 
+            this.imageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
+            resources.ApplyResources(this.imageList, "imageList");
+            this.imageList.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // saveFileDialog
             // 
+            resources.ApplyResources(this.saveFileDialog, "saveFileDialog");
             this.saveFileDialog.DefaultExt = "pdf";
             // 
             // statusStrip
@@ -63,56 +74,56 @@
             this.toolStripDropDownButtonZoomIn,
             this.toolStripDropDownButtonZoomOut,
             this.toolStripDropDownButtonSave,
-            this.toolStripStatusLabelInfo});
+            this.toolStripStatusLabelSingleFiles});
             this.statusStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.statusStrip.Location = new System.Drawing.Point(0, 431);
+            resources.ApplyResources(this.statusStrip, "statusStrip");
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.ShowItemToolTips = true;
-            this.statusStrip.Size = new System.Drawing.Size(632, 22);
-            this.statusStrip.TabIndex = 1;
             // 
             // toolStripDropDownButtonZoomIn
             // 
             this.toolStripDropDownButtonZoomIn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripDropDownButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripDropDownButtonZoomIn.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButtonZoomIn.Image")));
+            resources.ApplyResources(this.toolStripDropDownButtonZoomIn, "toolStripDropDownButtonZoomIn");
             this.toolStripDropDownButtonZoomIn.Name = "toolStripDropDownButtonZoomIn";
             this.toolStripDropDownButtonZoomIn.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonZoomIn.Size = new System.Drawing.Size(20, 20);
+            this.toolStripDropDownButtonZoomIn.Click += new System.EventHandler(this.toolStripDropDownButtonZoomIn_Click);
             // 
             // toolStripDropDownButtonZoomOut
             // 
             this.toolStripDropDownButtonZoomOut.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripDropDownButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripDropDownButtonZoomOut.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButtonZoomOut.Image")));
+            resources.ApplyResources(this.toolStripDropDownButtonZoomOut, "toolStripDropDownButtonZoomOut");
             this.toolStripDropDownButtonZoomOut.Name = "toolStripDropDownButtonZoomOut";
             this.toolStripDropDownButtonZoomOut.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonZoomOut.Size = new System.Drawing.Size(20, 20);
+            this.toolStripDropDownButtonZoomOut.Click += new System.EventHandler(this.toolStripDropDownButtonZoomOut_Click);
             // 
             // toolStripDropDownButtonSave
             // 
             this.toolStripDropDownButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripDropDownButtonSave.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButtonSave.Image")));
+            resources.ApplyResources(this.toolStripDropDownButtonSave, "toolStripDropDownButtonSave");
             this.toolStripDropDownButtonSave.Name = "toolStripDropDownButtonSave";
             this.toolStripDropDownButtonSave.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonSave.Size = new System.Drawing.Size(20, 20);
+            this.toolStripDropDownButtonSave.Click += new System.EventHandler(this.toolStripDropDownButtonSave_Click);
             // 
-            // toolStripStatusLabelInfo
+            // toolStripStatusLabelSingleFiles
             // 
-            this.toolStripStatusLabelInfo.Name = "toolStripStatusLabelInfo";
-            this.toolStripStatusLabelInfo.Size = new System.Drawing.Size(109, 17);
-            this.toolStripStatusLabelInfo.Text = "toolStripStatusLabel1";
+            this.toolStripStatusLabelSingleFiles.Name = "toolStripStatusLabelSingleFiles";
+            resources.ApplyResources(this.toolStripStatusLabelSingleFiles, "toolStripStatusLabelSingleFiles");
+            // 
+            // toolTipPreview
+            // 
+            this.toolTipPreview.OwnerDraw = true;
+            this.toolTipPreview.Draw += new System.Windows.Forms.DrawToolTipEventHandler(this.toolTipPreview_Draw);
+            this.toolTipPreview.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTipPreview_Popup);
             // 
             // ExtractForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(632, 453);
             this.Controls.Add(this.listViewPages);
             this.Controls.Add(this.statusStrip);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ExtractForm";
-            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -129,6 +140,8 @@
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonZoomIn;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonZoomOut;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonSave;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelInfo;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelSingleFiles;
+        private System.Windows.Forms.ImageList imageList;
+        private System.Windows.Forms.ToolTip toolTipPreview;
     }
 }
