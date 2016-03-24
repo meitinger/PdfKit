@@ -40,6 +40,8 @@
             this.toolStripDropDownButtonSave = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripStatusLabelSingleFiles = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTipPreview = new System.Windows.Forms.ToolTip(this.components);
+            this.toolStripProgressBarExtract = new System.Windows.Forms.ToolStripProgressBar();
+            this.toolStripStatusLabelExtract = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -54,6 +56,8 @@
             this.listViewPages.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.listViewPages_ItemDrag);
             this.listViewPages.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.listViewPages_RetrieveVirtualItem);
             this.listViewPages.SelectedIndexChanged += new System.EventHandler(this.listViewPages_SelectedIndexChanged);
+            this.listViewPages.VirtualItemsSelectionRangeChanged += new System.Windows.Forms.ListViewVirtualItemsSelectionRangeChangedEventHandler(this.listViewPages_VirtualItemsSelectionRangeChanged);
+            this.listViewPages.QueryContinueDrag += new System.Windows.Forms.QueryContinueDragEventHandler(this.listViewPages_QueryContinueDrag);
             this.listViewPages.MouseLeave += new System.EventHandler(this.listViewPages_MouseLeave);
             this.listViewPages.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listViewPages_MouseMove);
             // 
@@ -74,7 +78,9 @@
             this.toolStripDropDownButtonZoomIn,
             this.toolStripDropDownButtonZoomOut,
             this.toolStripDropDownButtonSave,
-            this.toolStripStatusLabelSingleFiles});
+            this.toolStripStatusLabelSingleFiles,
+            this.toolStripProgressBarExtract,
+            this.toolStripStatusLabelExtract});
             this.statusStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             resources.ApplyResources(this.statusStrip, "statusStrip");
             this.statusStrip.Name = "statusStrip";
@@ -117,6 +123,16 @@
             this.toolTipPreview.Draw += new System.Windows.Forms.DrawToolTipEventHandler(this.toolTipPreview_Draw);
             this.toolTipPreview.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTipPreview_Popup);
             // 
+            // toolStripProgressBarExtract
+            // 
+            this.toolStripProgressBarExtract.Name = "toolStripProgressBarExtract";
+            resources.ApplyResources(this.toolStripProgressBarExtract, "toolStripProgressBarExtract");
+            // 
+            // toolStripStatusLabelExtract
+            // 
+            this.toolStripStatusLabelExtract.Name = "toolStripStatusLabelExtract";
+            resources.ApplyResources(this.toolStripStatusLabelExtract, "toolStripStatusLabelExtract");
+            // 
             // ExtractForm
             // 
             resources.ApplyResources(this, "$this");
@@ -124,6 +140,7 @@
             this.Controls.Add(this.listViewPages);
             this.Controls.Add(this.statusStrip);
             this.Name = "ExtractForm";
+            this.Load += new System.EventHandler(this.ExtractForm_Load);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -143,5 +160,7 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelSingleFiles;
         private System.Windows.Forms.ImageList imageList;
         private System.Windows.Forms.ToolTip toolTipPreview;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBarExtract;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelExtract;
     }
 }

@@ -220,6 +220,18 @@
   <data name="toolStripStatusLabelSingleFiles.Size" type="System.Drawing.Size, System.Drawing">
     <value>0, 17</value>
   </data>
+  <data name="toolStripProgressBarExtract.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 16</value>
+  </data>
+  <data name="toolStripProgressBarExtract.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="toolStripStatusLabelExtract.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 17</value>
+  </data>
+  <data name="toolStripStatusLabelExtract.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
   <data name="statusStrip.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 431</value>
   </data>
@@ -1057,6 +1069,18 @@
   </data>
   <data name="&gt;&gt;toolTipPreview.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripProgressBarExtract.Name" xml:space="preserve">
+    <value>toolStripProgressBarExtract</value>
+  </data>
+  <data name="&gt;&gt;toolStripProgressBarExtract.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripProgressBar, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelExtract.Name" xml:space="preserve">
+    <value>toolStripStatusLabelExtract</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelExtract.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>ExtractForm</value>

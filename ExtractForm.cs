@@ -15,24 +15,28 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using Ghostscript.NET;
+using Ghostscript.NET.Processor;
 using Ghostscript.NET.Rasterizer;
-using System.Diagnostics;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class ExtractForm : Form
     {
         private readonly GhostscriptVersionInfo version = new GhostscriptVersionInfo("gsdll32.dll");
-        private readonly Image[] cache;
+        private readonly string shortPath;
         private readonly string fileName;
         private GhostscriptRasterizer rasterizer;
+        private Image[] cache;
         private CheckBox checkBoxSingleFiles;
         private TrackBar trackBarZoom;
         private Image imagePreview;
@@ -40,28 +44,23 @@ namespace Aufbauwerk.Tools.PdfKit
 
         public ExtractForm(string path)
         {
-            // store the path and create the rasterizer
-            fileName = Path.GetFileNameWithoutExtension(path);
-            rasterizer = new GhostscriptRasterizer();
-            rasterizer.Open(Program.GetShortPathName(path), version, false);
-            cache = new Image[rasterizer.PageCount];
-
             // intialize the components
             InitializeComponent();
-            InitializeAdditionalComponents();
+            InitializeAdditionalStatusStripComponents();
 
-            // set the text and default browse path
+            // store the path and set the default locations
+            fileName = Path.GetFileNameWithoutExtension(path);
+            shortPath = Program.GetShortPathName(path);
             Text = string.Format(Text, fileName);
             var directory = Path.GetDirectoryName(path);
             saveFileDialog.InitialDirectory = directory;
             folderBrowserDialog.SelectedPath = directory;
 
-            // simulate a trackbar change and set the virtual list size
+            // simulate a trackbar change
             trackBarZoom_ValueChanged(this, EventArgs.Empty);
-            listViewPages.VirtualListSize = rasterizer.PageCount;
         }
 
-        private void InitializeAdditionalComponents()
+        private void InitializeAdditionalStatusStripComponents()
         {
             // suspend layout
             statusStrip.SuspendLayout();
@@ -130,6 +129,201 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
+        private void ShowStatus(bool visible)
+        {
+            // set the visibilty and update
+            toolStripProgressBarExtract.Visible = visible;
+            toolStripStatusLabelExtract.Visible = visible;
+            toolStripDropDownButtonSave.Visible = !visible;
+            checkBoxSingleFiles.Visible = !visible;
+            toolStripStatusLabelSingleFiles.Visible = !visible;
+            toolStripDropDownButtonZoomOut.Visible = !visible;
+            trackBarZoom.Visible = !visible;
+            toolStripDropDownButtonZoomIn.Visible = !visible;
+            listViewPages.Enabled = !visible;
+            listViewPages.Update();
+            toolStripStatusLabelExtract.Text = string.Empty;
+            statusStrip.Update();
+        }
+
+        private void PerformGhostscriptOperation(Action<GhostscriptProcessor> action)
+        {
+            // make sure the rasterizer is closed during the action and show the status elements
+            rasterizer.Close();
+            ShowStatus(true);
+            try
+            {
+                // perform the action
+                using (var processor = new GhostscriptProcessor(version, false))
+                    action(processor);
+            }
+            catch (GhostscriptException e)
+            {
+                // show the error
+                MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                // hide the status and reopen the rasterizer
+                ShowStatus(false);
+                rasterizer.Open(shortPath, version, false);
+            }
+        }
+
+        private void ExtractRange(GhostscriptProcessor processor, bool appendFile, string path, int start, int end)
+        {
+            // make the range 1-based
+            start++;
+            end++;
+
+            // set the progress and status label
+            toolStripProgressBarExtract.Value = start;
+            var pages = start == end ? start.ToString() : string.Format("{0}-{1}", start, end);
+            if (appendFile)
+            {
+                if (toolStripStatusLabelExtract.Text.Length > 0)
+                    toolStripStatusLabelExtract.Text += ",";
+                toolStripStatusLabelExtract.Text += pages;
+            }
+            else
+                toolStripStatusLabelExtract.Text = string.Format("{0} => {1}", pages, Path.GetFileNameWithoutExtension(path));
+            statusStrip.Update();
+
+            // extract the given range of pages
+            processor.Process(new string[]
+            {
+                "-q",
+                "-dSAFER",
+                "-dBATCH",
+                "-dNOPAUSE",
+                "-dNOPROMPT",
+                "-sDEVICE=pdfwrite",
+                "-dFirstPage=" + start.ToString(CultureInfo.InvariantCulture),
+                "-dLastPage=" + end.ToString(CultureInfo.InvariantCulture),
+                "-dAutoRotatePages=/None",
+                "-sOutputFile=" + path,
+                shortPath
+            });
+
+            // increment the progress and reset the label if necessary
+            toolStripProgressBarExtract.Value = end;
+            if (!appendFile)
+            {
+                toolStripStatusLabelExtract.Text = string.Empty;
+                statusStrip.Update();
+            }
+        }
+
+        private int[] GetSelectedPages()
+        {
+            // get the selected indices   
+            var selected = new int[listViewPages.SelectedIndices.Count];
+            listViewPages.SelectedIndices.CopyTo(selected, 0);
+            Array.Sort(selected);
+            return selected;
+        }
+
+        private void ExtractToSingleDocument(string path)
+        {
+            PerformGhostscriptOperation(processor =>
+            {
+                // extract all continuous selections and combine them into one document
+                var selected = GetSelectedPages();
+                var statusInfo = new StringBuilder();
+                var files = new List<string>();
+                try
+                {
+                    // find continuous selections
+                    var start = 0;
+                    for (var i = 1; i < selected.Length; i++)
+                    {
+                        // extract the previous range if there is a gap
+                        if (selected[start] + (i - start) < selected[i])
+                        {
+                            var fileNameInner = Path.GetTempFileName();
+                            files.Add(fileNameInner);
+                            ExtractRange(processor, true, fileNameInner, selected[start], selected[i - 1]);
+                            start = i;
+                        }
+                    }
+
+                    // check whether previos ranges have been extracted
+                    if (start > 0)
+                    {
+                        // extract the remaining range
+                        var fileNameOuter = Path.GetTempFileName();
+                        files.Add(fileNameOuter);
+                        ExtractRange(processor, true, fileNameOuter, selected[start], selected[selected.Length - 1]);
+
+                        // combine all pages
+                        toolStripProgressBarExtract.Value = cache.Length;
+                        toolStripStatusLabelExtract.Text += " => " + Path.GetFileNameWithoutExtension(path);
+                        statusStrip.Update();
+                        var args = new string[]
+                        {
+                            "-q",
+                            "-dSAFER",
+                            "-dBATCH",
+                            "-dNOPAUSE",
+                            "-dNOPROMPT",
+                            "-sDEVICE=pdfwrite",
+                            "-dAutoRotatePages=/None",
+                            "-sOutputFile=" + path
+                        };
+                        var argc = args.Length;
+                        Array.Resize(ref args, argc + files.Count);
+                        files.CopyTo(args, argc);
+                        processor.Process(args);
+                    }
+                    else
+                        // simply extract the single range
+                        ExtractRange(processor, false, path, selected[start], selected[selected.Length - 1]);
+
+                    // done
+                    toolStripProgressBarExtract.Value = toolStripProgressBarExtract.Maximum;
+                }
+                finally
+                {
+                    // cleanup temporary files
+                    foreach (var file in files)
+                    {
+                        try { File.Delete(file); }
+                        catch { }
+                    }
+                }
+            });
+        }
+
+        private string GetPageFileName(int index)
+        {
+            // return the file name plus extension for a page
+            return string.Format("{0}_{1}.pdf", fileName, index + 1);
+        }
+
+        private void ExtractToMultipleDocuments(string path)
+        {
+            PerformGhostscriptOperation(processor =>
+            {
+                // extract all selected pages
+                var selected = GetSelectedPages();
+                for (var i = 0; i < selected.Length; i++)
+                {
+                    var index = selected[i];
+                    ExtractRange(processor, false, Path.Combine(path, GetPageFileName(index)), index, index);
+                }
+            });
+        }
+
+        private void ExtractForm_Load(object sender, EventArgs e)
+        {
+            // create the rasterizer, initialize the cache and virtual mode
+            rasterizer = new GhostscriptRasterizer();
+            rasterizer.Open(shortPath, version, false);
+            cache = new Image[rasterizer.PageCount];
+            listViewPages.VirtualListSize = rasterizer.PageCount;
+            toolStripProgressBarExtract.Maximum = (int)(rasterizer.PageCount * 1.1f);
+        }
+
         private void trackBarZoom_ValueChanged(object sender, EventArgs e)
         {
             // set the enabled state and reset the image list
@@ -185,8 +379,31 @@ namespace Aufbauwerk.Tools.PdfKit
 
         }
 
+        private void listViewPages_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
+        {
+
+        }
+
         private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
         {
+            if (checkBoxSingleFiles.Checked)
+            {
+                // pick a directory and extract the pages
+                if (folderBrowserDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    ExtractToMultipleDocuments(folderBrowserDialog.SelectedPath);
+                    // SHOpenFolderAndSelectItems 
+                }
+            }
+            else
+            {
+                // show the save dialog and extract the pages to a single document
+                if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    ExtractToSingleDocument(saveFileDialog.FileName);
+                    Process.Start(saveFileDialog.FileName);
+                }
+            }
         }
 
         private void toolTipPreview_Draw(object sender, DrawToolTipEventArgs e)
@@ -195,6 +412,7 @@ namespace Aufbauwerk.Tools.PdfKit
             e.DrawBackground();
             var bounds = e.Bounds;
             bounds.Inflate(-1, 1);
+            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
             e.Graphics.DrawImage(imagePreview, bounds);
             e.DrawBorder();
         }
@@ -232,6 +450,12 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // update the save button state
             toolStripDropDownButtonSave.Enabled = listViewPages.SelectedIndices.Count > 0;
+        }
+
+        private void listViewPages_VirtualItemsSelectionRangeChanged(object sender, ListViewVirtualItemsSelectionRangeChangedEventArgs e)
+        {
+            // do the same as a single selection change
+            listViewPages_SelectedIndexChanged(sender, e);
         }
     }
 }
