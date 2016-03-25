@@ -21,6 +21,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Windows.Forms;
+using Ghostscript.NET;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
@@ -110,8 +111,10 @@ namespace Aufbauwerk.Tools.PdfKit
             return buffer.ToString();
         }
 
+        internal static readonly GhostscriptVersionInfo GhostscriptVersion = new GhostscriptVersionInfo("gsdll32.dll");
+
         [STAThread]
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Application.SetCompatibleTextRenderingDefault(true);
             Application.EnableVisualStyles();

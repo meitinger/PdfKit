@@ -29,7 +29,6 @@ namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class CombineForm : Form
     {
-        private readonly GhostscriptVersionInfo version = new GhostscriptVersionInfo("gsdll32.dll");
         private readonly Dictionary<string, GhostscriptViewerState> viewerStates = new Dictionary<string, GhostscriptViewerState>();
         private readonly string totalFormat;
         private GhostscriptViewer currentViewer = null;
@@ -79,7 +78,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 currentViewer.DisplayUpdate += currentViewer_DisplayUpdate;
                 currentViewer.DisplaySize += currentViewer_DisplaySize;
                 currentViewer.DisplayPage += currentViewer_DisplayPage;
-                currentViewer.Open(path, version, false);
+                currentViewer.Open(path, Program.GhostscriptVersion, false);
                 GhostscriptViewerState state;
                 if (viewerStates.TryGetValue(currentViewer.FilePath, out state))
                 {
@@ -504,7 +503,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 try
                 {
                     // create the processor and build the argument array
-                    using (var processor = new GhostscriptProcessor(version, false))
+                    using (var processor = new GhostscriptProcessor(Program.GhostscriptVersion, false))
                     {
                         var args = new string[]
                         {

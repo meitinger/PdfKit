@@ -32,7 +32,6 @@ namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class ExtractForm : Form
     {
-        private readonly GhostscriptVersionInfo version = new GhostscriptVersionInfo("gsdll32.dll");
         private readonly string shortPath;
         private readonly string fileName;
         private GhostscriptRasterizer rasterizer;
@@ -129,7 +128,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void ShowStatus(bool visible)
+        private void ShowStatus(bool visible, int maximum)
         {
             // set the visibilty and update
             toolStripProgressBarExtract.Visible = visible;
@@ -142,25 +141,67 @@ namespace Aufbauwerk.Tools.PdfKit
             toolStripDropDownButtonZoomIn.Visible = !visible;
             listViewPages.Enabled = !visible;
             listViewPages.Update();
+            toolStripProgressBarExtract.Value = 0;
+            toolStripProgressBarExtract.Maximum = maximum;
             toolStripStatusLabelExtract.Text = string.Empty;
             statusStrip.Update();
         }
 
-        private T PerformGhostscriptOperation<T>(Func<int[], GhostscriptProcessor, T> action)
+        private int[] GetSelectedIndices()
         {
             // get the selected indices   
             var selected = new int[listViewPages.SelectedIndices.Count];
             listViewPages.SelectedIndices.CopyTo(selected, 0);
             Array.Sort(selected);
+            return selected;
+        }
 
+        private Tuple<int, int>[] GetRangesFromIndices(int[] indices)
+        {
+            // find continuous indices
+            var ranges = new List<Tuple<int, int>>();
+            if (indices.Length > 0)
+            {
+                var start = 0;
+                for (var i = 1; i < indices.Length; i++)
+                {
+                    // add the previous range if there is a gap
+                    if (indices[start] + (i - start) < indices[i])
+                    {
+                        ranges.Add(new Tuple<int, int>(indices[start], indices[i - 1]));
+                        start = i;
+                    }
+                }
+
+                // add the remaining range
+                ranges.Add(new Tuple<int, int>(indices[start], indices[indices.Length - 1]));
+            }
+
+            // return the array
+            return ranges.ToArray();
+        }
+
+        private T PerformGhostscriptOperation<T>(int steps, Func<GhostscriptProcessor, Action, Action<string>, T> action)
+        {
             // make sure the rasterizer is closed during the action and show the status elements
             rasterizer.Close();
-            ShowStatus(true);
+            ShowStatus(true, steps);
             try
             {
                 // perform the action
-                using (var processor = new GhostscriptProcessor(version, false))
-                    return action(selected, processor);
+                using (var processor = new GhostscriptProcessor(Program.GhostscriptVersion, false))
+                {
+                    return action
+                    (
+                        processor,
+                        () => toolStripProgressBarExtract.Value++,
+                        text =>
+                        {
+                            toolStripStatusLabelExtract.Text = text;
+                            statusStrip.Update();
+                        }
+                    );
+                }
             }
             catch (GhostscriptException e)
             {
@@ -171,31 +212,25 @@ namespace Aufbauwerk.Tools.PdfKit
             finally
             {
                 // hide the status and reopen the rasterizer
-                ShowStatus(false);
-                rasterizer.Open(shortPath, version, false);
+                ShowStatus(false, 0);
+                rasterizer.Open(shortPath, Program.GhostscriptVersion, false);
             }
         }
 
-        private void ExtractRange(GhostscriptProcessor processor, bool appendFile, string path, int start, int end)
+        private string GetFileStatus(string path, string text)
+        {
+            // gets the string to be displayed in the status area
+            return string.Format("{0} => {1}", text, Path.GetFileNameWithoutExtension(path));
+        }
+
+        private void ExtractRange(GhostscriptProcessor processor, Action stepId, Action<string> status, string path, int start, int end)
         {
             // make the range 1-based
             start++;
             end++;
 
-            // set the progress and status label
-            toolStripProgressBarExtract.Value = start;
-            var pages = start == end ? start.ToString() : string.Format("{0}-{1}", start, end);
-            if (appendFile)
-            {
-                if (toolStripStatusLabelExtract.Text.Length > 0)
-                    toolStripStatusLabelExtract.Text += ",";
-                toolStripStatusLabelExtract.Text += pages;
-            }
-            else
-                toolStripStatusLabelExtract.Text = string.Format("{0} => {1}", pages, Path.GetFileNameWithoutExtension(path));
-            statusStrip.Update();
-
             // extract the given range of pages
+            status(start == end ? start.ToString() : string.Format("{0}-{1}", start, end));
             processor.Process(new string[]
             {
                 "-q",
@@ -210,51 +245,45 @@ namespace Aufbauwerk.Tools.PdfKit
                 "-sOutputFile=" + path,
                 shortPath
             });
-
-            // increment the progress and reset the label if necessary
-            toolStripProgressBarExtract.Value = end;
-            if (!appendFile)
-            {
-                toolStripStatusLabelExtract.Text = string.Empty;
-                statusStrip.Update();
-            }
+            stepId();
         }
 
-        private void ExtractToSingleDocument(string path)
+        private void ExtractToSingleDocument(string path, Tuple<int, int>[] ranges)
         {
-            PerformGhostscriptOperation((selected, processor) =>
+            PerformGhostscriptOperation(ranges.Length == 1 ? 1 : ranges.Length + 1, (processor, stepIt, status) =>
             {
-                // extract all continuous selections and combine them into one document
-                var statusInfo = new StringBuilder();
-                var files = new List<string>();
-                try
+                if (ranges.Length != 1)
                 {
-                    // find continuous selections
-                    var start = 0;
-                    for (var i = 1; i < selected.Length; i++)
+                    // extract all ranges and combine them into one document
+                    var files = new List<string>();
+                    try
                     {
-                        // extract the previous range if there is a gap
-                        if (selected[start] + (i - start) < selected[i])
+                        // extract each range
+                        var pages = new StringBuilder();
+                        for (var i = 0; i < ranges.Length; i++)
                         {
-                            var fileNameInner = Path.GetTempFileName();
-                            files.Add(fileNameInner);
-                            ExtractRange(processor, true, fileNameInner, selected[start], selected[i - 1]);
-                            start = i;
+                            var file = Path.GetTempFileName();
+                            files.Add(file);
+                            ExtractRange
+                            (
+                                processor,
+                                stepIt,
+                                t =>
+                                {
+                                    // append the page string
+                                    if (pages.Length > 0)
+                                        pages.Append(',');
+                                    pages.Append(t);
+                                    status(pages.ToString());
+                                },
+                                file,
+                                ranges[i].Item1,
+                                ranges[i].Item2
+                            );
                         }
-                    }
-
-                    // check whether previos ranges have been extracted
-                    if (start > 0)
-                    {
-                        // extract the remaining range
-                        var fileNameOuter = Path.GetTempFileName();
-                        files.Add(fileNameOuter);
-                        ExtractRange(processor, true, fileNameOuter, selected[start], selected[selected.Length - 1]);
 
                         // combine all pages
-                        toolStripProgressBarExtract.Value = cache.Length;
-                        toolStripStatusLabelExtract.Text += " => " + Path.GetFileNameWithoutExtension(path);
-                        statusStrip.Update();
+                        status(GetFileStatus(path, pages.ToString()));
                         var args = new string[]
                         {
                             "-q",
@@ -270,43 +299,49 @@ namespace Aufbauwerk.Tools.PdfKit
                         Array.Resize(ref args, argc + files.Count);
                         files.CopyTo(args, argc);
                         processor.Process(args);
+                        stepIt();
                     }
-                    else
-                        // simply extract the single range
-                        ExtractRange(processor, false, path, selected[start], selected[selected.Length - 1]);
-
-                    // done
-                    toolStripProgressBarExtract.Value = toolStripProgressBarExtract.Maximum;
-                    return true;
-                }
-                finally
-                {
-                    // cleanup temporary files
-                    foreach (var file in files)
+                    finally
                     {
-                        try { File.Delete(file); }
-                        catch { }
+                        // cleanup temporary files
+                        foreach (var file in files)
+                        {
+                            try { File.Delete(file); }
+                            catch { }
+                        }
                     }
                 }
+                else
+                    // simply extract the single range
+                    ExtractRange(processor, stepIt, t => status(GetFileStatus(path, t)), path, ranges[0].Item1, ranges[0].Item2);
+                return true;
             });
         }
 
-        private string GetPageFileName(int index)
+        private string GetDocumentFileName(int index)
         {
-            // return the file name plus extension for a page
+            // return the file name plus extension for a single page
             return string.Format("{0}_{1}.pdf", fileName, index + 1);
         }
 
-        private string[] ExtractToMultipleDocuments(string path)
+        private string GetDocumentFileName(Tuple<int, int>[] ranges)
         {
-            return PerformGhostscriptOperation((selected, processor) =>
+            // return the file name plus extension for a range of pages
+            var pages = Array.ConvertAll(ranges, r => r.Item1 == r.Item2 ? (r.Item1 + 1).ToString() : string.Format("{0}-{1}", r.Item1 + 1, r.Item2 + 1));
+            return string.Format("{0}_{1}.pdf", fileName, string.Join(",", pages));
+        }
+
+        private string[] ExtractToMultipleDocuments(string path, int[] indices)
+        {
+            return PerformGhostscriptOperation(indices.Length, (processor, stepIt, status) =>
             {
                 // extract all selected pages
-                var fileNames = Array.ConvertAll(selected, i => GetPageFileName(i));
-                for (var i = 0; i < selected.Length; i++)
+                var fileNames = Array.ConvertAll(indices, i => GetDocumentFileName(i));
+                for (var i = 0; i < indices.Length; i++)
                 {
-                    var index = selected[i];
-                    ExtractRange(processor, false, Path.Combine(path, fileNames[i]), index, index);
+                    var index = indices[i];
+                    var fileName = Path.Combine(path, fileNames[i]);
+                    ExtractRange(processor, stepIt, t => status(GetFileStatus(fileName, t)), fileName, index, index);
                 }
                 return fileNames;
             });
@@ -316,10 +351,9 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // create the rasterizer, initialize the cache and virtual mode
             rasterizer = new GhostscriptRasterizer();
-            rasterizer.Open(shortPath, version, false);
+            rasterizer.Open(shortPath, Program.GhostscriptVersion, false);
             cache = new Image[rasterizer.PageCount];
             listViewPages.VirtualListSize = rasterizer.PageCount;
-            toolStripProgressBarExtract.Maximum = (int)(rasterizer.PageCount * 1.1f);
         }
 
         private void trackBarZoom_ValueChanged(object sender, EventArgs e)
@@ -374,7 +408,15 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void listViewPages_ItemDrag(object sender, ItemDragEventArgs e)
         {
+            string[] files;
+            if (checkBoxSingleFiles.Checked)
+            {
+            }
+            else
+            {
 
+            }
+            //var data = new DataObject(DataFormats.FileDrop, 
         }
 
         private void listViewPages_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
@@ -384,21 +426,25 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
         {
+            // get the selection and check what to do
+            var indices = GetSelectedIndices();
             if (checkBoxSingleFiles.Checked)
             {
                 // pick a directory and extract the pages
                 if (folderBrowserDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    var files = ExtractToMultipleDocuments(folderBrowserDialog.SelectedPath);
+                    var files = ExtractToMultipleDocuments(folderBrowserDialog.SelectedPath, indices);
                     Program.OpenFolderAndSelectItems(folderBrowserDialog.SelectedPath, files);
                 }
             }
             else
             {
                 // show the save dialog and extract the pages to a single document
+                var ranges = GetRangesFromIndices(indices);
+                saveFileDialog.FileName = GetDocumentFileName(ranges);
                 if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    ExtractToSingleDocument(saveFileDialog.FileName);
+                    ExtractToSingleDocument(saveFileDialog.FileName, ranges);
                     Process.Start(saveFileDialog.FileName);
                 }
             }
