@@ -130,7 +130,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void ShowStatus(bool visible, int maximum)
         {
-            // set the visibilty and update
+            // set the visibilty and enabled states
             toolStripProgressBarExtract.Visible = visible;
             toolStripStatusLabelExtract.Visible = visible;
             toolStripDropDownButtonSave.Visible = !visible;
@@ -141,6 +141,8 @@ namespace Aufbauwerk.Tools.PdfKit
             toolStripDropDownButtonZoomIn.Visible = !visible;
             listViewPages.Enabled = !visible;
             listViewPages.Update();
+
+            // reset the progress bar and status label
             toolStripProgressBarExtract.Value = 0;
             toolStripProgressBarExtract.Maximum = maximum;
             toolStripStatusLabelExtract.Text = string.Empty;
@@ -177,8 +179,27 @@ namespace Aufbauwerk.Tools.PdfKit
                 ranges.Add(new Tuple<int, int>(indices[start], indices[indices.Length - 1]));
             }
 
-            // return the array
+            // return an array
             return ranges.ToArray();
+        }
+
+        private string GetDocumentFileName(int index)
+        {
+            // return the file name plus extension for a single page
+            return string.Format("{0}_{1}.pdf", fileName, index + 1);
+        }
+
+        private string GetDocumentFileName(Tuple<int, int>[] ranges)
+        {
+            // return the combined file name plus extension for a range of pages
+            var pages = Array.ConvertAll(ranges, r => r.Item1 == r.Item2 ? (r.Item1 + 1).ToString() : string.Format("{0}-{1}", r.Item1 + 1, r.Item2 + 1));
+            return string.Format("{0}_{1}.pdf", fileName, string.Join(",", pages));
+        }
+
+        private string GetFileStatus(string path, string text)
+        {
+            // format the string to be displayed in the status area
+            return string.Format("{0} => {1}", text, Path.GetFileNameWithoutExtension(path));
         }
 
         private T PerformGhostscriptOperation<T>(int steps, Func<GhostscriptProcessor, Action, Action<string>, T> action)
@@ -215,12 +236,6 @@ namespace Aufbauwerk.Tools.PdfKit
                 ShowStatus(false, 0);
                 rasterizer.Open(shortPath, Program.GhostscriptVersion, false);
             }
-        }
-
-        private string GetFileStatus(string path, string text)
-        {
-            // gets the string to be displayed in the status area
-            return string.Format("{0} => {1}", text, Path.GetFileNameWithoutExtension(path));
         }
 
         private void ExtractRange(GhostscriptProcessor processor, Action stepId, Action<string> status, string path, int start, int end)
@@ -318,19 +333,6 @@ namespace Aufbauwerk.Tools.PdfKit
             });
         }
 
-        private string GetDocumentFileName(int index)
-        {
-            // return the file name plus extension for a single page
-            return string.Format("{0}_{1}.pdf", fileName, index + 1);
-        }
-
-        private string GetDocumentFileName(Tuple<int, int>[] ranges)
-        {
-            // return the file name plus extension for a range of pages
-            var pages = Array.ConvertAll(ranges, r => r.Item1 == r.Item2 ? (r.Item1 + 1).ToString() : string.Format("{0}-{1}", r.Item1 + 1, r.Item2 + 1));
-            return string.Format("{0}_{1}.pdf", fileName, string.Join(",", pages));
-        }
-
         private string[] ExtractToMultipleDocuments(string path, int[] indices)
         {
             return PerformGhostscriptOperation(indices.Length, (processor, stepIt, status) =>
@@ -408,20 +410,40 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void listViewPages_ItemDrag(object sender, ItemDragEventArgs e)
         {
-            string[] files;
-            if (checkBoxSingleFiles.Checked)
-            {
-            }
-            else
-            {
+            // get the target file names
+            var indices = GetSelectedIndices();
+            var files = checkBoxSingleFiles.Checked ?
+                Array.ConvertAll(indices, i => Path.Combine(Path.GetTempPath(), GetDocumentFileName(i))) :
+                new string[] { Path.Combine(Path.GetTempPath(), GetDocumentFileName(GetRangesFromIndices(indices))) };
 
+            // hide the tooltip and perform the operation
+            SetTooltip(null);
+            var data = new DataObject(DataFormats.FileDrop, files);
+            if (listViewPages.DoDragDrop(data, DragDropEffects.Copy | DragDropEffects.Move) == DragDropEffects.Copy)
+            {
+                // cleanup the files if they were copied
+                for (var i = 0; i < files.Length; i++)
+                {
+                    try { File.Delete(files[i]); }
+                    catch { }
+                }
             }
-            //var data = new DataObject(DataFormats.FileDrop, 
         }
 
         private void listViewPages_QueryContinueDrag(object sender, QueryContinueDragEventArgs e)
         {
-
+            // generate the files if they've been dropped
+            if (e.Action == DragAction.Drop)
+            {
+                var indices = GetSelectedIndices();
+                if (!checkBoxSingleFiles.Checked)
+                {
+                    var ranges = GetRangesFromIndices(indices);
+                    ExtractToSingleDocument(Path.Combine(Path.GetTempPath(), GetDocumentFileName(ranges)), ranges);
+                }
+                else
+                    ExtractToMultipleDocuments(Path.GetTempPath(), indices);
+            }
         }
 
         private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
