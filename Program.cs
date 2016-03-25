@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
@@ -113,12 +114,51 @@ namespace Aufbauwerk.Tools.PdfKit
 
         internal static readonly GhostscriptVersionInfo GhostscriptVersion = new GhostscriptVersionInfo("gsdll32.dll");
 
+        private enum TaskToPerform
+        {
+            Extract,
+            Combine,
+            CombineDirectory,
+            CombineIdList
+        }
+
         [STAThread]
         private static void Main(string[] args)
         {
-            Application.SetCompatibleTextRenderingDefault(true);
+            // enabled styles and set the text rendering
             Application.EnableVisualStyles();
-            Application.Run(new CombineForm());
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            // make sure the arguments are valid
+            TaskToPerform taskToPerform;
+            if (args.Length != 2 || !Enum.TryParse(args[0], true, out taskToPerform))
+            {
+                // show the usage dialog
+                MessageBox.Show(string.Format("USAGE: {0} <{1}> <arg>", Environment.GetCommandLineArgs()[0], string.Join("|", Enum.GetNames(typeof(TaskToPerform)))), null, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // create the main form based on the task
+            Form form;
+            switch(taskToPerform){
+                case TaskToPerform.Extract:
+                    form = new ExtractForm(args[1]);
+                    break;
+                case TaskToPerform.Combine:
+                    form = new CombineForm();
+                    break;
+                case TaskToPerform.CombineDirectory:
+                    form = new CombineForm(Directory.EnumerateFiles(args[1], "*.pdf", SearchOption.AllDirectories));
+                    break;
+        //        case TaskToPerform.CombineIdList:
+
+          //          break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            // run the application
+            Application.Run(form);
         }
     }
 }

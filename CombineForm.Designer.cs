@@ -300,6 +300,7 @@
             this.Controls.Add(this.splitContainer);
             this.Name = "CombineForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
+            this.Shown += new System.EventHandler(this.CombineForm_Shown);
             this.splitContainer.Panel1.ResumeLayout(false);
             this.splitContainer.Panel1.PerformLayout();
             this.splitContainer.Panel2.ResumeLayout(false);

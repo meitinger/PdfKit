@@ -30,6 +30,7 @@ namespace Aufbauwerk.Tools.PdfKit
     public partial class CombineForm : Form
     {
         private readonly Dictionary<string, GhostscriptViewerState> viewerStates = new Dictionary<string, GhostscriptViewerState>();
+        private readonly IEnumerable<string> initialFiles;
         private readonly string totalFormat;
         private GhostscriptViewer currentViewer = null;
         private Point? previewDrag = null;
@@ -42,6 +43,15 @@ namespace Aufbauwerk.Tools.PdfKit
             pictureBoxPreview.MouseWheel += new MouseEventHandler(pictureBoxPreview_MouseWheel);
             UpdateFiles();
             UpdatePreview();
+        }
+
+        public CombineForm(IEnumerable<string> files)
+            : this()
+        {
+            // store the initial files
+            if (files == null)
+                throw new ArgumentNullException("files");
+            initialFiles = files;
         }
 
         private void SetViewer(string path)
@@ -222,6 +232,17 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
+        private void CombineForm_Shown(object sender, EventArgs e)
+        {
+            // insert all initial files
+            if (initialFiles != null)
+            {
+                Update();
+                var index = 0;
+                foreach (var initialFile in initialFiles)
+                    InsertPdfFile(initialFile, index++);
+            }
+        }
 
         private void currentViewer_DisplayUpdate(object sender, GhostscriptViewerViewEventArgs e)
         {

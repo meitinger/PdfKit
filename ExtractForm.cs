@@ -32,7 +32,7 @@ namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class ExtractForm : Form
     {
-        private readonly string shortPath;
+        private readonly string fullPath;
         private readonly string fileName;
         private GhostscriptRasterizer rasterizer;
         private Image[] cache;
@@ -48,8 +48,8 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeAdditionalStatusStripComponents();
 
             // store the path and set the default locations
-            fileName = Path.GetFileNameWithoutExtension(path);
-            shortPath = Program.GetShortPathName(path);
+            fullPath = Path.GetFullPath(path);
+            fileName = Path.GetFileNameWithoutExtension(fullPath);
             Text = string.Format(Text, fileName);
             var directory = Path.GetDirectoryName(path);
             saveFileDialog.InitialDirectory = directory;
@@ -234,7 +234,7 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // hide the status and reopen the rasterizer
                 ShowStatus(false, 0);
-                rasterizer.Open(shortPath, Program.GhostscriptVersion, false);
+                rasterizer.Open(Program.GetShortPathName(fullPath), Program.GhostscriptVersion, false);
             }
         }
 
@@ -258,7 +258,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 "-dLastPage=" + end.ToString(CultureInfo.InvariantCulture),
                 "-dAutoRotatePages=/None",
                 "-sOutputFile=" + path,
-                shortPath
+                fullPath
             });
             stepId();
         }
@@ -349,11 +349,15 @@ namespace Aufbauwerk.Tools.PdfKit
             });
         }
 
-        private void ExtractForm_Load(object sender, EventArgs e)
+        private void ExtractForm_Shown(object sender, EventArgs e)
         {
+            // enable the virtual mode and paint the form
+            listViewPages.VirtualMode = true;
+            Update();
+
             // create the rasterizer, initialize the cache and virtual mode
             rasterizer = new GhostscriptRasterizer();
-            rasterizer.Open(shortPath, Program.GhostscriptVersion, false);
+            rasterizer.Open(Program.GetShortPathName(fullPath), Program.GhostscriptVersion, false);
             cache = new Image[rasterizer.PageCount];
             listViewPages.VirtualListSize = rasterizer.PageCount;
         }
