@@ -146,8 +146,13 @@ namespace Aufbauwerk.Tools.PdfKit
             statusStrip.Update();
         }
 
-        private void PerformGhostscriptOperation(Action<GhostscriptProcessor> action)
+        private T PerformGhostscriptOperation<T>(Func<int[], GhostscriptProcessor, T> action)
         {
+            // get the selected indices   
+            var selected = new int[listViewPages.SelectedIndices.Count];
+            listViewPages.SelectedIndices.CopyTo(selected, 0);
+            Array.Sort(selected);
+
             // make sure the rasterizer is closed during the action and show the status elements
             rasterizer.Close();
             ShowStatus(true);
@@ -155,12 +160,13 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // perform the action
                 using (var processor = new GhostscriptProcessor(version, false))
-                    action(processor);
+                    return action(selected, processor);
             }
             catch (GhostscriptException e)
             {
                 // show the error
                 MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return default(T);
             }
             finally
             {
@@ -214,21 +220,11 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private int[] GetSelectedPages()
-        {
-            // get the selected indices   
-            var selected = new int[listViewPages.SelectedIndices.Count];
-            listViewPages.SelectedIndices.CopyTo(selected, 0);
-            Array.Sort(selected);
-            return selected;
-        }
-
         private void ExtractToSingleDocument(string path)
         {
-            PerformGhostscriptOperation(processor =>
+            PerformGhostscriptOperation((selected, processor) =>
             {
                 // extract all continuous selections and combine them into one document
-                var selected = GetSelectedPages();
                 var statusInfo = new StringBuilder();
                 var files = new List<string>();
                 try
@@ -281,6 +277,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
                     // done
                     toolStripProgressBarExtract.Value = toolStripProgressBarExtract.Maximum;
+                    return true;
                 }
                 finally
                 {
@@ -300,17 +297,18 @@ namespace Aufbauwerk.Tools.PdfKit
             return string.Format("{0}_{1}.pdf", fileName, index + 1);
         }
 
-        private void ExtractToMultipleDocuments(string path)
+        private string[] ExtractToMultipleDocuments(string path)
         {
-            PerformGhostscriptOperation(processor =>
+            return PerformGhostscriptOperation((selected, processor) =>
             {
                 // extract all selected pages
-                var selected = GetSelectedPages();
+                var fileNames = Array.ConvertAll(selected, i => GetPageFileName(i));
                 for (var i = 0; i < selected.Length; i++)
                 {
                     var index = selected[i];
-                    ExtractRange(processor, false, Path.Combine(path, GetPageFileName(index)), index, index);
+                    ExtractRange(processor, false, Path.Combine(path, fileNames[i]), index, index);
                 }
+                return fileNames;
             });
         }
 
@@ -391,8 +389,8 @@ namespace Aufbauwerk.Tools.PdfKit
                 // pick a directory and extract the pages
                 if (folderBrowserDialog.ShowDialog(this) == DialogResult.OK)
                 {
-                    ExtractToMultipleDocuments(folderBrowserDialog.SelectedPath);
-                    // SHOpenFolderAndSelectItems 
+                    var files = ExtractToMultipleDocuments(folderBrowserDialog.SelectedPath);
+                    Program.OpenFolderAndSelectItems(folderBrowserDialog.SelectedPath, files);
                 }
             }
             else

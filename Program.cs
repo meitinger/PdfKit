@@ -15,8 +15,10 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Windows.Forms;
 
@@ -26,6 +28,73 @@ namespace Aufbauwerk.Tools.PdfKit
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetShortPathName(string path, StringBuilder shortPath, int shortPathLength);
+
+        [DllImport("Shell32.dll", ExactSpelling = true, PreserveSig = false)]
+        private static extern void SHOpenFolderAndSelectItems([In] IntPtr pidlFolder, [In] int cidl, [In] IntPtr[] apidl, [In] uint dwFlags);
+
+        [DllImport("Shell32.dll", ExactSpelling = true, PreserveSig = false)]
+        [return: MarshalAs(UnmanagedType.Interface)]
+        private static extern IShellFolder SHGetDesktopFolder();
+
+        [ComImport, Guid("000214E6-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface IShellFolder
+        {
+            void ParseDisplayName([In] IntPtr hwnd, [In] IBindCtx pbc, [MarshalAs(UnmanagedType.LPWStr)] [In] string pszDisplayName, [In, Optional] IntPtr pchEaten, out IntPtr ppidl, [In, Optional] IntPtr pdwAttributes);
+
+            void Dummy();
+
+            [return: MarshalAs(UnmanagedType.Interface)]
+            IShellFolder BindToObject([In] IntPtr pidl, [In] IBindCtx pbc, [In, MarshalAs(UnmanagedType.LPStruct)] Guid riid);
+        }
+
+        private static Guid IID_IShellFolder = typeof(IShellFolder).GUID;
+
+        internal static void OpenFolderAndSelectItems(string folder, params string[] files)
+        {
+            // check the input and get the folder pidl
+            if (folder == null)
+                throw new ArgumentNullException("folder");
+            var desktop = SHGetDesktopFolder();
+            var folderPidl = IntPtr.Zero;
+            desktop.ParseDisplayName(IntPtr.Zero, null, folder, IntPtr.Zero, out folderPidl, IntPtr.Zero);
+            try
+            {
+                // check if there are any files to select
+                if (files != null && files.Length > 0)
+                {
+                    // get the folder object
+                    var folderObject = desktop.BindToObject(folderPidl, null, IID_IShellFolder);
+                    var filesPidl = new List<IntPtr>();
+                    try
+                    {
+                        // get all child pidls
+                        foreach (var file in files)
+                        {
+                            var filePidl = IntPtr.Zero;
+                            folderObject.ParseDisplayName(IntPtr.Zero, null, file, IntPtr.Zero, out filePidl, IntPtr.Zero);
+                            filesPidl.Add(filePidl);
+                        }
+
+                        // show the folder and select the items
+                        SHOpenFolderAndSelectItems(folderPidl, filesPidl.Count, filesPidl.ToArray(), 0);
+                    }
+                    finally
+                    {
+                        // free the child pidls
+                        foreach (var filePidl in filesPidl)
+                            Marshal.FreeCoTaskMem(filePidl);
+                    }
+                }
+                else
+                    // simply show the folder
+                    SHOpenFolderAndSelectItems(folderPidl, 0, null, 0);
+            }
+            finally
+            {
+                // free the folder pidl
+                Marshal.FreeCoTaskMem(folderPidl);
+            }
+        }
 
         internal static string GetShortPathName(string path)
         {
