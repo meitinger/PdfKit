@@ -77,6 +77,16 @@ namespace Aufbauwerk.Tools.PdfKit
             this.form = form;
         }
 
+        ~CombineDelegate()
+        {
+            // release the item array
+            if (itemArray != IntPtr.Zero)
+            {
+                Marshal.Release(itemArray);
+                itemArray = IntPtr.Zero;
+            }
+        }
+
         void IExecuteCommand.SetKeyState(uint grfKeyState) { }
         void IExecuteCommand.SetParameters(string pszParameters) { }
         void IExecuteCommand.SetPosition(Point pt) { }
@@ -87,8 +97,9 @@ namespace Aufbauwerk.Tools.PdfKit
         void IExecuteCommand.Execute()
         {
             // add all selected files
-            foreach (var file in Program.EnumerateShellItemArray(itemArray))
-                form.AddFile(file);
+            if (itemArray != IntPtr.Zero)
+                foreach (var file in Program.EnumerateShellItemArray(itemArray))
+                    form.AddFile(file);
         }
 
         void IObjectWithSelection.SetSelection(IntPtr psia)
@@ -208,17 +219,17 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             get
             {
-                // builds the ghostscript dll path
+                // build the ghostscript dll path
                 return new GhostscriptVersionInfo(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "gsdll32.dll"));
             }
         }
 
-        internal static IEnumerable<string> EnumerateShellItemArray(IntPtr pUnk)
+        internal static IEnumerable<string> EnumerateShellItemArray(IntPtr psia)
         {
             // enumerate over a shell item array
-            if (pUnk == IntPtr.Zero)
-                yield break;
-            var array = (IShellItemArray)Marshal.GetTypedObjectForIUnknown(pUnk, typeof(IShellItemArray));
+            if (psia == IntPtr.Zero)
+                throw new ArgumentNullException("psia");
+            var array = (IShellItemArray)Marshal.GetTypedObjectForIUnknown(psia, typeof(IShellItemArray));
             for (var i = 0; i < array.GetCount(); i++)
                 yield return array.GetItemAt(i).GetDisplayName(SIGDN_FILESYSPATH);
         }
@@ -287,8 +298,8 @@ namespace Aufbauwerk.Tools.PdfKit
         private static void RunCombineComServer()
         {
             // register the factory for the delegate an run the com server
-            uint cookie;
             var form = new CombineForm();
+            uint cookie;
             CoRegisterClassObject(typeof(CombineDelegate).GUID, new CombineDelegate(form), CLSCTX_LOCAL_SERVER, REGCLS_SINGLEUSE, out cookie);
             RuntimeHelpers.PrepareConstrainedRegions();
             try { Application.Run(form); }
