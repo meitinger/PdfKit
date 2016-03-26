@@ -54,6 +54,13 @@ namespace Aufbauwerk.Tools.PdfKit
             initialFiles = files;
         }
 
+        public void AddFile(string path)
+        {
+            // add the given file it the list is enabled
+            if (listViewFiles.Enabled)
+                InsertPdfFile(path, listViewFiles.Items.Count);
+        }
+
         private void SetViewer(string path)
         {
             // get the 8.3 path to circumvent non-ascii characters
