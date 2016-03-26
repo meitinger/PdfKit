@@ -38,6 +38,6 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <Target Name="SignMsi" Condition=" '$(Configuration)' == 'Release' ">
-    <Exec Command="signtool.exe sign /a &quot;$(TargetPath)&quot;" />
+    <Exec Command="signtool.exe sign /a &quot;$(TargetDir)%(CultureGroup.OutputFolder)$(TargetName)$(TargetExt)&quot;" />
   </Target>
 </Project>

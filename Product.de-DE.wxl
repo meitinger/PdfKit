@@ -19,4 +19,8 @@
   <String Id="Culture">de-DE</String>
   <String Id="Language">1031</String>
   <String Id="DowngradeErrorMessage">Eine neuere Version von PdfKit ist bereits installiert.</String>
+  <String Id="Extract">Seiten extrahieren...</String>
+  <String Id="Combine">Dokumente zusammenführen...</String>
+  <String Id="CombineCom">PdfKit COM Server</String>
+  <String Id="CombineFolder">Enthaltene PDFs zusammenführen...</String>
 </WixLocalization>

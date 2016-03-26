@@ -16,7 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <WixLocalization Codepage="1252" Culture="en-US" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Culture">de-DE</String>
+  <String Id="Culture">en-US</String>
   <String Id="Language">1033</String>
   <String Id="DowngradeErrorMessage">A newer version of PdfKit is already installed.</String>
+  <String Id="Extract">Extract pages...</String>
+  <String Id="Combine">Combine documents...</String>
+  <String Id="CombineCom">PdfKit COM Server</String>
+  <String Id="CombineFolder">Combine containg PDF documents...</String>
 </WixLocalization>
