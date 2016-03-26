@@ -1,4 +1,5 @@
-*        text=auto
-*.cs     diff=csharp
-*.sln    merge=union
-*.csproj merge=union
+*         text=auto
+*.cs      diff=csharp
+*.sln     merge=union
+*.csproj  merge=union
+*.wixproj merge=union

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<!--
+  Copyright (C) 2016, Manuel Meitinger
+  
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 2 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="PdfKit" Language="!(loc.Language)" Version="!(bind.fileVersion.PdfKit.exe)" Manufacturer="AufBauWerk - Unternehmen für junge Menschen" UpgradeCode="85E7C6F3EF01438891CC93387E0659B9" Codepage="1252">
+    <Package Id="*" InstallerVersion="200" Compressed="yes" Platform="$(var.Platform)" InstallPrivileges="elevated" InstallScope="perMachine" />
+    <Media Id="1" Cabinet="PdfKit.cab" EmbedCab="yes" CompressionLevel="high" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPPRODUCTICON" Value="PdfKit.ico" />
+    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="!(loc.DowngradeErrorMessage)" />
+    <Icon Id="PdfKit.ico" SourceFile="PdfKit.ico" />
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="PdfKitFolder" Name="PdfKit">
+          <Directory Id="PdfKitCultureFolder" Name="!(loc.Culture)" />
+        </Directory>
+      </Directory>
+    </Directory>
+    <Feature Id="PdfKit" AllowAdvertise="no">
+      <Component Directory="PdfKitFolder">
+        <File Source="bin\$(var.Configuration)\PdfKit.exe" KeyPath="yes" />
+      </Component>
+      <Component Directory="PdfKitFolder">
+        <File Source="bin\$(var.Configuration)\PdfKit.pdb" KeyPath="yes" />
+      </Component>
+      <Component Directory="PdfKitFolder">
+        <File Source="lib\Ghostscript.NET.dll" KeyPath="yes" />
+      </Component>
+      <Component Directory="PdfKitFolder">
+        <File Source="lib\gsdll32.dll" KeyPath="yes" />
+      </Component>
+      <Component Directory="PdfKitCultureFolder">
+        <File Source="bin\$(var.Configuration)\!(loc.Culture)\PdfKit.resources.dll" KeyPath="yes" />
+      </Component>
+    </Feature>
+  </Product>
+</Wix>
