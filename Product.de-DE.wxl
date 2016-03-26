@@ -22,5 +22,5 @@
   <String Id="Extract">Seiten extrahieren...</String>
   <String Id="Combine">Dokumente zusammenführen...</String>
   <String Id="CombineCom">PdfKit COM Server</String>
-  <String Id="CombineFolder">Enthaltene PDFs zusammenführen...</String>
+  <String Id="CombineDirectory">Enthaltene PDFs zusammenführen...</String>
 </WixLocalization>
