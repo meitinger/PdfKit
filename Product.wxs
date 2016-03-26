@@ -64,7 +64,7 @@
           <RegistryKey Key="Directory">
             <RegistryKey Key="shell">
               <RegistryKey Key="combinepdf">
-                <RegistryValue Type="string" Value="!(loc.CombineFolder)" />
+                <RegistryValue Type="string" Value="!(loc.CombineDirectory)" />
                 <RegistryValue Name="MultiSelectModel" Type="string" Value="Single" />
                 <RegistryKey Key="command">
                   <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; CombineDirectory &quot;%1&quot;" />
