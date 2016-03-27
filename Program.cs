@@ -96,7 +96,8 @@ namespace Aufbauwerk.Tools.PdfKit
 
         void IExecuteCommand.Execute()
         {
-            // add all selected files
+            // show the form and add all selected files
+            Program.SetForegroundForm(form);
             if (itemArray != IntPtr.Zero)
                 foreach (var file in Program.EnumerateShellItemArray(itemArray))
                     form.AddFile(file);
@@ -144,6 +145,9 @@ namespace Aufbauwerk.Tools.PdfKit
         private const uint SIGDN_FILESYSPATH = 0x80058000;
         private const uint CLSCTX_LOCAL_SERVER = 0x4;
         private const uint REGCLS_SINGLEUSE = 0;
+
+        [DllImport("user32.dll", ExactSpelling = true)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern int GetShortPathName(string path, StringBuilder shortPath, int shortPathLength);
@@ -222,6 +226,14 @@ namespace Aufbauwerk.Tools.PdfKit
                 // build the ghostscript dll path
                 return new GhostscriptVersionInfo(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "gsdll32.dll"));
             }
+        }
+
+        internal static bool SetForegroundForm(Form form)
+        {
+            // set the foreground window
+            if (form == null)
+                throw new ArgumentNullException("form");
+            return SetForegroundWindow(form.Handle);
         }
 
         internal static IEnumerable<string> EnumerateShellItemArray(IntPtr psia)

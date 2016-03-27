@@ -61,7 +61,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void InitializeAdditionalStatusStripComponents()
         {
-            // suspend layout
+            // suspend the layout
             statusStrip.SuspendLayout();
 
             // create the single file checkbox
@@ -355,7 +355,7 @@ namespace Aufbauwerk.Tools.PdfKit
             listViewPages.VirtualMode = true;
             Update();
 
-            // create the rasterizer, initialize the cache and virtual mode
+            // create the rasterizer, initialize the cache and set the page count
             rasterizer = new GhostscriptRasterizer();
             rasterizer.Open(Program.GetShortPathName(fullPath), Program.GhostscriptVersion, false);
             cache = new Image[rasterizer.PageCount];
@@ -504,7 +504,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void listViewPages_MouseMove(object sender, MouseEventArgs e)
         {
-            // ensure the cursor is above the image and show the preview image
+            // ensure the cursor is above the image and show the preview
             var item = listViewPages.GetItemAt(e.X, e.Y);
             if (item != null)
             {

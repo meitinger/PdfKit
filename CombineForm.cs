@@ -56,7 +56,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         public void AddFile(string path)
         {
-            // add the given file it the list is enabled
+            // add the given file if the list is enabled
             if (listViewFiles.Enabled)
                 InsertPdfFile(path, listViewFiles.Items.Count);
         }
@@ -74,7 +74,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 if (currentViewer.FilePath == path)
                     return;
 
-                // clear the image, save the state and dispose the viewers
+                // clear the image, save the state and dispose of the viewer
                 pictureBoxPreview.Image = null;
                 panelPreview.Update();
                 viewerStates[currentViewer.FilePath] = currentViewer.SaveState();
@@ -86,7 +86,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 UpdatePreview();
             }
 
-            // set the new viewer if any
+            // set the new viewer if a path is given
             if (path != null)
             {
                 // create, hook and open the viewer and restore the state if possible
@@ -155,7 +155,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void DoScroll(ScrollProperties scrollProperties, int delta)
         {
-            // perform the scroll operation if possible
+            // perform the scroll operation if possible and within bounds
             if (scrollProperties.Enabled)
                 scrollProperties.Value = Math.Min(scrollProperties.Maximum, Math.Max(scrollProperties.Minimum, scrollProperties.Value - delta));
         }
@@ -165,7 +165,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // redraw the list
             listViewFiles.Update();
 
-            // update the files controls
+            // update the file controls
             toolStripButtonRemove.Enabled = listViewFiles.SelectedItems.Count > 0;
             toolStripButtonUp.Enabled = listViewFiles.SelectedItems.Count > 0 && !listViewFiles.SelectedItems.Contains(listViewFiles.Items[0]);
             toolStripButtonDown.Enabled = listViewFiles.SelectedItems.Count > 0 && !listViewFiles.SelectedItems.Contains(listViewFiles.Items[listViewFiles.Items.Count - 1]);
@@ -253,7 +253,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void currentViewer_DisplayUpdate(object sender, GhostscriptViewerViewEventArgs e)
         {
-            // redraw the image on incremental update
+            // redraw the image
             pictureBoxPreview.Invalidate();
             pictureBoxPreview.Update();
         }
@@ -319,7 +319,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void pictureBoxPreview_MouseWheel(object sender, MouseEventArgs e)
         {
-            // zoom instead of scroll if control is pressed
+            // zoom instead of scroll if CTRL is pressed
             if ((ModifierKeys & Keys.Control) != 0)
             {
                 ((HandledMouseEventArgs)e).Handled = true;
@@ -435,7 +435,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 index = listViewFiles.InsertionMark.NearestIndex(location);
                 if (index > -1)
                 {
-                    // determine whether to insert it above or below
+                    // determine whether to insert the data above or below
                     var rect = listViewFiles.GetItemRect(index);
                     showAfterItem = location.Y > rect.Top + rect.Height / 2;
                 }
@@ -460,6 +460,7 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // hide the insertion mask
             listViewFiles.InsertionMark.Index = -1;
+            listViewFiles.InsertionMark.AppearsAfterItem = false;
         }
 
         private void listViewFiles_ItemDrag(object sender, ItemDragEventArgs e)
@@ -469,7 +470,7 @@ namespace Aufbauwerk.Tools.PdfKit
             listViewFiles.SelectedItems.CopyTo(selected, 0);
             var files = Array.ConvertAll(selected, i => (string)i.Tag);
 
-            // create the file drop objet and start the drag & drop operation
+            // create the file drop object and start the drag & drop operation
             var data = new DataObject(DataFormats.FileDrop, files);
             if (listViewFiles.DoDragDrop(data, DragDropEffects.Copy | DragDropEffects.Move) == DragDropEffects.Move)
                 for (var i = 0; i < selected.Length; i++)
@@ -558,7 +559,7 @@ namespace Aufbauwerk.Tools.PdfKit
                             return;
                         }
 
-                        // show the combined pdf and close
+                        // show the combined PDF
                         Process.Start(saveFileDialog.FileName);
                     }
                 }
