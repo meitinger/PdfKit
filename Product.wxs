@@ -34,21 +34,23 @@
       <Component Directory="PdfKitFolder">
         <File Source="bin\$(var.Configuration)\PdfKit.exe" KeyPath="yes" />
         <RegistryKey Root="HKLM" Key="SOFTWARE\Classes">
-          <RegistryKey Key="AcroExch.Document">
-            <RegistryKey Key="shell">
-              <RegistryKey Key="combine">
-                <RegistryValue Type="string" Value="!(loc.Combine)" />
-                <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
-                <RegistryKey Key="command">
-                  <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; Combine" />
-                  <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+          <RegistryKey Key="SystemFileAssociations">
+            <RegistryKey Key=".pdf">
+              <RegistryKey Key="shell">
+                <RegistryKey Key="combine">
+                  <RegistryValue Type="string" Value="!(loc.Combine)" />
+                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
+                  <RegistryKey Key="command">
+                    <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; Combine" />
+                    <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                  </RegistryKey>
                 </RegistryKey>
-              </RegistryKey>
-              <RegistryKey Key="extract">
-                <RegistryValue Type="string" Value="!(loc.Extract)" />
-                <RegistryValue Name="MultiSelectModel" Type="string" Value="Document" />
-                <RegistryKey Key="command">
-                  <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; Extract &quot;%1&quot;" />
+                <RegistryKey Key="extract">
+                  <RegistryValue Type="string" Value="!(loc.Extract)" />
+                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Document" />
+                  <RegistryKey Key="command">
+                    <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; Extract &quot;%1&quot;" />
+                  </RegistryKey>
                 </RegistryKey>
               </RegistryKey>
             </RegistryKey>
