@@ -58,6 +58,8 @@
             this.buttonOK = new System.Windows.Forms.Button();
             this.openFilesDialog = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.progressBarStatus = new System.Windows.Forms.ProgressBar();
+            this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
@@ -289,12 +291,24 @@
             resources.ApplyResources(this.saveFileDialog, "saveFileDialog");
             this.saveFileDialog.DefaultExt = "pdf";
             // 
+            // progressBarStatus
+            // 
+            resources.ApplyResources(this.progressBarStatus, "progressBarStatus");
+            this.progressBarStatus.Name = "progressBarStatus";
+            this.progressBarStatus.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            // 
+            // backgroundWorker
+            // 
+            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker_DoWork);
+            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
+            // 
             // CombineForm
             // 
             this.AcceptButton = this.buttonOK;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
+            this.Controls.Add(this.progressBarStatus);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.splitContainer);
@@ -349,5 +363,7 @@
         private System.Windows.Forms.ToolStripButton toolStripButtonDown;
         private System.Windows.Forms.OpenFileDialog openFilesDialog;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
+        private System.Windows.Forms.ProgressBar progressBarStatus;
+        private System.ComponentModel.BackgroundWorker backgroundWorker;
     }
 }

@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -77,13 +78,23 @@ namespace Aufbauwerk.Tools.PdfKit
                 // clear the image, save the state and dispose of the viewer
                 pictureBoxPreview.Image = null;
                 panelPreview.Update();
-                viewerStates[currentViewer.FilePath] = currentViewer.SaveState();
-                currentViewer.DisplayPage -= currentViewer_DisplayPage;
-                currentViewer.DisplaySize -= currentViewer_DisplaySize;
-                currentViewer.DisplayUpdate -= currentViewer_DisplayUpdate;
-                currentViewer.Dispose();
-                currentViewer = null;
-                UpdatePreview();
+                try
+                {
+                    viewerStates[currentViewer.FilePath] = currentViewer.SaveState();
+                    currentViewer.DisplayPage -= currentViewer_DisplayPage;
+                    currentViewer.DisplaySize -= currentViewer_DisplaySize;
+                    currentViewer.DisplayUpdate -= currentViewer_DisplayUpdate;
+                    currentViewer.Dispose();
+                }
+                catch (GhostscriptException)
+                {
+                    // don't care on the way out
+                }
+                finally
+                {
+                    currentViewer = null;
+                    UpdatePreview();
+                }
             }
 
             // set the new viewer if a path is given
@@ -91,20 +102,31 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // create, hook and open the viewer and restore the state if possible
                 currentViewer = new GhostscriptViewer();
-                currentViewer.GetType().GetProperty("ShowPageAfterOpen", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(currentViewer, false, null);
-                currentViewer.DisplayUpdate += currentViewer_DisplayUpdate;
-                currentViewer.DisplaySize += currentViewer_DisplaySize;
-                currentViewer.DisplayPage += currentViewer_DisplayPage;
-                currentViewer.Open(path, Program.GhostscriptVersion, false);
-                GhostscriptViewerState state;
-                if (viewerStates.TryGetValue(currentViewer.FilePath, out state))
+                try
                 {
-                    currentViewer.RestoreState(state);
-                    currentViewer.RefreshPage();
+                    currentViewer.GetType().GetProperty("ShowPageAfterOpen", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(currentViewer, false, null);
+                    currentViewer.DisplayUpdate += currentViewer_DisplayUpdate;
+                    currentViewer.DisplaySize += currentViewer_DisplaySize;
+                    currentViewer.DisplayPage += currentViewer_DisplayPage;
+                    currentViewer.Open(path, Program.GhostscriptVersion, false);
+                    GhostscriptViewerState state;
+                    if (viewerStates.TryGetValue(currentViewer.FilePath, out state))
+                    {
+                        currentViewer.RestoreState(state);
+                        currentViewer.RefreshPage();
+                    }
+                    else
+                        currentViewer.ShowPage(currentViewer.FirstPageNumber, true);
                 }
-                else
-                    currentViewer.ShowPage(currentViewer.FirstPageNumber, true);
-                UpdatePreview();
+                catch (GhostscriptException e)
+                {
+                    // show an error message
+                    MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    UpdatePreview();
+                }
             }
         }
 
@@ -136,21 +158,16 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void ClearSelectionAndViewer()
         {
-            // disable updates
-            listViewFiles.ItemSelectionChanged -= listViewFiles_ItemSelectionChanged;
-            try
-            {
-                // deselect all items and clear the viewer
-                listViewFiles.SelectedItems.Clear();
-                SetViewer(null);
+            // clear the viewer
+            SetViewer(null);
 
-                // redraw the list and the controls
-                UpdateFiles();
-            }
-            finally
-            {
-                listViewFiles.ItemSelectionChanged += listViewFiles_ItemSelectionChanged;
-            }
+            // disable updates and deselect all items
+            listViewFiles.ItemSelectionChanged -= listViewFiles_ItemSelectionChanged;
+            try { listViewFiles.SelectedItems.Clear(); }
+            finally { listViewFiles.ItemSelectionChanged += listViewFiles_ItemSelectionChanged; }
+
+            // redraw the list and the controls
+            UpdateFiles();
         }
 
         private void DoScroll(ScrollProperties scrollProperties, int delta)
@@ -200,6 +217,8 @@ namespace Aufbauwerk.Tools.PdfKit
             buttonCancel.Update();
             splitContainer.Enabled = enabled;
             splitContainer.Update();
+            progressBarStatus.Visible = !enabled;
+            progressBarStatus.Update();
         }
 
         private void ChangeSelectedIndices(int delta)
@@ -521,53 +540,62 @@ namespace Aufbauwerk.Tools.PdfKit
             ChangeSelectedIndices(+1);
         }
 
+        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            // combine the pdfs
+            using (var processor = new GhostscriptProcessor(Program.GhostscriptVersion, false))
+                processor.Process((string[])e.Argument);
+        }
+
+        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // restore the state and reselect the OK button
+            UpdateOther(true);
+            buttonOK.Focus();
+
+            // handle the result
+            if (e.Error != null)
+            {
+                // rethrow all non-Ghostscript errors
+                if (!(e.Error is GhostscriptException))
+                    throw e.Error;
+
+                // show an error message
+                MessageBox.Show(e.Error.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+                // show the combined PDF
+                Process.Start(saveFileDialog.FileName);
+        }
+
         private void buttonOK_Click(object sender, EventArgs e)
         {
             // show the save file dialog
             if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
             {
+                // build the argument array
+                var args = new string[]
+                    {
+                        "-q",
+                        "-dSAFER",
+                        "-dBATCH",
+                        "-dNOPAUSE",
+                        "-dNOPROMPT",
+                        "-sDEVICE=pdfwrite",
+                        "-dAutoRotatePages=/None",
+                        "-sOutputFile=" + saveFileDialog.FileName
+                    };
+                var offset = args.Length;
+                Array.Resize(ref args, offset + listViewFiles.Items.Count);
+                for (var i = 0; i < listViewFiles.Items.Count; i++)
+                    args[offset + i] = (string)listViewFiles.Items[i].Tag;
+
                 // clear the selection and disable all elements
                 ClearSelectionAndViewer();
                 UpdateOther(false);
-                try
-                {
-                    // create the processor and build the argument array
-                    using (var processor = new GhostscriptProcessor(Program.GhostscriptVersion, false))
-                    {
-                        var args = new string[]
-                        {
-                            "-q",
-                            "-dSAFER",
-                            "-dBATCH",
-                            "-dNOPAUSE",
-                            "-dNOPROMPT",
-                            "-sDEVICE=pdfwrite",
-                            "-dAutoRotatePages=/None",
-                            "-sOutputFile=" + saveFileDialog.FileName
-                        };
-                        var offset = args.Length;
-                        Array.Resize(ref args, offset + listViewFiles.Items.Count);
-                        for (var i = 0; i < listViewFiles.Items.Count; i++)
-                            args[offset + i] = (string)listViewFiles.Items[i].Tag;
 
-                        // combine the pdfs
-                        try { processor.Process(args); }
-                        catch (GhostscriptException ex)
-                        {
-                            // show the error and exit
-                            MessageBox.Show(ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-
-                        // show the combined PDF
-                        Process.Start(saveFileDialog.FileName);
-                    }
-                }
-                finally
-                {
-                    UpdateOther(true);
-                    buttonOK.Focus();
-                }
+                // combine the documents
+                backgroundWorker.RunWorkerAsync(args);
             }
         }
 
