@@ -62,7 +62,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 InsertPdfFile(path, listViewFiles.Items.Count);
         }
 
-        private void SetViewer(string path)
+        private void SetViewer(string path, bool saveState = true)
         {
             // get the 8.3 path to circumvent non-ascii characters
             if (path != null)
@@ -72,29 +72,33 @@ namespace Aufbauwerk.Tools.PdfKit
             if (currentViewer != null)
             {
                 // do nothing if it's the same path
-                if (currentViewer.FilePath == path)
+                if (path != null && string.Equals(currentViewer.FilePath, path, StringComparison.OrdinalIgnoreCase))
                     return;
 
-                // clear the image, save the state and dispose of the viewer
+                // unhook the viewer
+                currentViewer.DisplayPage -= currentViewer_DisplayPage;
+                currentViewer.DisplaySize -= currentViewer_DisplaySize;
+                currentViewer.DisplayUpdate -= currentViewer_DisplayUpdate;
+
+                // clear the image
                 pictureBoxPreview.Image = null;
                 panelPreview.Update();
+
+                // save the state and dispose of the viewer
                 try
                 {
-                    viewerStates[currentViewer.FilePath] = currentViewer.SaveState();
-                    currentViewer.DisplayPage -= currentViewer_DisplayPage;
-                    currentViewer.DisplaySize -= currentViewer_DisplaySize;
-                    currentViewer.DisplayUpdate -= currentViewer_DisplayUpdate;
+                    if (saveState)
+                        viewerStates[currentViewer.FilePath] = currentViewer.SaveState();
                     currentViewer.Dispose();
                 }
-                catch (GhostscriptException)
+                catch
                 {
                     // don't care on the way out
                 }
-                finally
-                {
-                    currentViewer = null;
-                    UpdatePreview();
-                }
+
+                // clear the viewer and update the controls
+                currentViewer = null;
+                UpdatePreview();
             }
 
             // set the new viewer if a path is given
@@ -102,12 +106,12 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // create, hook and open the viewer and restore the state if possible
                 currentViewer = new GhostscriptViewer();
+                currentViewer.GetType().GetProperty("ShowPageAfterOpen", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(currentViewer, false, null);
+                currentViewer.DisplayUpdate += currentViewer_DisplayUpdate;
+                currentViewer.DisplaySize += currentViewer_DisplaySize;
+                currentViewer.DisplayPage += currentViewer_DisplayPage;
                 try
                 {
-                    currentViewer.GetType().GetProperty("ShowPageAfterOpen", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(currentViewer, false, null);
-                    currentViewer.DisplayUpdate += currentViewer_DisplayUpdate;
-                    currentViewer.DisplaySize += currentViewer_DisplaySize;
-                    currentViewer.DisplayPage += currentViewer_DisplayPage;
                     currentViewer.Open(path, Program.GhostscriptVersion, false);
                     GhostscriptViewerState state;
                     if (viewerStates.TryGetValue(currentViewer.FilePath, out state))
@@ -118,15 +122,15 @@ namespace Aufbauwerk.Tools.PdfKit
                     else
                         currentViewer.ShowPage(currentViewer.FirstPageNumber, true);
                 }
-                catch (GhostscriptException e)
+                catch
                 {
-                    // show an error message
-                    MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // clear the viewer and rethrow the error
+                    SetViewer(null, false);
+                    throw;
                 }
-                finally
-                {
-                    UpdatePreview();
-                }
+
+                // update the controls
+                UpdatePreview();
             }
         }
 

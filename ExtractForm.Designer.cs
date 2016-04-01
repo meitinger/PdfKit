@@ -56,7 +56,6 @@
             this.listViewPages.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.listViewPages_RetrieveVirtualItem);
             this.listViewPages.SelectedIndexChanged += new System.EventHandler(this.listViewPages_SelectedIndexChanged);
             this.listViewPages.VirtualItemsSelectionRangeChanged += new System.Windows.Forms.ListViewVirtualItemsSelectionRangeChangedEventHandler(this.listViewPages_VirtualItemsSelectionRangeChanged);
-            this.listViewPages.QueryContinueDrag += new System.Windows.Forms.QueryContinueDragEventHandler(this.listViewPages_QueryContinueDrag);
             this.listViewPages.MouseLeave += new System.EventHandler(this.listViewPages_MouseLeave);
             this.listViewPages.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listViewPages_MouseMove);
             // 
