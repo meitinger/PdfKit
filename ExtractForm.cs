@@ -34,15 +34,19 @@ namespace Aufbauwerk.Tools.PdfKit
     {
         private class FilesDataObject : IDataObject, IDisposable
         {
-            private readonly ExtractForm form;
+            private readonly int[] indices;
+            private readonly bool singleFiles;
+            private readonly Func<int[], bool, string[]> extractDelegate;
             private bool disposed = false;
             private DragDropEffects result = DragDropEffects.None;
             private string[] filePaths = null;
 
-            public FilesDataObject(ExtractForm form)
+            public FilesDataObject(Func<int[], bool, string[]> extractDelegate, int[] indices, bool singleFiles)
             {
-                // store the form
-                this.form = form;
+                // store the parameters
+                this.indices = indices;
+                this.singleFiles = singleFiles;
+                this.extractDelegate = extractDelegate;
             }
 
             ~FilesDataObject()
@@ -53,30 +57,47 @@ namespace Aufbauwerk.Tools.PdfKit
             private string[] Extract()
             {
                 // extract the documents if not done so already
+                CheckDisposed();
                 if (filePaths == null)
-                {
-                    // get the selected pages and determine how to extract them
-                    var indices = form.GetSelectedIndices();
-                    if (!form.checkBoxSingleFiles.Checked)
-                    {
-                        // get the index ranges and the document path
-                        var ranges = form.GetRangesFromIndices(indices);
-                        var path = Path.Combine(Path.GetTempPath(), form.GetDocumentFileName(ranges));
+                    filePaths = extractDelegate(indices, singleFiles);
+                return filePaths;
+            }
 
-                        // extract the pages into one document and store its path
-                        if (form.ExtractToSingleDocument(path, ranges))
-                            filePaths = new string[] { path };
-                    }
-                    else
+            private void CheckDisposed()
+            {
+                // throw an error if the object is disposed
+                if (disposed)
+                    throw new ObjectDisposedException(GetType().ToString());
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                // dispose the drop object if not done so already
+                if (!disposed)
+                {
+                    disposed = true;
+
+                    // cleanup extracted documents if they weren't moved
+                    if (filePaths != null && result != DragDropEffects.Move)
                     {
-                        // extract each page to a document and store all paths
-                        var root = Path.GetTempPath();
-                        var fileNames = form.ExtractToMultipleDocuments(root, indices);
-                        if (fileNames != null)
-                            filePaths = Array.ConvertAll(fileNames, f => Path.Combine(root, f));
+                        for (var i = 0; i < filePaths.Length; i++)
+                        {
+                            try { File.Delete(filePaths[i]); }
+                            catch { }
+                        }
                     }
                 }
-                return filePaths;
+            }
+
+            public DragDropEffects Result
+            {
+                get { return result; }
+                set
+                {
+                    // ensure the object is not disposed and set the result
+                    CheckDisposed();
+                    result = value;
+                }
             }
 
             public object GetData(Type format)
@@ -137,37 +158,6 @@ namespace Aufbauwerk.Tools.PdfKit
             public void SetData(string format, bool autoConvert, object data)
             {
                 throw new NotSupportedException();
-            }
-
-            public DragDropEffects Result
-            {
-                get { return result; }
-                set
-                {
-                    // ensure the object is not disposed and set the result
-                    if (disposed)
-                        throw new ObjectDisposedException(GetType().Name);
-                    result = value;
-                }
-            }
-
-            protected virtual void Dispose(bool disposing)
-            {
-                // dispose the drop object if not done so already
-                if (!disposed)
-                {
-                    disposed = true;
-
-                    // cleanup extracted documents if they weren't moved
-                    if (filePaths != null && result != DragDropEffects.Move)
-                    {
-                        for (var i = 0; i < filePaths.Length; i++)
-                        {
-                            try { File.Delete(filePaths[i]); }
-                            catch { }
-                        }
-                    }
-                }
             }
 
             public void Dispose()
@@ -494,6 +484,32 @@ namespace Aufbauwerk.Tools.PdfKit
             });
         }
 
+        private string[] ExtractForDragAndDrop(int[] indices, bool singleFiles)
+        {
+            // determine how to extract the pages
+            if (!singleFiles)
+            {
+                // get the index ranges and the document path
+                var ranges = GetRangesFromIndices(indices);
+                var path = Path.Combine(Path.GetTempPath(), GetDocumentFileName(ranges));
+
+                // extract the pages into one document and store its path
+                if (ExtractToSingleDocument(path, ranges))
+                    return new string[] { path };
+            }
+            else
+            {
+                // extract each page to a document and store all paths
+                var root = Path.GetTempPath();
+                var fileNames = ExtractToMultipleDocuments(root, indices);
+                if (fileNames != null)
+                    return Array.ConvertAll(fileNames, f => Path.Combine(root, f));
+            }
+
+            // a ghostscript error occured
+            return null;
+        }
+
         private void ExtractForm_Shown(object sender, EventArgs e)
         {
             // enable the virtual mode and paint the form
@@ -565,9 +581,12 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void listViewPages_ItemDrag(object sender, ItemDragEventArgs e)
         {
-            // hide the tooltip and perform the operation
+            // hide the tooltip and make sure the progress bar handle is created
             SetTooltip(null);
-            using (var data = new FilesDataObject(this))
+            toolStripProgressBarExtract.Control.Handle.GetHashCode();
+
+            // perform the operation
+            using (var data = new FilesDataObject(ExtractForDragAndDrop, GetSelectedIndices(), checkBoxSingleFiles.Checked))
                 data.Result = listViewPages.DoDragDrop(data, DragDropEffects.Copy | DragDropEffects.Move);
         }
 
