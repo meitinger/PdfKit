@@ -34,6 +34,7 @@ namespace Aufbauwerk.Tools.PdfKit
     {
         private class FilesDataObject : IDataObject, IDisposable
         {
+            private readonly object filePathsLock = new object();
             private readonly int[] indices;
             private readonly bool singleFiles;
             private readonly Func<int[], bool, string[]> extractDelegate;
@@ -58,9 +59,12 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // extract the documents if not done so already
                 CheckDisposed();
-                if (filePaths == null)
-                    filePaths = extractDelegate(indices, singleFiles);
-                return filePaths;
+                lock (filePathsLock)
+                {
+                    if (filePaths == null)
+                        filePaths = extractDelegate(indices, singleFiles);
+                    return filePaths;
+                }
             }
 
             private void CheckDisposed()
