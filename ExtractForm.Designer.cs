@@ -41,7 +41,9 @@
             this.toolStripStatusLabelSingleFiles = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBarExtract = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabelExtract = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripDropDownButtonCancel = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolTipPreview = new System.Windows.Forms.ToolTip(this.components);
+            this.backgroundWorkerExtract = new System.ComponentModel.BackgroundWorker();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -65,71 +67,92 @@
             resources.ApplyResources(this.imageList, "imageList");
             this.imageList.TransparentColor = System.Drawing.Color.Transparent;
             // 
+            // folderBrowserDialog
+            // 
+            resources.ApplyResources(this.folderBrowserDialog, "folderBrowserDialog");
+            // 
             // saveFileDialog
             // 
-            resources.ApplyResources(this.saveFileDialog, "saveFileDialog");
             this.saveFileDialog.DefaultExt = "pdf";
+            resources.ApplyResources(this.saveFileDialog, "saveFileDialog");
             // 
             // statusStrip
             // 
+            resources.ApplyResources(this.statusStrip, "statusStrip");
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripDropDownButtonZoomIn,
             this.toolStripDropDownButtonZoomOut,
             this.toolStripDropDownButtonSave,
             this.toolStripStatusLabelSingleFiles,
             this.toolStripProgressBarExtract,
-            this.toolStripStatusLabelExtract});
+            this.toolStripStatusLabelExtract,
+            this.toolStripDropDownButtonCancel});
             this.statusStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            resources.ApplyResources(this.statusStrip, "statusStrip");
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.ShowItemToolTips = true;
             // 
             // toolStripDropDownButtonZoomIn
             // 
+            resources.ApplyResources(this.toolStripDropDownButtonZoomIn, "toolStripDropDownButtonZoomIn");
             this.toolStripDropDownButtonZoomIn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripDropDownButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripDropDownButtonZoomIn, "toolStripDropDownButtonZoomIn");
             this.toolStripDropDownButtonZoomIn.Name = "toolStripDropDownButtonZoomIn";
             this.toolStripDropDownButtonZoomIn.ShowDropDownArrow = false;
             this.toolStripDropDownButtonZoomIn.Click += new System.EventHandler(this.toolStripDropDownButtonZoomIn_Click);
             // 
             // toolStripDropDownButtonZoomOut
             // 
+            resources.ApplyResources(this.toolStripDropDownButtonZoomOut, "toolStripDropDownButtonZoomOut");
             this.toolStripDropDownButtonZoomOut.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripDropDownButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripDropDownButtonZoomOut, "toolStripDropDownButtonZoomOut");
             this.toolStripDropDownButtonZoomOut.Name = "toolStripDropDownButtonZoomOut";
             this.toolStripDropDownButtonZoomOut.ShowDropDownArrow = false;
             this.toolStripDropDownButtonZoomOut.Click += new System.EventHandler(this.toolStripDropDownButtonZoomOut_Click);
             // 
             // toolStripDropDownButtonSave
             // 
-            this.toolStripDropDownButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripDropDownButtonSave, "toolStripDropDownButtonSave");
+            this.toolStripDropDownButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripDropDownButtonSave.Name = "toolStripDropDownButtonSave";
             this.toolStripDropDownButtonSave.ShowDropDownArrow = false;
             this.toolStripDropDownButtonSave.Click += new System.EventHandler(this.toolStripDropDownButtonSave_Click);
             // 
             // toolStripStatusLabelSingleFiles
             // 
-            this.toolStripStatusLabelSingleFiles.Name = "toolStripStatusLabelSingleFiles";
             resources.ApplyResources(this.toolStripStatusLabelSingleFiles, "toolStripStatusLabelSingleFiles");
+            this.toolStripStatusLabelSingleFiles.Name = "toolStripStatusLabelSingleFiles";
             // 
             // toolStripProgressBarExtract
             // 
-            this.toolStripProgressBarExtract.Name = "toolStripProgressBarExtract";
             resources.ApplyResources(this.toolStripProgressBarExtract, "toolStripProgressBarExtract");
+            this.toolStripProgressBarExtract.Name = "toolStripProgressBarExtract";
             // 
             // toolStripStatusLabelExtract
             // 
-            this.toolStripStatusLabelExtract.Name = "toolStripStatusLabelExtract";
             resources.ApplyResources(this.toolStripStatusLabelExtract, "toolStripStatusLabelExtract");
+            this.toolStripStatusLabelExtract.Name = "toolStripStatusLabelExtract";
+            // 
+            // toolStripDropDownButtonCancel
+            // 
+            resources.ApplyResources(this.toolStripDropDownButtonCancel, "toolStripDropDownButtonCancel");
+            this.toolStripDropDownButtonCancel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButtonCancel.Name = "toolStripDropDownButtonCancel";
+            this.toolStripDropDownButtonCancel.ShowDropDownArrow = false;
+            this.toolStripDropDownButtonCancel.Click += new System.EventHandler(this.toolStripDropDownButtonCancel_Click);
             // 
             // toolTipPreview
             // 
             this.toolTipPreview.OwnerDraw = true;
             this.toolTipPreview.Draw += new System.Windows.Forms.DrawToolTipEventHandler(this.toolTipPreview_Draw);
             this.toolTipPreview.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTipPreview_Popup);
+            // 
+            // backgroundWorkerExtract
+            // 
+            this.backgroundWorkerExtract.WorkerReportsProgress = true;
+            this.backgroundWorkerExtract.WorkerSupportsCancellation = true;
+            this.backgroundWorkerExtract.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerExtract_DoWork);
+            this.backgroundWorkerExtract.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerExtract_ProgressChanged);
+            this.backgroundWorkerExtract.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerExtract_RunWorkerCompleted);
             // 
             // ExtractForm
             // 
@@ -160,5 +183,7 @@
         private System.Windows.Forms.ToolTip toolTipPreview;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBarExtract;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelExtract;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonCancel;
+        private System.ComponentModel.BackgroundWorker backgroundWorkerExtract;
     }
 }

@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016, Manuel Meitinger
+﻿/* Copyright (C) 2016-2017, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-using Ghostscript.NET;
-using Ghostscript.NET.Processor;
 using Ghostscript.NET.Rasterizer;
+using PdfSharp;
+using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
@@ -62,7 +65,9 @@ namespace Aufbauwerk.Tools.PdfKit
                 lock (filePathsLock)
                 {
                     if (filePaths == null)
+                    {
                         filePaths = extractDelegate(indices, singleFiles);
+                    }
                     return filePaths;
                 }
             }
@@ -71,7 +76,9 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // throw an error if the object is disposed
                 if (disposed)
+                {
                     throw new ObjectDisposedException(GetType().ToString());
+                }
             }
 
             protected virtual void Dispose(bool disposing)
@@ -171,14 +178,19 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private readonly string fullPath;
-        private readonly string fileName;
-        private GhostscriptRasterizer rasterizer;
-        private Image[] cache;
-        private CheckBox checkBoxSingleFiles;
-        private TrackBar trackBarZoom;
-        private Image imagePreview;
-        private Size sizePreview;
+        private struct Work
+        {
+            public bool MultipleFiles;
+            public string Path;
+            public int[] Indices;
+        }
+
+        private PdfDocument _document;
+        private readonly string _filePath;
+        private Image[] _imageCache;
+        private Image _previewImage;
+        private Size _previewSize;
+        private GhostscriptRasterizer _rasterizer;
 
         public ExtractForm(string path)
         {
@@ -187,16 +199,21 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeAdditionalStatusStripComponents();
 
             // store the path and set the default locations
-            fullPath = Path.GetFullPath(path);
-            fileName = Path.GetFileNameWithoutExtension(fullPath);
-            Text = string.Format(Text, fileName);
+            _filePath = Path.GetFullPath(path);
+            Text = string.Format(Text, Path.GetFileName(_filePath));
             var directory = Path.GetDirectoryName(path);
             saveFileDialog.InitialDirectory = directory;
             folderBrowserDialog.SelectedPath = directory;
 
-            // simulate a trackbar change
+            // simulate a selection and trackbar change
+            listViewPages_SelectedIndexChanged(this, EventArgs.Empty);
             trackBarZoom_ValueChanged(this, EventArgs.Empty);
+
+            // hide the status elements
+            ShowStatus(false, false);
         }
+
+        #region Additional Designer Code
 
         private void InitializeAdditionalStatusStripComponents()
         {
@@ -204,13 +221,13 @@ namespace Aufbauwerk.Tools.PdfKit
             statusStrip.SuspendLayout();
 
             // create the single file checkbox
-            checkBoxSingleFiles = new CheckBox();
-            var checkboxHost = new ToolStripControlHost(checkBoxSingleFiles);
+            checkBoxMultipleFiles = new CheckBox();
+            var checkboxHost = new ToolStripControlHost(checkBoxMultipleFiles);
             checkboxHost.ToolTipText = toolStripStatusLabelSingleFiles.ToolTipText;
             toolStripStatusLabelSingleFiles.ToolTipText = null;
             checkboxHost.Margin = checkboxHost.Margin + new Padding(8, 4, 0, 0);
             statusStrip.Items.Insert(statusStrip.Items.IndexOf(toolStripStatusLabelSingleFiles), checkboxHost);
-            toolStripStatusLabelSingleFiles.Click += (s, e) => { checkBoxSingleFiles.Checked = !checkBoxSingleFiles.Checked; };
+            toolStripStatusLabelSingleFiles.Click += (s, e) => { checkBoxMultipleFiles.Checked = !checkBoxMultipleFiles.Checked; };
 
             // create the zoom trackbar
             trackBarZoom = new TrackBar();
@@ -221,7 +238,7 @@ namespace Aufbauwerk.Tools.PdfKit
             trackBarZoom.Value = 4;
             trackBarZoom.ValueChanged += trackBarZoom_ValueChanged;
             var trackbarHost = new ToolStripControlHost(trackBarZoom);
-            trackbarHost.ToolTipText = string.Format("{0}/{1}", toolStripDropDownButtonZoomOut.ToolTipText, toolStripDropDownButtonZoomIn.ToolTipText);
+            trackbarHost.ToolTipText = new StringBuilder().Append(toolStripDropDownButtonZoomOut.ToolTipText).Append("/").Append(toolStripDropDownButtonZoomIn.ToolTipText).ToString();
             trackbarHost.Alignment = ToolStripItemAlignment.Right;
             statusStrip.Items.Insert(statusStrip.Items.IndexOf(toolStripDropDownButtonZoomOut), trackbarHost);
 
@@ -230,62 +247,150 @@ namespace Aufbauwerk.Tools.PdfKit
             statusStrip.PerformLayout();
         }
 
-        private void SetTooltip(ListViewItem item)
+        private System.Windows.Forms.CheckBox checkBoxMultipleFiles;
+        private System.Windows.Forms.TrackBar trackBarZoom;
+
+        #endregion
+
+        #region Methods
+
+        private string[] ExtractForDragAndDrop(int[] indices, bool multipleFiles)
         {
-            // check if a tooltip should be shown
-            if (item != null)
+            // determine how to extract the pages
+            if (!multipleFiles)
             {
-                // do nothing if it is already shown
-                if (imagePreview == cache[item.Index])
-                    return;
-
-                // store the image and calculate the best size
-                imagePreview = cache[item.Index];
-                var screenRect = Screen.FromControl(listViewPages).Bounds;
-                var itemRect = listViewPages.RectangleToScreen(item.Bounds);
-                var factor = Math.Min(1, Math.Min((float)((screenRect.Width - 2 - itemRect.Width) / 2) / (float)imagePreview.Size.Width, (float)(screenRect.Height - 2) / (float)imagePreview.Size.Height));
-                sizePreview = new Size((int)(imagePreview.Size.Width * factor), (int)(imagePreview.Size.Height * factor));
-
-                // calculate the location (prefer the right top corner)
-                var pointPreview = new Point()
+                // extract the pages into one document and store its path
+                var path = Path.Combine(Path.GetTempPath(), GetDocumentFileName(indices));
+                if (PerformSync(ExtractToSingleDocument, path, indices))
                 {
-                    X = itemRect.Right + sizePreview.Width > screenRect.Right ? itemRect.Left - sizePreview.Width : itemRect.Right,
-                    Y = Math.Min(itemRect.Top, screenRect.Bottom - sizePreview.Height)
-                };
-
-                // show the tooltip
-                toolTipPreview.Show(">", listViewPages, listViewPages.PointToClient(pointPreview));
+                    return new string[] { path };
+                }
             }
             else
             {
-                // clear the preview variables and hide the tooltip
-                if (imagePreview == null)
-                    return;
-                imagePreview = null;
-                sizePreview = Size.Empty;
-                toolTipPreview.Hide(listViewPages);
+                // extract each page to a document and store all paths
+                var root = Path.GetTempPath();
+                var fileNames = PerformSync(ExtractToMultipleDocuments, root, indices);
+                if (fileNames != null)
+                {
+                    return Array.ConvertAll(fileNames, f => Path.Combine(root, f));
+                }
             }
+
+            // an error occured
+            return null;
         }
 
-        private void ShowStatus(bool visible, int maximum)
+        private string[] ExtractToMultipleDocuments(string path, int[] indices, Func<bool> isCanelled, Action<int, object> reportStatus)
         {
-            // set the visibilty and enabled states
-            toolStripProgressBarExtract.Visible = visible;
-            toolStripStatusLabelExtract.Visible = visible;
-            toolStripDropDownButtonSave.Visible = !visible;
-            checkBoxSingleFiles.Visible = !visible;
-            toolStripStatusLabelSingleFiles.Visible = !visible;
-            toolStripDropDownButtonZoomOut.Visible = !visible;
-            trackBarZoom.Visible = !visible;
-            toolStripDropDownButtonZoomIn.Visible = !visible;
-            listViewPages.Enabled = !visible;
-            listViewPages.Update();
+            // extract all selected pages
+            var fileNames = new string[indices.Length];
+            var progress = 0;
+            for (var i = 0; i < indices.Length; i++)
+            {
+                // return if cancelled
+                if (isCanelled())
+                {
+                    Array.Resize(ref fileNames, i);
+                    return fileNames;
+                }
 
-            // reset the progress bar and status label
-            toolStripProgressBarExtract.Value = 0;
-            toolStripProgressBarExtract.Maximum = maximum;
-            toolStripStatusLabelExtract.Text = string.Empty;
-            statusStrip.Update();
+                // get the current index and file name
+                var index = indices[i];
+                var fileName = GetDocumentFileName(index);
+                reportStatus(progress, fileName);
+
+                // extract and save the page
+                using (var onePageDocument = new PdfDocument())
+                {
+                    onePageDocument.AddPage(_document.Pages[index]);
+                    onePageDocument.Save(Path.Combine(path, fileName));
+                }
+
+                // store the file name and continue
+                fileNames[i] = fileName;
+                progress = (int)Math.Round((100.0 * (i + 1)) / indices.Length);
+                reportStatus(progress, string.Empty);
+            }
+            return fileNames;
+        }
+
+        private bool ExtractToSingleDocument(string path, int[] indices, Func<bool> isCanelled, Action<int, object> reportStatus)
+        {
+            // create the resulting pdf
+            var fileName = Path.GetFileName(path);
+            reportStatus(0, fileName);
+            using (var combinedDocument = new PdfDocument())
+            {
+                var prevProgress = 0;
+                for (var i = 0; i < indices.Length; i++)
+                {
+                    // return if cancelled
+                    if (isCanelled())
+                    {
+                        return false;
+                    }
+
+                    // add the page and increment the progress
+                    combinedDocument.AddPage(_document.Pages[indices[i]]);
+                    var progress = (int)Math.Round((99.0 * (i + 1)) / indices.Length);
+                    if (progress != prevProgress)
+                    {
+                        reportStatus(progress, fileName);
+                        prevProgress = progress;
+                    }
+                }
+                combinedDocument.Save(path);
+            }
+            reportStatus(100, string.Empty);
+            return true;
+        }
+
+        private string GetDocumentFileName(int index)
+        {
+            // return the file name plus extension for a single page
+            return new StringBuilder(Path.GetFileNameWithoutExtension(_filePath)).Append("_").Append(index + 1).Append(".pdf").ToString();
+        }
+
+        private string GetDocumentFileName(int[] indices)
+        {
+            // return the combined file name plus extension for multiple pages
+            var buffer = new StringBuilder(Path.GetFileNameWithoutExtension(_filePath));
+            var isFirstSuffix = true;
+            var firstIndex = 0;
+            while (firstIndex < indices.Length)
+            {
+                // find the end of the current page range
+                var lastIndex = firstIndex;
+                var value = indices[firstIndex];
+                while (lastIndex < indices.Length - 1 && indices[lastIndex + 1] == value + 1)
+                {
+                    lastIndex++;
+                    value++;
+                }
+
+                // append the separator
+                if (isFirstSuffix)
+                {
+                    buffer.Append("_");
+                    isFirstSuffix = false;
+                }
+                else
+                {
+                    buffer.Append(",");
+                }
+
+                // append the single index or range
+                buffer.Append(indices[firstIndex] + 1);
+                if (lastIndex > firstIndex)
+                {
+                    buffer.Append("-").Append(indices[lastIndex] + 1);
+                }
+
+                // search for the next index or range
+                firstIndex = lastIndex + 1;
+            }
+            return buffer.Append(".pdf").ToString();
         }
 
         private int[] GetSelectedIndices()
@@ -297,73 +402,78 @@ namespace Aufbauwerk.Tools.PdfKit
             return selected;
         }
 
-        private Tuple<int, int>[] GetRangesFromIndices(int[] indices)
+        private void OpenFolderAndSelectItems(string folder, string[] files)
         {
-            // find continuous indices
-            var ranges = new List<Tuple<int, int>>();
-            if (indices.Length > 0)
+            // get the folder pidl
+            var desktop = Native.SHGetDesktopFolder();
+            IntPtr folderPidl;
+            desktop.ParseDisplayName(Handle, IntPtr.Zero, folder, IntPtr.Zero, out folderPidl, IntPtr.Zero);
+            try
             {
-                var start = 0;
-                for (var i = 1; i < indices.Length; i++)
+                // check if there are any files to select
+                if (files != null && files.Length > 0)
                 {
-                    // add the previous range if there is a gap
-                    if (indices[start] + (i - start) < indices[i])
+                    // get the folder object
+                    var folderObject = (Native.IShellFolder)desktop.BindToObject(folderPidl, IntPtr.Zero, typeof(Native.IShellFolder).GUID);
+                    var filesPidl = new List<IntPtr>();
+                    try
                     {
-                        ranges.Add(new Tuple<int, int>(indices[start], indices[i - 1]));
-                        start = i;
+                        // get all child pidls
+                        foreach (var file in files)
+                        {
+                            IntPtr filePidl;
+                            folderObject.ParseDisplayName(Handle, IntPtr.Zero, file, IntPtr.Zero, out filePidl, IntPtr.Zero);
+                            filesPidl.Add(filePidl);
+                        }
+
+                        // show the folder and select the items
+                        Native.SHOpenFolderAndSelectItems(folderPidl, filesPidl.Count, filesPidl.ToArray(), 0);
+                    }
+                    finally
+                    {
+                        // free the child pidls
+                        foreach (var filePidl in filesPidl)
+                        {
+                            Marshal.FreeCoTaskMem(filePidl);
+                        }
                     }
                 }
-
-                // add the remaining range
-                ranges.Add(new Tuple<int, int>(indices[start], indices[indices.Length - 1]));
+                else
+                {
+                    // simply show the folder
+                    Native.SHOpenFolderAndSelectItems(folderPidl, 0, null, 0);
+                }
             }
-
-            // return an array
-            return ranges.ToArray();
+            finally
+            {
+                // free the folder pidl
+                Marshal.FreeCoTaskMem(folderPidl);
+            }
         }
 
-        private string GetDocumentFileName(int index)
+        private T PerformSync<T>(Func<string, int[], Func<bool>, Action<int, object>, T> action, string path, int[] indizes)
         {
-            // return the file name plus extension for a single page
-            return string.Format("{0}_{1}.pdf", fileName, index + 1);
-        }
-
-        private string GetDocumentFileName(Tuple<int, int>[] ranges)
-        {
-            // return the combined file name plus extension for a range of pages
-            var pages = Array.ConvertAll(ranges, r => r.Item1 == r.Item2 ? (r.Item1 + 1).ToString() : string.Format("{0}-{1}", r.Item1 + 1, r.Item2 + 1));
-            return string.Format("{0}_{1}.pdf", fileName, string.Join(",", pages));
-        }
-
-        private string GetFileStatus(string path, string text)
-        {
-            // format the string to be displayed in the status area
-            return string.Format("{0} => {1}", text, Path.GetFileNameWithoutExtension(path));
-        }
-
-        private T PerformGhostscriptOperation<T>(int steps, Func<GhostscriptProcessor, Action, Action<string>, T> action)
-        {
-            // make sure the rasterizer is closed during the action and show the status elements
-            rasterizer.Close();
-            ShowStatus(true, steps);
+            // show the status elements and redraw the form
+            ShowStatus(true, false);
+            Update();
             try
             {
                 // perform the action
-                using (var processor = new GhostscriptProcessor(Program.GhostscriptVersion, false))
+                return action(path, indizes, () => false, (progress, status) =>
                 {
-                    return action
-                    (
-                        processor,
-                        () => toolStripProgressBarExtract.Value++,
-                        text =>
-                        {
-                            toolStripStatusLabelExtract.Text = text;
-                            statusStrip.Update();
-                        }
-                    );
-                }
+                    // update the status
+                    toolStripProgressBarExtract.Value = progress;
+                    toolStripStatusLabelExtract.Text = (string)status;
+                    statusStrip.Update();
+                });
             }
-            catch (GhostscriptException e)
+            catch (PdfSharpException e)
+            {
+                // show the error
+                MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return default(T);
+            }
+            catch (IOException e)
             {
                 // show the error
                 MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -371,147 +481,128 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             finally
             {
-                // hide the status and reopen the rasterizer
-                ShowStatus(false, 0);
-                rasterizer.Open(Program.GetShortPathName(fullPath), Program.GhostscriptVersion, false);
+                // hide the status elements and redraw the form
+                ShowStatus(false, false);
+                Update();
             }
         }
 
-        private void ExtractRange(GhostscriptProcessor processor, Action stepId, Action<string> status, string path, int start, int end)
+        private void SetTooltip(ListViewItem item)
         {
-            // make the range 1-based
-            start++;
-            end++;
-
-            // extract the given range of pages
-            status(start == end ? start.ToString() : string.Format("{0}-{1}", start, end));
-            processor.Process(new string[]
+            // check if a tooltip should be shown
+            if (item != null)
             {
-                "-q",
-                "-dSAFER",
-                "-dBATCH",
-                "-dNOPAUSE",
-                "-dNOPROMPT",
-                "-sDEVICE=pdfwrite",
-                "-dFirstPage=" + start.ToString(CultureInfo.InvariantCulture),
-                "-dLastPage=" + end.ToString(CultureInfo.InvariantCulture),
-                "-dAutoRotatePages=/None",
-                "-sOutputFile=" + path,
-                fullPath
-            });
-            stepId();
-        }
-
-        private bool ExtractToSingleDocument(string path, Tuple<int, int>[] ranges)
-        {
-            return PerformGhostscriptOperation(ranges.Length == 1 ? 1 : ranges.Length + 1, (processor, stepIt, status) =>
-            {
-                if (ranges.Length != 1)
+                // do nothing if it is already shown
+                if (_previewImage == _imageCache[item.Index])
                 {
-                    // extract all ranges and combine them into one document
-                    var files = new List<string>();
-                    try
-                    {
-                        // extract each range
-                        var pages = new StringBuilder();
-                        for (var i = 0; i < ranges.Length; i++)
-                        {
-                            var file = Path.GetTempFileName();
-                            files.Add(file);
-                            ExtractRange
-                            (
-                                processor,
-                                stepIt,
-                                t =>
-                                {
-                                    // append the page string
-                                    if (pages.Length > 0)
-                                        pages.Append(',');
-                                    pages.Append(t);
-                                    status(pages.ToString());
-                                },
-                                file,
-                                ranges[i].Item1,
-                                ranges[i].Item2
-                            );
-                        }
-
-                        // combine all pages
-                        status(GetFileStatus(path, pages.ToString()));
-                        var args = new string[]
-                        {
-                            "-q",
-                            "-dSAFER",
-                            "-dBATCH",
-                            "-dNOPAUSE",
-                            "-dNOPROMPT",
-                            "-sDEVICE=pdfwrite",
-                            "-dAutoRotatePages=/None",
-                            "-sOutputFile=" + path
-                        };
-                        var argc = args.Length;
-                        Array.Resize(ref args, argc + files.Count);
-                        files.CopyTo(args, argc);
-                        processor.Process(args);
-                        stepIt();
-                    }
-                    finally
-                    {
-                        // cleanup temporary files
-                        foreach (var file in files)
-                        {
-                            try { File.Delete(file); }
-                            catch { }
-                        }
-                    }
+                    return;
                 }
-                else
-                    // simply extract the single range
-                    ExtractRange(processor, stepIt, t => status(GetFileStatus(path, t)), path, ranges[0].Item1, ranges[0].Item2);
-                return true;
-            });
-        }
 
-        private string[] ExtractToMultipleDocuments(string path, int[] indices)
-        {
-            return PerformGhostscriptOperation(indices.Length, (processor, stepIt, status) =>
-            {
-                // extract all selected pages
-                var fileNames = Array.ConvertAll(indices, i => GetDocumentFileName(i));
-                for (var i = 0; i < indices.Length; i++)
+                // store the image and calculate the best size
+                _previewImage = _imageCache[item.Index];
+                var screenRect = Screen.FromControl(listViewPages).Bounds;
+                var itemRect = listViewPages.RectangleToScreen(item.Bounds);
+                var factor = Math.Min(1, Math.Min((float)((screenRect.Width - 2 - itemRect.Width) / 2) / (float)_previewImage.Size.Width, (float)(screenRect.Height - 2) / (float)_previewImage.Size.Height));
+                _previewSize = new Size((int)(_previewImage.Size.Width * factor), (int)(_previewImage.Size.Height * factor));
+
+                // calculate the location (prefer the right top corner)
+                var pointPreview = new Point()
                 {
-                    var index = indices[i];
-                    var fileName = Path.Combine(path, fileNames[i]);
-                    ExtractRange(processor, stepIt, t => status(GetFileStatus(fileName, t)), fileName, index, index);
-                }
-                return fileNames;
-            });
-        }
+                    X = itemRect.Right + _previewSize.Width > screenRect.Right ? itemRect.Left - _previewSize.Width : itemRect.Right,
+                    Y = Math.Min(itemRect.Top, screenRect.Bottom - _previewSize.Height),
+                };
 
-        private string[] ExtractForDragAndDrop(int[] indices, bool singleFiles)
-        {
-            // determine how to extract the pages
-            if (!singleFiles)
-            {
-                // get the index ranges and the document path
-                var ranges = GetRangesFromIndices(indices);
-                var path = Path.Combine(Path.GetTempPath(), GetDocumentFileName(ranges));
-
-                // extract the pages into one document and store its path
-                if (ExtractToSingleDocument(path, ranges))
-                    return new string[] { path };
+                // show the tooltip
+                toolTipPreview.Show(">", listViewPages, listViewPages.PointToClient(pointPreview));
             }
             else
             {
-                // extract each page to a document and store all paths
-                var root = Path.GetTempPath();
-                var fileNames = ExtractToMultipleDocuments(root, indices);
-                if (fileNames != null)
-                    return Array.ConvertAll(fileNames, f => Path.Combine(root, f));
+                // clear the preview variables and hide the tooltip if there is one
+                if (_previewImage == null)
+                {
+                    return;
+                }
+                _previewImage = null;
+                _previewSize = Size.Empty;
+                toolTipPreview.Hide(listViewPages);
             }
+        }
 
-            // a ghostscript error occured
-            return null;
+        private void ShowStatus(bool visible, bool cancelable)
+        {
+            // set the visibilty and enabled states
+            toolStripProgressBarExtract.Visible = visible;
+            toolStripStatusLabelExtract.Visible = visible;
+            toolStripDropDownButtonCancel.Visible = visible;
+            toolStripDropDownButtonCancel.Enabled = cancelable;
+            toolStripDropDownButtonSave.Visible = !visible;
+            checkBoxMultipleFiles.Visible = !visible;
+            toolStripStatusLabelSingleFiles.Visible = !visible;
+            toolStripDropDownButtonZoomOut.Visible = !visible;
+            trackBarZoom.Visible = !visible;
+            toolStripDropDownButtonZoomIn.Visible = !visible;
+            listViewPages.Enabled = !visible;
+
+            // reset the progress bar and status label
+            toolStripProgressBarExtract.Value = 0;
+            toolStripStatusLabelExtract.Text = string.Empty;
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        private void backgroundWorkerExtract_DoWork(object sender, DoWorkEventArgs e)
+        {
+            var work = (Work)e.Argument;
+            if (work.MultipleFiles)
+            {
+                // extract each page as one document and show them in the explorer
+                var files = ExtractToMultipleDocuments(work.Path, work.Indices, () => (sender as BackgroundWorker).CancellationPending, (sender as BackgroundWorker).ReportProgress);
+                e.Result = files;
+                if (files != null)
+                {
+                    OpenFolderAndSelectItems(folderBrowserDialog.SelectedPath, files);
+                }
+            }
+            else
+            {
+                // extract all pages into one document and show it
+                if (ExtractToSingleDocument(work.Path, work.Indices, () => (sender as BackgroundWorker).CancellationPending, (sender as BackgroundWorker).ReportProgress))
+                {
+                    e.Result = true;
+                    Process.Start(work.Path);
+                }
+                else
+                {
+                    e.Result = false;
+                }
+            }
+        }
+
+        private void backgroundWorkerExtract_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            // update the status bar
+            toolStripProgressBarExtract.Value = e.ProgressPercentage;
+            toolStripStatusLabelExtract.Text = (string)e.UserState;
+        }
+
+        private void backgroundWorkerExtract_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // hide the status elements and handle any potential error
+            ShowStatus(false, true);
+            if (!e.Cancelled && e.Error != null)
+            {
+                // display PdfSharp an I/O errors and rethrow others
+                if (e.Error is PdfSharpException || e.Error is IOException)
+                {
+                    MessageBox.Show(e.Error.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    throw e.Error;
+                }
+            }
         }
 
         private void ExtractForm_Shown(object sender, EventArgs e)
@@ -520,39 +611,58 @@ namespace Aufbauwerk.Tools.PdfKit
             listViewPages.VirtualMode = true;
             Update();
 
-            // create the rasterizer, initialize the cache and set the page count
-            rasterizer = new GhostscriptRasterizer();
-            try { rasterizer.Open(Program.GetShortPathName(fullPath), Program.GhostscriptVersion, false); }
+            // open the document and create the rasterizer
+            try
+            {
+                _document = PdfReader.Open(_filePath, PdfDocumentOpenMode.Import);
+                _rasterizer = new GhostscriptRasterizer();
+                _rasterizer.Open(_filePath, Program.GhostscriptVersion, false);
+            }
             catch
             {
                 // turn off the virtual mode and rethrow the error
                 listViewPages.VirtualMode = false;
                 throw;
             }
-            cache = new Image[rasterizer.PageCount];
-            listViewPages.VirtualListSize = rasterizer.PageCount;
+
+            // initialize the cache and set the page count
+            _imageCache = new Image[_document.PageCount];
+            listViewPages.VirtualListSize = _document.PageCount;
         }
 
-        private void trackBarZoom_ValueChanged(object sender, EventArgs e)
+        private void listViewPages_ItemDrag(object sender, ItemDragEventArgs e)
         {
-            // set the enabled state and reset the image list
-            toolStripDropDownButtonZoomOut.Enabled = trackBarZoom.Value > trackBarZoom.Minimum;
-            toolStripDropDownButtonZoomIn.Enabled = trackBarZoom.Value < trackBarZoom.Maximum;
-            imageList.Images.Clear();
-            imageList.ImageSize = new Size(trackBarZoom.Value * 32, trackBarZoom.Value * 32);
+            // hide the tooltip and make sure the progress bar handle is created
+            SetTooltip(null);
+            toolStripProgressBarExtract.Control.Handle.GetHashCode();
 
-            // refrash the list
-            listViewPages.Invalidate();
+            // perform the operation
+            using (var data = new FilesDataObject(ExtractForDragAndDrop, GetSelectedIndices(), checkBoxMultipleFiles.Checked))
+            {
+                data.Result = listViewPages.DoDragDrop(data, DragDropEffects.Copy | DragDropEffects.Move);
+            }
         }
 
-        private void toolStripDropDownButtonZoomOut_Click(object sender, EventArgs e)
+        private void listViewPages_MouseLeave(object sender, EventArgs e)
         {
-            trackBarZoom.Value--;
+            // hide the preview image
+            SetTooltip(null);
         }
 
-        private void toolStripDropDownButtonZoomIn_Click(object sender, EventArgs e)
+        private void listViewPages_MouseMove(object sender, MouseEventArgs e)
         {
-            trackBarZoom.Value++;
+            // ensure the cursor is above the image and show the preview
+            var item = listViewPages.GetItemAt(e.X, e.Y);
+            if (item != null)
+            {
+                var imageBounds = listViewPages.GetItemRect(item.Index, ItemBoundsPortion.Icon);
+                imageBounds.Inflate(-(imageBounds.Width - imageList.ImageSize.Width) / 2, -(imageBounds.Height - imageList.ImageSize.Height) / 2);
+                if (!imageBounds.Contains(e.Location))
+                {
+                    item = null;
+                }
+            }
+            SetTooltip(item);
         }
 
         private void listViewPages_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
@@ -562,9 +672,11 @@ namespace Aufbauwerk.Tools.PdfKit
             if (!imageList.Images.ContainsKey(key))
             {
                 // get the cached image or rasterize the page
-                var image = cache[e.ItemIndex];
+                var image = _imageCache[e.ItemIndex];
                 if (image == null)
-                    cache[e.ItemIndex] = image = rasterizer.GetPage(96, 96, e.ItemIndex + 1);
+                {
+                    _imageCache[e.ItemIndex] = image = _rasterizer.GetPage(96, 96, e.ItemIndex + 1);
+                }
 
                 // draw the icon
                 var icon = new Bitmap(imageList.ImageSize.Width, imageList.ImageSize.Height, PixelFormat.Format32bppArgb);
@@ -583,81 +695,6 @@ namespace Aufbauwerk.Tools.PdfKit
             e.Item = new ListViewItem((e.ItemIndex + 1).ToString(), imageList.Images.IndexOfKey(key));
         }
 
-        private void listViewPages_ItemDrag(object sender, ItemDragEventArgs e)
-        {
-            // hide the tooltip and make sure the progress bar handle is created
-            SetTooltip(null);
-            toolStripProgressBarExtract.Control.Handle.GetHashCode();
-
-            // perform the operation
-            using (var data = new FilesDataObject(ExtractForDragAndDrop, GetSelectedIndices(), checkBoxSingleFiles.Checked))
-                data.Result = listViewPages.DoDragDrop(data, DragDropEffects.Copy | DragDropEffects.Move);
-        }
-
-        private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
-        {
-            // get the selection and check what to do
-            var indices = GetSelectedIndices();
-            if (checkBoxSingleFiles.Checked)
-            {
-                // pick a directory and extract the pages
-                if (folderBrowserDialog.ShowDialog(this) == DialogResult.OK)
-                {
-                    var files = ExtractToMultipleDocuments(folderBrowserDialog.SelectedPath, indices);
-                    if (files != null)
-                        Program.OpenFolderAndSelectItems(folderBrowserDialog.SelectedPath, files);
-                }
-            }
-            else
-            {
-                // show the save dialog and extract the pages to a single document
-                var ranges = GetRangesFromIndices(indices);
-                saveFileDialog.FileName = GetDocumentFileName(ranges);
-                if (saveFileDialog.ShowDialog(this) == DialogResult.OK && ExtractToSingleDocument(saveFileDialog.FileName, ranges))
-                    Process.Start(saveFileDialog.FileName);
-            }
-        }
-
-        private void toolTipPreview_Draw(object sender, DrawToolTipEventArgs e)
-        {
-            // draw the background, image and border
-            e.DrawBackground();
-            var bounds = e.Bounds;
-            bounds.Inflate(-1, 1);
-            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            e.Graphics.DrawImage(imagePreview, bounds);
-            e.DrawBorder();
-        }
-
-        private void toolTipPreview_Popup(object sender, PopupEventArgs e)
-        {
-            // cancel the tooltip or set the tooltip size
-            if (imagePreview == null)
-                e.Cancel = true;
-            else
-                e.ToolTipSize = sizePreview + new Size(2, 2);
-        }
-
-        private void listViewPages_MouseLeave(object sender, EventArgs e)
-        {
-            // hide the preview image
-            SetTooltip(null);
-        }
-
-        private void listViewPages_MouseMove(object sender, MouseEventArgs e)
-        {
-            // ensure the cursor is above the image and show the preview
-            var item = listViewPages.GetItemAt(e.X, e.Y);
-            if (item != null)
-            {
-                var imageBounds = listViewPages.GetItemRect(item.Index, ItemBoundsPortion.Icon);
-                imageBounds.Inflate(-(imageBounds.Width - imageList.ImageSize.Width) / 2, -(imageBounds.Height - imageList.ImageSize.Height) / 2);
-                if (!imageBounds.Contains(e.Location))
-                    item = null;
-            }
-            SetTooltip(item);
-        }
-
         private void listViewPages_SelectedIndexChanged(object sender, EventArgs e)
         {
             // update the save button state
@@ -669,5 +706,92 @@ namespace Aufbauwerk.Tools.PdfKit
             // do the same as a single selection change
             listViewPages_SelectedIndexChanged(sender, e);
         }
+
+        private void toolStripDropDownButtonCancel_Click(object sender, EventArgs e)
+        {
+            // cancel the extraction
+            backgroundWorkerExtract.CancelAsync();
+        }
+
+        private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
+        {
+            // get the selection and check what to do
+            var work = new Work()
+            {
+                Indices = GetSelectedIndices(),
+                MultipleFiles = checkBoxMultipleFiles.Checked,
+            };
+            if (work.MultipleFiles)
+            {
+                // make sure the user picks a directory
+                if (folderBrowserDialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                work.Path = folderBrowserDialog.SelectedPath;
+            }
+            else
+            {
+                // get a proper default name and make sure the user finishes the save dialog
+                saveFileDialog.FileName = GetDocumentFileName(work.Indices);
+                if (saveFileDialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+                work.Path = saveFileDialog.FileName;
+            }
+
+            // show the status elements and start the work
+            ShowStatus(true, true);
+            backgroundWorkerExtract.RunWorkerAsync(work);
+        }
+
+        private void toolStripDropDownButtonZoomIn_Click(object sender, EventArgs e)
+        {
+            trackBarZoom.Value++;
+        }
+
+        private void toolStripDropDownButtonZoomOut_Click(object sender, EventArgs e)
+        {
+            trackBarZoom.Value--;
+        }
+
+        private void toolTipPreview_Draw(object sender, DrawToolTipEventArgs e)
+        {
+            // draw the background, image and border
+            e.DrawBackground();
+            var bounds = e.Bounds;
+            bounds.Inflate(-1, 1);
+            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            e.Graphics.DrawImage(_previewImage, bounds);
+            e.DrawBorder();
+        }
+
+        private void toolTipPreview_Popup(object sender, PopupEventArgs e)
+        {
+            // cancel the tooltip or set the tooltip size
+            if (_previewImage == null)
+            {
+                e.Cancel = true;
+            }
+            else
+            {
+                e.ToolTipSize = _previewSize + new Size(2, 2);
+            }
+        }
+
+        private void trackBarZoom_ValueChanged(object sender, EventArgs e)
+        {
+            // set the enabled state and reset the image list
+            toolStripDropDownButtonZoomOut.Enabled = trackBarZoom.Value > trackBarZoom.Minimum;
+            toolStripDropDownButtonZoomIn.Enabled = trackBarZoom.Value < trackBarZoom.Maximum;
+            imageList.Images.Clear();
+            imageList.ImageSize = new Size(trackBarZoom.Value * 32, trackBarZoom.Value * 32);
+
+            // refrash the list
+            listViewPages.Invalidate();
+        }
+
+        #endregion
     }
 }

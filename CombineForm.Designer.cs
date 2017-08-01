@@ -40,20 +40,7 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripButtonUp = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonDown = new System.Windows.Forms.ToolStripButton();
-            this.panelPreview = new System.Windows.Forms.Panel();
-            this.pictureBoxPreview = new System.Windows.Forms.PictureBox();
-            this.toolStripPreview = new System.Windows.Forms.ToolStrip();
-            this.toolStripButtonFirst = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButtonPrevious = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripTextBoxPage = new System.Windows.Forms.ToolStripTextBox();
-            this.toolStripLabelTotal = new System.Windows.Forms.ToolStripLabel();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripButtonNext = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButtonLast = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripButtonZoomIn = new System.Windows.Forms.ToolStripButton();
-            this.toolStripButtonZoomOut = new System.Windows.Forms.ToolStripButton();
+            this.viewer = new Aufbauwerk.Tools.PdfKit.Viewer();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOK = new System.Windows.Forms.Button();
             this.openFilesDialog = new System.Windows.Forms.OpenFileDialog();
@@ -65,9 +52,6 @@
             this.splitContainer.Panel2.SuspendLayout();
             this.splitContainer.SuspendLayout();
             this.toolStripFiles.SuspendLayout();
-            this.panelPreview.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
-            this.toolStripPreview.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer
@@ -83,8 +67,7 @@
             // 
             // splitContainer.Panel2
             // 
-            this.splitContainer.Panel2.Controls.Add(this.panelPreview);
-            this.splitContainer.Panel2.Controls.Add(this.toolStripPreview);
+            this.splitContainer.Panel2.Controls.Add(this.viewer);
             // 
             // listViewFiles
             // 
@@ -164,107 +147,10 @@
             this.toolStripButtonDown.Name = "toolStripButtonDown";
             this.toolStripButtonDown.Click += new System.EventHandler(this.toolStripButtonDown_Click);
             // 
-            // panelPreview
+            // viewer
             // 
-            resources.ApplyResources(this.panelPreview, "panelPreview");
-            this.panelPreview.Controls.Add(this.pictureBoxPreview);
-            this.panelPreview.Name = "panelPreview";
-            // 
-            // pictureBoxPreview
-            // 
-            this.pictureBoxPreview.Cursor = System.Windows.Forms.Cursors.NoMove2D;
-            resources.ApplyResources(this.pictureBoxPreview, "pictureBoxPreview");
-            this.pictureBoxPreview.Name = "pictureBoxPreview";
-            this.pictureBoxPreview.TabStop = false;
-            this.pictureBoxPreview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxPreview_MouseDown);
-            this.pictureBoxPreview.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxPreview_MouseMove);
-            this.pictureBoxPreview.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBoxPreview_MouseUp);
-            // 
-            // toolStripPreview
-            // 
-            resources.ApplyResources(this.toolStripPreview, "toolStripPreview");
-            this.toolStripPreview.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStripPreview.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripButtonFirst,
-            this.toolStripButtonPrevious,
-            this.toolStripSeparator1,
-            this.toolStripTextBoxPage,
-            this.toolStripLabelTotal,
-            this.toolStripSeparator2,
-            this.toolStripButtonNext,
-            this.toolStripButtonLast,
-            this.toolStripSeparator3,
-            this.toolStripButtonZoomIn,
-            this.toolStripButtonZoomOut});
-            this.toolStripPreview.Name = "toolStripPreview";
-            // 
-            // toolStripButtonFirst
-            // 
-            this.toolStripButtonFirst.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButtonFirst, "toolStripButtonFirst");
-            this.toolStripButtonFirst.Name = "toolStripButtonFirst";
-            this.toolStripButtonFirst.Click += new System.EventHandler(this.toolStripButtonFirst_Click);
-            // 
-            // toolStripButtonPrevious
-            // 
-            this.toolStripButtonPrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButtonPrevious, "toolStripButtonPrevious");
-            this.toolStripButtonPrevious.Name = "toolStripButtonPrevious";
-            this.toolStripButtonPrevious.Click += new System.EventHandler(this.toolStripButtonPrevious_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            resources.ApplyResources(this.toolStripSeparator1, "toolStripSeparator1");
-            // 
-            // toolStripTextBoxPage
-            // 
-            this.toolStripTextBoxPage.Name = "toolStripTextBoxPage";
-            resources.ApplyResources(this.toolStripTextBoxPage, "toolStripTextBoxPage");
-            this.toolStripTextBoxPage.Validated += new System.EventHandler(this.toolStripTextBoxPage_Validated);
-            // 
-            // toolStripLabelTotal
-            // 
-            this.toolStripLabelTotal.Name = "toolStripLabelTotal";
-            resources.ApplyResources(this.toolStripLabelTotal, "toolStripLabelTotal");
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            resources.ApplyResources(this.toolStripSeparator2, "toolStripSeparator2");
-            // 
-            // toolStripButtonNext
-            // 
-            this.toolStripButtonNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButtonNext, "toolStripButtonNext");
-            this.toolStripButtonNext.Name = "toolStripButtonNext";
-            this.toolStripButtonNext.Click += new System.EventHandler(this.toolStripButtonNext_Click);
-            // 
-            // toolStripButtonLast
-            // 
-            this.toolStripButtonLast.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButtonLast, "toolStripButtonLast");
-            this.toolStripButtonLast.Name = "toolStripButtonLast";
-            this.toolStripButtonLast.Click += new System.EventHandler(this.toolStripButtonLast_Click);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            resources.ApplyResources(this.toolStripSeparator3, "toolStripSeparator3");
-            // 
-            // toolStripButtonZoomIn
-            // 
-            this.toolStripButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButtonZoomIn, "toolStripButtonZoomIn");
-            this.toolStripButtonZoomIn.Name = "toolStripButtonZoomIn";
-            this.toolStripButtonZoomIn.Click += new System.EventHandler(this.toolStripButtonZoomIn_Click);
-            // 
-            // toolStripButtonZoomOut
-            // 
-            this.toolStripButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButtonZoomOut, "toolStripButtonZoomOut");
-            this.toolStripButtonZoomOut.Name = "toolStripButtonZoomOut";
-            this.toolStripButtonZoomOut.Click += new System.EventHandler(this.toolStripButtonZoomOut_Click);
+            resources.ApplyResources(this.viewer, "viewer");
+            this.viewer.Name = "viewer";
             // 
             // buttonCancel
             // 
@@ -282,24 +168,26 @@
             // 
             // openFilesDialog
             // 
-            resources.ApplyResources(this.openFilesDialog, "openFilesDialog");
             this.openFilesDialog.DefaultExt = "pdf";
+            resources.ApplyResources(this.openFilesDialog, "openFilesDialog");
             this.openFilesDialog.Multiselect = true;
             // 
             // saveFileDialog
             // 
-            resources.ApplyResources(this.saveFileDialog, "saveFileDialog");
             this.saveFileDialog.DefaultExt = "pdf";
+            resources.ApplyResources(this.saveFileDialog, "saveFileDialog");
             // 
             // progressBarStatus
             // 
             resources.ApplyResources(this.progressBarStatus, "progressBarStatus");
             this.progressBarStatus.Name = "progressBarStatus";
-            this.progressBarStatus.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             // 
             // backgroundWorker
             // 
+            this.backgroundWorker.WorkerReportsProgress = true;
+            this.backgroundWorker.WorkerSupportsCancellation = true;
             this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker_DoWork);
+            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker_ProgressChanged);
             this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
             // 
             // CombineForm
@@ -318,16 +206,10 @@
             this.splitContainer.Panel1.ResumeLayout(false);
             this.splitContainer.Panel1.PerformLayout();
             this.splitContainer.Panel2.ResumeLayout(false);
-            this.splitContainer.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).EndInit();
             this.splitContainer.ResumeLayout(false);
             this.toolStripFiles.ResumeLayout(false);
             this.toolStripFiles.PerformLayout();
-            this.panelPreview.ResumeLayout(false);
-            this.panelPreview.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).EndInit();
-            this.toolStripPreview.ResumeLayout(false);
-            this.toolStripPreview.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -335,26 +217,12 @@
         #endregion
 
         private System.Windows.Forms.SplitContainer splitContainer;
-        private System.Windows.Forms.ToolStrip toolStripPreview;
-        private System.Windows.Forms.ToolStripButton toolStripButtonFirst;
-        private System.Windows.Forms.ToolStripButton toolStripButtonPrevious;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxPage;
-        private System.Windows.Forms.ToolStripLabel toolStripLabelTotal;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripButton toolStripButtonNext;
-        private System.Windows.Forms.ToolStripButton toolStripButtonLast;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton toolStripButtonZoomIn;
-        private System.Windows.Forms.ToolStripButton toolStripButtonZoomOut;
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.Button buttonOK;
         private System.Windows.Forms.ListView listViewFiles;
         private System.Windows.Forms.ColumnHeader columnHeaderName;
         private System.Windows.Forms.ColumnHeader columnHeaderPages;
         private System.Windows.Forms.ColumnHeader columnHeaderPath;
-        private System.Windows.Forms.Panel panelPreview;
-        private System.Windows.Forms.PictureBox pictureBoxPreview;
         private System.Windows.Forms.ToolStrip toolStripFiles;
         private System.Windows.Forms.ToolStripButton toolStripButtonInsert;
         private System.Windows.Forms.ToolStripButton toolStripButtonRemove;
@@ -365,5 +233,6 @@
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.ProgressBar progressBarStatus;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
+        private Viewer viewer;
     }
 }

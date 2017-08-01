@@ -41,6 +41,10 @@
       <HintPath>lib\Ghostscript.NET.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PdfSharp">
+      <HintPath>lib\PdfSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -49,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Native.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CombineForm.cs">
       <SubType>Form</SubType>
@@ -63,25 +68,31 @@
       <DependentUpon>ExtractForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="Viewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Viewer.Designer.cs">
+      <DependentUpon>Viewer.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="CombineForm.de-DE.resx">
-      <DependentUpon>CombineForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CombineForm.en-US.resx">
+    <EmbeddedResource Include="CombineForm.de.resx">
       <DependentUpon>CombineForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="CombineForm.resx">
       <DependentUpon>CombineForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExtractForm.de-DE.resx">
-      <DependentUpon>ExtractForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ExtractForm.en-US.resx">
+    <EmbeddedResource Include="ExtractForm.de.resx">
       <DependentUpon>ExtractForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ExtractForm.resx">
       <DependentUpon>ExtractForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Viewer.de.resx">
+      <DependentUpon>Viewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Viewer.resx">
+      <DependentUpon>Viewer.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

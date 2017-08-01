@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016, Manuel Meitinger
+﻿/* Copyright (C) 2016-2017, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,30 +20,23 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Reflection;
 using System.Windows.Forms;
-using Ghostscript.NET;
-using Ghostscript.NET.Processor;
-using Ghostscript.NET.Viewer;
+using PdfSharp;
+using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class CombineForm : Form
     {
-        private readonly Dictionary<string, GhostscriptViewerState> viewerStates = new Dictionary<string, GhostscriptViewerState>();
-        private readonly IEnumerable<string> initialFiles;
-        private readonly string totalFormat;
-        private GhostscriptViewer currentViewer = null;
-        private Point? previewDrag = null;
+        private readonly IEnumerable<string> _initialFiles;
+        private int _selectionChangeSuspensions = 0;
 
         public CombineForm()
         {
             // initialize the components, hook the wheel event and set the controls
             InitializeComponent();
-            totalFormat = toolStripLabelTotal.Text;
-            pictureBoxPreview.MouseWheel += new MouseEventHandler(pictureBoxPreview_MouseWheel);
-            UpdateFiles();
-            UpdatePreview();
+            SetEnabledState(true);
         }
 
         public CombineForm(IEnumerable<string> files)
@@ -51,185 +44,67 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // store the initial files
             if (files == null)
+            {
                 throw new ArgumentNullException("files");
-            initialFiles = files;
+            }
+            _initialFiles = files;
         }
 
-        public void AddFile(string path)
-        {
-            // add the given file if the list is enabled
-            if (listViewFiles.Enabled)
-                InsertPdfFile(path, listViewFiles.Items.Count);
-        }
+        #region Methods
 
-        private void SetViewer(string path, bool saveState = true)
+        internal void InsertFiles(IEnumerable<string> filePaths, int startIndex)
         {
-            // get the 8.3 path to circumvent non-ascii characters
-            if (path != null)
-                path = Program.GetShortPathName(path);
-
-            // remove the old viewer
-            if (currentViewer != null)
+            // ensure the insertion of files is allowed at the time
+            if (!listViewFiles.Enabled)
             {
-                // do nothing if it's the same path
-                if (path != null && string.Equals(currentViewer.FilePath, path, StringComparison.OrdinalIgnoreCase))
-                    return;
-
-                // unhook the viewer
-                currentViewer.DisplayPage -= currentViewer_DisplayPage;
-                currentViewer.DisplaySize -= currentViewer_DisplaySize;
-                currentViewer.DisplayUpdate -= currentViewer_DisplayUpdate;
-
-                // clear the image
-                pictureBoxPreview.Image = null;
-                panelPreview.Update();
-
-                // save the state and dispose of the viewer
-                try
-                {
-                    if (saveState)
-                        viewerStates[currentViewer.FilePath] = currentViewer.SaveState();
-                    currentViewer.Dispose();
-                }
-                catch
-                {
-                    // don't care on the way out
-                }
-
-                // clear the viewer and update the controls
-                currentViewer = null;
-                UpdatePreview();
+                throw new InvalidOperationException();
             }
 
-            // set the new viewer if a path is given
-            if (path != null)
+            // insert the files
+            DoWithSuspendedSelectionChange(() =>
             {
-                // create, hook and open the viewer and restore the state if possible
-                currentViewer = new GhostscriptViewer();
-                currentViewer.GetType().GetProperty("ShowPageAfterOpen", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(currentViewer, false, null);
-                currentViewer.DisplayUpdate += currentViewer_DisplayUpdate;
-                currentViewer.DisplaySize += currentViewer_DisplaySize;
-                currentViewer.DisplayPage += currentViewer_DisplayPage;
-                try
+                // clear the selection
+                listViewFiles.SelectedItems.Clear();
+                HandleSelectionChange(true);
+                Update();
+
+                // insert all files
+                foreach (var filePath in filePaths)
                 {
-                    currentViewer.Open(path, Program.GhostscriptVersion, false);
-                    GhostscriptViewerState state;
-                    if (viewerStates.TryGetValue(currentViewer.FilePath, out state))
+                    // create the item
+                    var item = new ListViewItem(Path.GetFileName(filePath));
+                    using (var document = PdfReader.Open(filePath, PdfDocumentOpenMode.Import))
                     {
-                        currentViewer.RestoreState(state);
-                        currentViewer.RefreshPage();
+                        item.Tag = new Tuple<string, int>(filePath, document.PageCount);
+                        item.SubItems.Add(document.PageCount.ToString());
                     }
-                    else
-                        currentViewer.ShowPage(currentViewer.FirstPageNumber, true);
-                }
-                catch
-                {
-                    // clear the viewer and rethrow the error
-                    SetViewer(null, false);
-                    throw;
-                }
+                    item.SubItems.Add(Path.GetDirectoryName(filePath));
 
-                // update the controls
-                UpdatePreview();
-            }
+                    // insert, select and focus the item
+                    listViewFiles.Items.Insert(startIndex++, item);
+                    item.EnsureVisible();
+                    item.Selected = true;
+                    item.Focused = true;
+                    listViewFiles.Update();
+                }
+            });
         }
 
-        private ListViewItem InsertPdfFile(string path, int index)
-        {
-            // create the item
-            SetViewer(path);
-            var item = new ListViewItem(Path.GetFileName(path));
-            item.SubItems.Add((currentViewer.LastPageNumber - currentViewer.FirstPageNumber + 1).ToString());
-            item.SubItems.Add(Path.GetDirectoryName(path));
-            item.Tag = path;
-
-            // insert and select the item
-            listViewFiles.Items.Insert(index, item);
-            item.Focused = true;
-            item.Selected = true;
-
-            // redraw the list and update the controls
-            UpdateFiles();
-            return item;
-        }
-
-        private void RemovePdfFile(ListViewItem item)
+        private void RemoveFiles(ListViewItem[] items)
         {
             // remove the item, redraw the list and update the controls
-            item.Remove();
-            UpdateFiles();
-        }
-
-        private void ClearSelectionAndViewer()
-        {
-            // clear the viewer
-            SetViewer(null);
-
-            // disable updates and deselect all items
-            listViewFiles.ItemSelectionChanged -= listViewFiles_ItemSelectionChanged;
-            try { listViewFiles.SelectedItems.Clear(); }
-            finally { listViewFiles.ItemSelectionChanged += listViewFiles_ItemSelectionChanged; }
-
-            // redraw the list and the controls
-            UpdateFiles();
-        }
-
-        private void DoScroll(ScrollProperties scrollProperties, int delta)
-        {
-            // perform the scroll operation if possible and within bounds
-            if (scrollProperties.Enabled)
-                scrollProperties.Value = Math.Min(scrollProperties.Maximum, Math.Max(scrollProperties.Minimum, scrollProperties.Value - delta));
-        }
-
-        private void UpdateFiles()
-        {
-            // redraw the list
-            listViewFiles.Update();
-
-            // update the file controls
-            toolStripButtonRemove.Enabled = listViewFiles.SelectedItems.Count > 0;
-            toolStripButtonUp.Enabled = listViewFiles.SelectedItems.Count > 0 && !listViewFiles.SelectedItems.Contains(listViewFiles.Items[0]);
-            toolStripButtonDown.Enabled = listViewFiles.SelectedItems.Count > 0 && !listViewFiles.SelectedItems.Contains(listViewFiles.Items[listViewFiles.Items.Count - 1]);
-            toolStripFiles.Update();
-        }
-
-        private void UpdatePreview()
-        {
-            // update the preview controls
-            toolStripButtonFirst.Enabled = currentViewer != null && currentViewer.CanShowFirstPage;
-            toolStripButtonPrevious.Enabled = currentViewer != null && currentViewer.CanShowPreviousPage;
-            toolStripButtonNext.Enabled = currentViewer != null && currentViewer.CanShowNextPage;
-            toolStripButtonLast.Enabled = currentViewer != null && currentViewer.CanShowLastPage;
-            toolStripButtonZoomIn.Enabled = currentViewer != null && currentViewer.CanZoomIn;
-            toolStripButtonZoomOut.Enabled = currentViewer != null && currentViewer.CanZoomOut;
-            toolStripTextBoxPage.Enabled = currentViewer != null;
-            toolStripTextBoxPage.Text = currentViewer != null ? (currentViewer.CurrentPageNumber - currentViewer.FirstPageNumber + 1).ToString() : string.Empty;
-            toolStripLabelTotal.Text = currentViewer != null ? string.Format(totalFormat, currentViewer.LastPageNumber - currentViewer.FirstPageNumber + 1) : string.Empty;
-            toolStripPreview.Update();
-        }
-
-        private void UpdateOther(bool enabled)
-        {
-            // set the enabled state of all other controls
-            toolStripButtonInsert.Enabled = enabled;
-            toolStripFiles.Update();
-            listViewFiles.Enabled = enabled;
-            listViewFiles.Update();
-            buttonOK.Enabled = enabled;
-            buttonOK.Update();
-            buttonCancel.Enabled = enabled;
-            buttonCancel.Update();
-            splitContainer.Enabled = enabled;
-            splitContainer.Update();
-            progressBarStatus.Visible = !enabled;
-            progressBarStatus.Update();
+            DoWithSuspendedSelectionChange(() =>
+            {
+                for (var i = 0; i < items.Length; i++)
+                {
+                    items[i].Remove();
+                }
+            });
         }
 
         private void ChangeSelectedIndices(int delta)
         {
-            // disable updates
-            listViewFiles.ItemSelectionChanged -= listViewFiles_ItemSelectionChanged;
-            try
+            DoWithSuspendedSelectionChange(() =>
             {
                 // get all selected items
                 var selected = new ListViewItem[listViewFiles.SelectedItems.Count];
@@ -244,145 +119,197 @@ namespace Aufbauwerk.Tools.PdfKit
 
                 // remove all selected items
                 for (var i = indices.Length - 1; i >= 0; i--)
+                {
                     listViewFiles.Items.RemoveAt(indices[i]);
+                }
 
                 // insert them again at the proper index
                 for (var i = 0; i < selected.Length; i++)
+                {
                     listViewFiles.Items.Insert(indices[i] + delta, selected[i]);
+                }
 
                 // restore the focues item
                 listViewFiles.FocusedItem = focused;
+            });
+        }
 
-                // redraw the list and the controls
-                UpdateFiles();
+        private void DoWithSuspendedSelectionChange(Action action)
+        {
+            // disable updates
+            _selectionChangeSuspensions++;
+            try
+            {
+                action();
             }
             finally
             {
-                listViewFiles.ItemSelectionChanged += listViewFiles_ItemSelectionChanged;
+                // enable updates and perform change
+                _selectionChangeSuspensions--;
+                HandleSelectionChange();
+            }
+        }
+
+        private void HandleSelectionChange(bool force = false)
+        {
+            // only do something if no suspension is in place
+            if (_selectionChangeSuspensions == 0 || force)
+            {
+                // update the controls
+                SyncToolStrip();
+
+                // set the viewer
+                viewer.Path = listViewFiles.SelectedItems.Count == 1 ? ((Tuple<string, int>)listViewFiles.SelectedItems[0].Tag).Item1 : null;
+            }
+        }
+
+        private void SetEnabledState(bool enabled)
+        {
+            // set the enabled state of all controls
+            splitContainer.Enabled = enabled;
+            buttonOK.Enabled = enabled;
+            progressBarStatus.Visible = !enabled;
+            progressBarStatus.Value = 0;
+            listViewFiles.Enabled = enabled;
+            SyncToolStrip();
+        }
+
+        private void SyncToolStrip()
+        {
+            // update the file controls
+            toolStripButtonInsert.Enabled = listViewFiles.Enabled;
+            toolStripButtonRemove.Enabled = listViewFiles.Enabled && listViewFiles.SelectedItems.Count > 0;
+            toolStripButtonUp.Enabled = listViewFiles.Enabled && listViewFiles.SelectedItems.Count > 0 && !listViewFiles.SelectedItems.Contains(listViewFiles.Items[0]);
+            toolStripButtonDown.Enabled = listViewFiles.Enabled && listViewFiles.SelectedItems.Count > 0 && !listViewFiles.SelectedItems.Contains(listViewFiles.Items[listViewFiles.Items.Count - 1]);
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            // get the arguments and create the combined document
+            var allFiles = (Tuple<string, int>[])e.Argument;
+            (sender as BackgroundWorker).ReportProgress(0);
+            var prevProgress = 0;
+            using (var combinedDocument = new PdfDocument())
+            {
+                // go over all input documents and keep track of the page count
+                var currentPages = 0;
+                var totalPages = allFiles[0].Item2;
+                for (var docIndex = 1; docIndex < allFiles.Length; docIndex++)
+                {
+                    // quit if cancelled
+                    if ((sender as BackgroundWorker).CancellationPending)
+                    {
+                        return;
+                    }
+
+                    // merge the next document
+                    using (var document = PdfReader.Open(allFiles[docIndex].Item1, PdfDocumentOpenMode.Import))
+                    {
+                        // update the total pages (document might have been changed)
+                        totalPages += document.PageCount - allFiles[docIndex].Item2;
+                        for (var pageIndex = 0; pageIndex < document.PageCount; pageIndex++)
+                        {
+                            // import the page
+                            combinedDocument.AddPage(document.Pages[pageIndex]);
+                            currentPages++;
+
+                            // report any further progress
+                            var progress = (int)Math.Round((99.0 * currentPages) / totalPages);
+                            if (progress != prevProgress)
+                            {
+                                (sender as BackgroundWorker).ReportProgress(progress);
+                                prevProgress = progress;
+                            }
+                        }
+                    }
+                }
+
+                // save the document
+                combinedDocument.Save(allFiles[0].Item1);
+            }
+            (sender as BackgroundWorker).ReportProgress(100);
+
+            // show the combined PDF
+            Process.Start(allFiles[0].Item1);
+        }
+
+        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            // set the progress bar
+            progressBarStatus.Value = e.ProgressPercentage;
+        }
+
+        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // restore the state and reselect the OK button
+            SetEnabledState(true);
+            buttonOK.Focus();
+
+            // handle any potential error
+            if (!e.Cancelled && e.Error != null)
+            {
+                // display PdfSharp an I/O errors and rethrow others
+                if (e.Error is PdfSharpException || e.Error is IOException)
+                {
+                    MessageBox.Show(e.Error.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    throw e.Error;
+                }
+            }
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            // either cancel the task or exit the form
+            if (backgroundWorker.IsBusy)
+            {
+                backgroundWorker.CancelAsync();
+            }
+            else
+            {
+                Close();
+            }
+        }
+
+        private void buttonOK_Click(object sender, EventArgs e)
+        {
+            // show the save file dialog
+            if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                // get all file paths and the total page count
+                var allFiles = new Tuple<string, int>[1 + listViewFiles.Items.Count];
+                var totalPages = 0;
+                for (var i = 0; i < listViewFiles.Items.Count; i++)
+                {
+                    var file = (Tuple<string, int>)listViewFiles.Items[i].Tag;
+                    allFiles[i + 1] = file;
+                    totalPages += file.Item2;
+                }
+                allFiles[0] = new Tuple<string, int>(saveFileDialog.FileName, totalPages);
+
+                // clear the selection and disable all elements
+                SetEnabledState(false);
+                buttonCancel.Focus();
+
+                // combine the documents
+                backgroundWorker.RunWorkerAsync(allFiles);
             }
         }
 
         private void CombineForm_Shown(object sender, EventArgs e)
         {
             // insert all initial files
-            if (initialFiles != null)
+            if (_initialFiles != null)
             {
                 Update();
-                var index = 0;
-                foreach (var initialFile in initialFiles)
-                    InsertPdfFile(initialFile, index++);
+                InsertFiles(_initialFiles, 0);
             }
-        }
-
-        private void currentViewer_DisplayUpdate(object sender, GhostscriptViewerViewEventArgs e)
-        {
-            // redraw the image
-            pictureBoxPreview.Invalidate();
-            pictureBoxPreview.Update();
-        }
-
-        private void currentViewer_DisplaySize(object sender, GhostscriptViewerViewEventArgs e)
-        {
-            // set the image
-            pictureBoxPreview.Image = e.Image;
-            panelPreview.Update();
-        }
-
-        private void currentViewer_DisplayPage(object sender, GhostscriptViewerViewEventArgs e)
-        {
-            // redraw the image and update the controls
-            pictureBoxPreview.Invalidate();
-            pictureBoxPreview.Update();
-            UpdatePreview();
-        }
-
-        private void toolStripButtonFirst_Click(object sender, EventArgs e)
-        {
-            currentViewer.ShowFirstPage();
-        }
-
-        private void toolStripButtonPrevious_Click(object sender, EventArgs e)
-        {
-            currentViewer.ShowPreviousPage();
-        }
-
-        private void toolStripButtonNext_Click(object sender, EventArgs e)
-        {
-            currentViewer.ShowNextPage();
-        }
-
-        private void toolStripButtonLast_Click(object sender, EventArgs e)
-        {
-            currentViewer.ShowLastPage();
-        }
-
-        private void toolStripButtonZoomIn_Click(object sender, EventArgs e)
-        {
-            currentViewer.ZoomIn();
-        }
-
-        private void toolStripButtonZoomOut_Click(object sender, EventArgs e)
-        {
-            currentViewer.ZoomOut();
-        }
-
-        private void toolStripTextBoxPage_Validated(object sender, EventArgs e)
-        {
-            // parse the text and constrain the page number within the its bounds
-            int page;
-            if (int.TryParse(toolStripTextBoxPage.Text, out page))
-            {
-                page += currentViewer.FirstPageNumber - 1;
-                currentViewer.ShowPage(Math.Min(currentViewer.LastPageNumber, Math.Max(currentViewer.FirstPageNumber, page)), true);
-            }
-
-            // always update the label
-            UpdatePreview();
-        }
-
-        private void pictureBoxPreview_MouseWheel(object sender, MouseEventArgs e)
-        {
-            // zoom instead of scroll if CTRL is pressed
-            if ((ModifierKeys & Keys.Control) != 0)
-            {
-                ((HandledMouseEventArgs)e).Handled = true;
-                if (e.Delta > 0)
-                    toolStripButtonZoomIn.PerformClick();
-                if (e.Delta < 0)
-                    toolStripButtonZoomOut.PerformClick();
-            }
-        }
-
-        private void pictureBoxPreview_MouseDown(object sender, MouseEventArgs e)
-        {
-            // focus the picture and start draging
-            pictureBoxPreview.Focus();
-            previewDrag = e.Location;
-        }
-
-        private void pictureBoxPreview_MouseMove(object sender, MouseEventArgs e)
-        {
-            // perform a scroll operation if the mouse is pressed
-            if (previewDrag.HasValue)
-            {
-                // get and clear the last location
-                var lastLocation = previewDrag.Value;
-                previewDrag = null;
-
-                // convert the current location to screen coords and scroll
-                var currentScreen = pictureBoxPreview.PointToScreen(e.Location);
-                DoScroll(panelPreview.HorizontalScroll, e.Location.X - lastLocation.X);
-                DoScroll(panelPreview.VerticalScroll, e.Location.Y - lastLocation.Y);
-
-                // get the changed current location and store it
-                previewDrag = pictureBoxPreview.PointToClient(currentScreen);
-            }
-        }
-
-        private void pictureBoxPreview_MouseUp(object sender, MouseEventArgs e)
-        {
-            // stop draging
-            previewDrag = null;
         }
 
         private void listViewFiles_DragDrop(object sender, DragEventArgs e)
@@ -390,7 +317,9 @@ namespace Aufbauwerk.Tools.PdfKit
             // get the insertion mark
             var insertIndex = listViewFiles.InsertionMark.Index;
             if (listViewFiles.InsertionMark.AppearsAfterItem)
+            {
                 insertIndex++;
+            }
             listViewFiles.InsertionMark.Index = -1;
 
             // quit the operation if we don't have a valid index
@@ -402,7 +331,9 @@ namespace Aufbauwerk.Tools.PdfKit
 
             // make sure the effect is not none
             if (e.Effect == DragDropEffects.None)
+            {
                 return;
+            }
 
             // get the file names
             var files = e.Data.GetData(DataFormats.FileDrop, false) as string[];
@@ -412,10 +343,15 @@ namespace Aufbauwerk.Tools.PdfKit
                 return;
             }
 
-            // clear the selection and add all files
-            ClearSelectionAndViewer();
-            for (var i = 0; i < files.Length; i++)
-                InsertPdfFile(files[i], insertIndex + i);
+            // insert the files
+            InsertFiles(files, insertIndex);
+        }
+
+        private void listViewFiles_DragLeave(object sender, EventArgs e)
+        {
+            // hide the insertion mask
+            listViewFiles.InsertionMark.Index = -1;
+            listViewFiles.InsertionMark.AppearsAfterItem = false;
         }
 
         private void listViewFiles_DragOver(object sender, DragEventArgs e)
@@ -427,26 +363,42 @@ namespace Aufbauwerk.Tools.PdfKit
                 switch (e.KeyState & (4 + 8 + 32))
                 {
                     case 0:
+                    {
                         if ((e.AllowedEffect & DragDropEffects.Move) != 0)
+                        {
                             effect = DragDropEffects.Move;
+                        }
                         else if ((e.AllowedEffect & DragDropEffects.Copy) != 0)
+                        {
                             effect = DragDropEffects.Copy;
+                        }
                         else
+                        {
                             effect = DragDropEffects.None;
+                        }
                         break;
+                    }
                     case 4: //SHIFT
+                    {
                         effect = (e.AllowedEffect & DragDropEffects.Move) != 0 ? DragDropEffects.Move : DragDropEffects.None;
                         break;
+                    }
                     case 8: //CTRL
+                    {
                         effect = (e.AllowedEffect & DragDropEffects.Copy) != 0 ? DragDropEffects.Copy : DragDropEffects.None;
                         break;
+                    }
                     default:
+                    {
                         effect = DragDropEffects.None;
                         break;
+                    }
                 }
             }
             else
+            {
                 effect = DragDropEffects.None;
+            }
 
             // get the insertion mask
             int index;
@@ -463,8 +415,10 @@ namespace Aufbauwerk.Tools.PdfKit
                     showAfterItem = location.Y > rect.Top + rect.Height / 2;
                 }
                 else
+                {
                     // hide the mark if the cursor is above the moved item
                     showAfterItem = listViewFiles.Items.Count == 0;
+                }
             }
             else
             {
@@ -479,34 +433,29 @@ namespace Aufbauwerk.Tools.PdfKit
             listViewFiles.InsertionMark.AppearsAfterItem = showAfterItem;
         }
 
-        private void listViewFiles_DragLeave(object sender, EventArgs e)
-        {
-            // hide the insertion mask
-            listViewFiles.InsertionMark.Index = -1;
-            listViewFiles.InsertionMark.AppearsAfterItem = false;
-        }
-
         private void listViewFiles_ItemDrag(object sender, ItemDragEventArgs e)
         {
             // get all selected items
             var selected = new ListViewItem[listViewFiles.SelectedItems.Count];
             listViewFiles.SelectedItems.CopyTo(selected, 0);
-            var files = Array.ConvertAll(selected, i => (string)i.Tag);
+            var files = Array.ConvertAll(selected, i => ((Tuple<string, int>)i.Tag).Item1);
 
             // create the file drop object and start the drag & drop operation
             var data = new DataObject(DataFormats.FileDrop, files);
             if (listViewFiles.DoDragDrop(data, DragDropEffects.Copy | DragDropEffects.Move) == DragDropEffects.Move)
-                for (var i = 0; i < selected.Length; i++)
-                    RemovePdfFile(selected[i]);
+            {
+                RemoveFiles(selected);
+            }
         }
 
         private void listViewFiles_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            // redraw the list and update the controls
-            UpdateFiles();
+            HandleSelectionChange();
+        }
 
-            // set the viewer
-            SetViewer(listViewFiles.SelectedItems.Count == 1 ? (string)listViewFiles.SelectedItems[0].Tag : null);
+        private void toolStripButtonDown_Click(object sender, EventArgs e)
+        {
+            ChangeSelectedIndices(+1);
         }
 
         private void toolStripButtonInsert_Click(object sender, EventArgs e)
@@ -514,14 +463,8 @@ namespace Aufbauwerk.Tools.PdfKit
             // show the dialog
             if (openFilesDialog.ShowDialog(this) == DialogResult.OK)
             {
-                // get start index and chosen files
-                var index = listViewFiles.Items.Count;
-                var files = openFilesDialog.FileNames;
-
-                // clear the selection and add the files
-                ClearSelectionAndViewer();
-                for (var i = 0; i < files.Length; i++)
-                    InsertPdfFile(files[i], index + i);
+                // insert the chosen files at the end
+                InsertFiles(openFilesDialog.FileNames, listViewFiles.Items.Count);
             }
         }
 
@@ -530,8 +473,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // remove all selected items
             var selected = new ListViewItem[listViewFiles.SelectedItems.Count];
             listViewFiles.SelectedItems.CopyTo(selected, 0);
-            for (var i = 0; i < selected.Length; i++)
-                RemovePdfFile(selected[i]);
+            RemoveFiles(selected);
         }
 
         private void toolStripButtonUp_Click(object sender, EventArgs e)
@@ -539,73 +481,6 @@ namespace Aufbauwerk.Tools.PdfKit
             ChangeSelectedIndices(-1);
         }
 
-        private void toolStripButtonDown_Click(object sender, EventArgs e)
-        {
-            ChangeSelectedIndices(+1);
-        }
-
-        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            // combine the pdfs
-            using (var processor = new GhostscriptProcessor(Program.GhostscriptVersion, false))
-                processor.Process((string[])e.Argument);
-        }
-
-        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            // restore the state and reselect the OK button
-            UpdateOther(true);
-            buttonOK.Focus();
-
-            // handle the result
-            if (e.Error != null)
-            {
-                // rethrow all non-Ghostscript errors
-                if (!(e.Error is GhostscriptException))
-                    throw e.Error;
-
-                // show an error message
-                MessageBox.Show(e.Error.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-                // show the combined PDF
-                Process.Start(saveFileDialog.FileName);
-        }
-
-        private void buttonOK_Click(object sender, EventArgs e)
-        {
-            // show the save file dialog
-            if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
-            {
-                // build the argument array
-                var args = new string[]
-                    {
-                        "-q",
-                        "-dSAFER",
-                        "-dBATCH",
-                        "-dNOPAUSE",
-                        "-dNOPROMPT",
-                        "-sDEVICE=pdfwrite",
-                        "-dAutoRotatePages=/None",
-                        "-sOutputFile=" + saveFileDialog.FileName
-                    };
-                var offset = args.Length;
-                Array.Resize(ref args, offset + listViewFiles.Items.Count);
-                for (var i = 0; i < listViewFiles.Items.Count; i++)
-                    args[offset + i] = (string)listViewFiles.Items[i].Tag;
-
-                // clear the selection and disable all elements
-                ClearSelectionAndViewer();
-                UpdateOther(false);
-
-                // combine the documents
-                backgroundWorker.RunWorkerAsync(args);
-            }
-        }
-
-        private void buttonCancel_Click(object sender, EventArgs e)
-        {
-            Close();
-        }
+        #endregion
     }
 }
