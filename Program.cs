@@ -21,7 +21,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Ghostscript.NET;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
@@ -147,15 +146,6 @@ namespace Aufbauwerk.Tools.PdfKit
             Combine,
             CombineCom,
             CombineDirectory,
-        }
-
-        internal static GhostscriptVersionInfo GhostscriptVersion
-        {
-            get
-            {
-                // build the ghostscript dll path
-                return new GhostscriptVersionInfo(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "gsdll32.dll"));
-            }
         }
 
         [STAThread]

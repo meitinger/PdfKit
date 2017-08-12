@@ -37,10 +37,6 @@
     <ApplicationIcon>PdfKit.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ghostscript.NET">
-      <HintPath>lib\Ghostscript.NET.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="PdfSharp">
       <HintPath>lib\PdfSharp.dll</HintPath>
       <Private>False</Private>
@@ -53,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ghostscript.cs" />
     <Compile Include="Native.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CombineForm.cs">

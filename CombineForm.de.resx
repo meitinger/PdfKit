@@ -187,12 +187,6 @@
   <data name="toolStripButtonDown.ToolTipText" xml:space="preserve">
     <value>Dokument nach hinten reihen</value>
   </data>
-  <data name="buttonCancel.Text" xml:space="preserve">
-    <value>Abbrechen</value>
-  </data>
-  <data name="buttonOK.Text" xml:space="preserve">
-    <value>Speichern</value>
-  </data>
   <data name="openFilesDialog.Filter" xml:space="preserve">
     <value>PDF-Dokumente (*.pdf)|*.pdf</value>
   </data>
@@ -626,5 +620,11 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Dokumente zusammenführen</value>
+  </data>
+  <data name="toolStripDropDownButtonCancel.Text" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="toolStripDropDownButtonSave.ToolTipText" xml:space="preserve">
+    <value>Zusammengeführtes Dokument speichern...</value>
   </data>
 </root>

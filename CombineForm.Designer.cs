@@ -41,17 +41,19 @@
             this.toolStripButtonUp = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonDown = new System.Windows.Forms.ToolStripButton();
             this.viewer = new Aufbauwerk.Tools.PdfKit.Viewer();
-            this.buttonCancel = new System.Windows.Forms.Button();
-            this.buttonOK = new System.Windows.Forms.Button();
             this.openFilesDialog = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.progressBarStatus = new System.Windows.Forms.ProgressBar();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.statusStrip = new System.Windows.Forms.StatusStrip();
+            this.toolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
+            this.toolStripDropDownButtonCancel = new System.Windows.Forms.ToolStripDropDownButton();
+            this.toolStripDropDownButtonSave = new System.Windows.Forms.ToolStripDropDownButton();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer)).BeginInit();
             this.splitContainer.Panel1.SuspendLayout();
             this.splitContainer.Panel2.SuspendLayout();
             this.splitContainer.SuspendLayout();
             this.toolStripFiles.SuspendLayout();
+            this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer
@@ -71,13 +73,13 @@
             // 
             // listViewFiles
             // 
+            resources.ApplyResources(this.listViewFiles, "listViewFiles");
             this.listViewFiles.AllowDrop = true;
             this.listViewFiles.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listViewFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderName,
             this.columnHeaderPages,
             this.columnHeaderPath});
-            resources.ApplyResources(this.listViewFiles, "listViewFiles");
             this.listViewFiles.FullRowSelect = true;
             this.listViewFiles.HideSelection = false;
             this.listViewFiles.Name = "listViewFiles";
@@ -116,34 +118,34 @@
             // 
             // toolStripButtonInsert
             // 
-            this.toolStripButtonInsert.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonInsert, "toolStripButtonInsert");
+            this.toolStripButtonInsert.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonInsert.Name = "toolStripButtonInsert";
             this.toolStripButtonInsert.Click += new System.EventHandler(this.toolStripButtonInsert_Click);
             // 
             // toolStripButtonRemove
             // 
-            this.toolStripButtonRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonRemove, "toolStripButtonRemove");
+            this.toolStripButtonRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonRemove.Name = "toolStripButtonRemove";
             this.toolStripButtonRemove.Click += new System.EventHandler(this.toolStripButtonRemove_Click);
             // 
             // toolStripSeparator4
             // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
             resources.ApplyResources(this.toolStripSeparator4, "toolStripSeparator4");
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
             // 
             // toolStripButtonUp
             // 
-            this.toolStripButtonUp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonUp, "toolStripButtonUp");
+            this.toolStripButtonUp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonUp.Name = "toolStripButtonUp";
             this.toolStripButtonUp.Click += new System.EventHandler(this.toolStripButtonUp_Click);
             // 
             // toolStripButtonDown
             // 
-            this.toolStripButtonDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonDown, "toolStripButtonDown");
+            this.toolStripButtonDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonDown.Name = "toolStripButtonDown";
             this.toolStripButtonDown.Click += new System.EventHandler(this.toolStripButtonDown_Click);
             // 
@@ -152,35 +154,16 @@
             resources.ApplyResources(this.viewer, "viewer");
             this.viewer.Name = "viewer";
             // 
-            // buttonCancel
-            // 
-            resources.ApplyResources(this.buttonCancel, "buttonCancel");
-            this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Name = "buttonCancel";
-            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
-            // 
-            // buttonOK
-            // 
-            resources.ApplyResources(this.buttonOK, "buttonOK");
-            this.buttonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOK.Name = "buttonOK";
-            this.buttonOK.Click += new System.EventHandler(this.buttonOK_Click);
-            // 
             // openFilesDialog
             // 
-            this.openFilesDialog.DefaultExt = "pdf";
             resources.ApplyResources(this.openFilesDialog, "openFilesDialog");
+            this.openFilesDialog.DefaultExt = "pdf";
             this.openFilesDialog.Multiselect = true;
             // 
             // saveFileDialog
             // 
-            this.saveFileDialog.DefaultExt = "pdf";
             resources.ApplyResources(this.saveFileDialog, "saveFileDialog");
-            // 
-            // progressBarStatus
-            // 
-            resources.ApplyResources(this.progressBarStatus, "progressBarStatus");
-            this.progressBarStatus.Name = "progressBarStatus";
+            this.saveFileDialog.DefaultExt = "pdf";
             // 
             // backgroundWorker
             // 
@@ -190,18 +173,44 @@
             this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker_ProgressChanged);
             this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
             // 
+            // statusStrip
+            // 
+            resources.ApplyResources(this.statusStrip, "statusStrip");
+            this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripDropDownButtonSave,
+            this.toolStripProgressBar,
+            this.toolStripDropDownButtonCancel});
+            this.statusStrip.Name = "statusStrip";
+            this.statusStrip.ShowItemToolTips = true;
+            // 
+            // toolStripProgressBar
+            // 
+            resources.ApplyResources(this.toolStripProgressBar, "toolStripProgressBar");
+            this.toolStripProgressBar.Name = "toolStripProgressBar";
+            // 
+            // toolStripDropDownButtonCancel
+            // 
+            resources.ApplyResources(this.toolStripDropDownButtonCancel, "toolStripDropDownButtonCancel");
+            this.toolStripDropDownButtonCancel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButtonCancel.Name = "toolStripDropDownButtonCancel";
+            this.toolStripDropDownButtonCancel.ShowDropDownArrow = false;
+            this.toolStripDropDownButtonCancel.Click += new System.EventHandler(this.toolStripDropDownButtonCancel_Click);
+            // 
+            // toolStripDropDownButtonSave
+            // 
+            resources.ApplyResources(this.toolStripDropDownButtonSave, "toolStripDropDownButtonSave");
+            this.toolStripDropDownButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripDropDownButtonSave.Name = "toolStripDropDownButtonSave";
+            this.toolStripDropDownButtonSave.ShowDropDownArrow = false;
+            this.toolStripDropDownButtonSave.Click += new System.EventHandler(this.toolStripDropDownButtonSave_Click);
+            // 
             // CombineForm
             // 
-            this.AcceptButton = this.buttonOK;
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.buttonCancel;
-            this.Controls.Add(this.progressBarStatus);
-            this.Controls.Add(this.buttonOK);
-            this.Controls.Add(this.buttonCancel);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.Controls.Add(this.splitContainer);
+            this.Controls.Add(this.statusStrip);
             this.Name = "CombineForm";
-            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Shown += new System.EventHandler(this.CombineForm_Shown);
             this.splitContainer.Panel1.ResumeLayout(false);
             this.splitContainer.Panel1.PerformLayout();
@@ -210,15 +219,16 @@
             this.splitContainer.ResumeLayout(false);
             this.toolStripFiles.ResumeLayout(false);
             this.toolStripFiles.PerformLayout();
+            this.statusStrip.ResumeLayout(false);
+            this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.SplitContainer splitContainer;
-        private System.Windows.Forms.Button buttonCancel;
-        private System.Windows.Forms.Button buttonOK;
         private System.Windows.Forms.ListView listViewFiles;
         private System.Windows.Forms.ColumnHeader columnHeaderName;
         private System.Windows.Forms.ColumnHeader columnHeaderPages;
@@ -231,8 +241,11 @@
         private System.Windows.Forms.ToolStripButton toolStripButtonDown;
         private System.Windows.Forms.OpenFileDialog openFilesDialog;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
-        private System.Windows.Forms.ProgressBar progressBarStatus;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
         private Viewer viewer;
+        private System.Windows.Forms.StatusStrip statusStrip;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonCancel;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonSave;
     }
 }

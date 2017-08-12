@@ -25,8 +25,8 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
-using Ghostscript.NET.Rasterizer;
 using PdfSharp;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
@@ -35,22 +35,25 @@ namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class ExtractForm : Form
     {
+        private const string LoadingImageName = "loading";
+        private const string ErrorImageName = "error";
+
         private class FilesDataObject : IDataObject, IDisposable
         {
-            private readonly object filePathsLock = new object();
-            private readonly int[] indices;
-            private readonly bool singleFiles;
-            private readonly Func<int[], bool, string[]> extractDelegate;
-            private bool disposed = false;
-            private DragDropEffects result = DragDropEffects.None;
-            private string[] filePaths = null;
+            private bool _disposed = false;
+            private readonly Func<int[], bool, string[]> _extractDelegate;
+            private string[] _filePaths = null;
+            private readonly object _filePathsLock = new object();
+            private readonly int[] _indices;
+            private readonly bool _multipleFiles;
+            private DragDropEffects _result = DragDropEffects.None;
 
-            public FilesDataObject(Func<int[], bool, string[]> extractDelegate, int[] indices, bool singleFiles)
+            public FilesDataObject(Func<int[], bool, string[]> extractDelegate, int[] indices, bool multipleFiles)
             {
                 // store the parameters
-                this.indices = indices;
-                this.singleFiles = singleFiles;
-                this.extractDelegate = extractDelegate;
+                _indices = indices;
+                _multipleFiles = multipleFiles;
+                _extractDelegate = extractDelegate;
             }
 
             ~FilesDataObject()
@@ -58,56 +61,62 @@ namespace Aufbauwerk.Tools.PdfKit
                 Dispose(false);
             }
 
-            private string[] Extract()
+            public DragDropEffects Result
             {
-                // extract the documents if not done so already
-                CheckDisposed();
-                lock (filePathsLock)
+                get { return _result; }
+                set
                 {
-                    if (filePaths == null)
-                    {
-                        filePaths = extractDelegate(indices, singleFiles);
-                    }
-                    return filePaths;
+                    // ensure the object is not disposed and set the result
+                    CheckDisposed();
+                    _result = value;
                 }
             }
 
             private void CheckDisposed()
             {
                 // throw an error if the object is disposed
-                if (disposed)
+                if (_disposed)
                 {
                     throw new ObjectDisposedException(GetType().ToString());
                 }
             }
 
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
             protected virtual void Dispose(bool disposing)
             {
                 // dispose the drop object if not done so already
-                if (!disposed)
+                if (!_disposed)
                 {
-                    disposed = true;
+                    _disposed = true;
 
                     // cleanup extracted documents if they weren't moved
-                    if (filePaths != null && result != DragDropEffects.Move)
+                    if (_filePaths != null && _result != DragDropEffects.Move)
                     {
-                        for (var i = 0; i < filePaths.Length; i++)
+                        for (var i = 0; i < _filePaths.Length; i++)
                         {
-                            try { File.Delete(filePaths[i]); }
+                            try { File.Delete(_filePaths[i]); }
                             catch { }
                         }
                     }
                 }
             }
 
-            public DragDropEffects Result
+            private string[] Extract()
             {
-                get { return result; }
-                set
+                // extract the documents if not done so already
+                CheckDisposed();
+                lock (_filePathsLock)
                 {
-                    // ensure the object is not disposed and set the result
-                    CheckDisposed();
-                    result = value;
+                    if (_filePaths == null)
+                    {
+                        _filePaths = _extractDelegate(_indices, _multipleFiles);
+                    }
+                    return _filePaths;
                 }
             }
 
@@ -170,11 +179,179 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 throw new NotSupportedException();
             }
+        }
+
+        private class Preview : IDisposable
+        {
+            private readonly Size _borderSize = SystemInformation.BorderSize;
+            private Size _calculatedSize;
+            private readonly Func<Point, int> _currentIndex;
+            private bool _disposed = false;
+            private readonly Form _form;
+            private Image _image;
+            private Cursor _prevCursor;
+            private readonly ToolTip _toolTip;
+
+            public Preview(Form form, int itemIndex, Func<Point, int> currentIndex)
+            {
+                // set the variables and create the tooltip
+                _form = form;
+                _currentIndex = currentIndex;
+                ItemIndex = itemIndex;
+                _toolTip = new ToolTip()
+                {
+                    IsBalloon = false,
+                    OwnerDraw = true,
+                    UseAnimation = false,
+                    UseFading = false,
+                };
+                _toolTip.Draw += Draw;
+                _toolTip.Popup += Popup;
+                _prevCursor = _form.Cursor;
+                _form.Cursor = Cursors.WaitCursor;
+            }
+
+            ~Preview()
+            {
+                Dispose(false);
+            }
 
             public void Dispose()
             {
                 Dispose(true);
                 GC.SuppressFinalize(this);
+            }
+
+            protected virtual void Dispose(bool disposing)
+            {
+                // only dispose once
+                if (!_disposed)
+                {
+                    _disposed = true;
+
+                    // restore the cursor if necessary 
+                    if (_image == null)
+                    {
+                        _form.Cursor = Cursors.Default;
+                    }
+
+                    // forward the dispose call
+                    if (disposing)
+                    {
+                        _toolTip.Dispose();
+                    }
+                }
+            }
+
+            public bool IsPrestine
+            {
+                get { return !_disposed && _image == null; }
+            }
+
+            public int ItemIndex { get; private set; }
+
+            private void Draw(object sender, DrawToolTipEventArgs e)
+            {
+                // draw the background and border
+                e.DrawBackground();
+                e.DrawBorder();
+
+                // draw the image within the border
+                var destRect = e.Bounds;
+                destRect.Inflate(-_borderSize.Width, -_borderSize.Height);
+                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                e.Graphics.DrawImage(_image, destRect, 0, 0, _image.Width, _image.Height, GraphicsUnit.Pixel, null, _ =>
+                {
+                    // abort if the index has changed
+                    return ItemIndex != _currentIndex(Cursor.Position);
+                });
+            }
+
+            public void Initialize(Image image)
+            {
+                // check the arguments and state
+                if (image == null)
+                {
+                    throw new ArgumentNullException("image");
+                }
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(GetType().ToString());
+                }
+                if (_image != null)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                // make a copy of the image (might be used in the abort callback) and restore the cursor
+                _image = (Image)image.Clone();
+                _form.Cursor = _prevCursor;
+
+                // get the best fit next to the window
+                var imageWidthF = (float)_image.Width;
+                var imageHeightF = (float)_image.Height;
+                var imageRatio = imageWidthF / imageHeightF;
+                var workingArea = Screen.GetWorkingArea(_form);
+                workingArea.Inflate(-_borderSize.Width, -_borderSize.Height);
+                var windowRect = _form.Bounds;
+                windowRect.Inflate(_borderSize.Width, _borderSize.Height);
+
+                var leftRightRect = windowRect.Left - workingArea.Left > workingArea.Right - windowRect.Right ?
+                    Rectangle.FromLTRB(workingArea.Left, workingArea.Top, windowRect.Left, workingArea.Bottom) :
+                    Rectangle.FromLTRB(windowRect.Right, workingArea.Top, workingArea.Right, workingArea.Bottom);
+                var hasLeftRight = leftRightRect.Width > 0 && leftRightRect.Height > 0;
+                var topBottomRect = windowRect.Top - workingArea.Top > workingArea.Bottom - windowRect.Bottom ?
+                    Rectangle.FromLTRB(workingArea.Left, workingArea.Top, workingArea.Right, windowRect.Top) :
+                    Rectangle.FromLTRB(workingArea.Left, windowRect.Bottom, workingArea.Right, workingArea.Bottom);
+                var hasTopBottom = topBottomRect.Width > 0 && topBottomRect.Height > 0;
+                var toolTipRect =
+                    !hasLeftRight && !hasTopBottom ? workingArea :
+                    !hasLeftRight ? topBottomRect :
+                    !hasTopBottom ? leftRightRect :
+                    Math.Min(1, (float)topBottomRect.Width / (float)topBottomRect.Height > imageRatio ? topBottomRect.Height / imageHeightF : topBottomRect.Width / imageWidthF) >
+                    Math.Min(1, (float)leftRightRect.Width / (float)leftRightRect.Height > imageRatio ? leftRightRect.Height / imageHeightF : leftRightRect.Width / imageWidthF) ?
+                    topBottomRect :
+                    leftRightRect;
+
+                // shrink too large images
+                _calculatedSize = toolTipRect.Size;
+                if ((float)toolTipRect.Width / (float)toolTipRect.Height > imageRatio)
+                {
+                    if (imageHeightF > toolTipRect.Height)
+                    {
+                        _calculatedSize = new Size((int)Math.Round(imageRatio * toolTipRect.Height), toolTipRect.Height);
+                    }
+                }
+                else
+                {
+                    if (imageWidthF > toolTipRect.Width)
+                    {
+                        _calculatedSize = new Size(toolTipRect.Width, (int)Math.Round(toolTipRect.Width / imageRatio));
+                    }
+                }
+
+                // get the location
+                var point =
+                    toolTipRect.Left == windowRect.Right ? new Point(toolTipRect.Left, toolTipRect.Top + (toolTipRect.Height - _calculatedSize.Height) / 2) :
+                    toolTipRect.Right == windowRect.Left ? new Point(toolTipRect.Right - _calculatedSize.Width, toolTipRect.Top + (toolTipRect.Height - _calculatedSize.Height) / 2) :
+                    toolTipRect.Top == windowRect.Bottom ? new Point(toolTipRect.Left + (toolTipRect.Width - _calculatedSize.Width) / 2, toolTipRect.Top) :
+                    toolTipRect.Bottom == windowRect.Top ? new Point(toolTipRect.Left + (toolTipRect.Width - _calculatedSize.Width) / 2, toolTipRect.Bottom - _calculatedSize.Height) :
+                    new Point(Cursor.Position.X * 2 <= toolTipRect.Right - toolTipRect.Left ? toolTipRect.Right - _calculatedSize.Width : toolTipRect.Left, Cursor.Position.Y * 2 <= toolTipRect.Bottom - toolTipRect.Top ? toolTipRect.Bottom - _calculatedSize.Height : toolTipRect.Top);
+
+                // add the border
+                point.X -= _borderSize.Width;
+                point.Y -= _borderSize.Height;
+                _calculatedSize.Width += 2 * _borderSize.Width;
+                _calculatedSize.Height += 2 * _borderSize.Height;
+
+                // show the preview
+                _toolTip.Show(">", _form, point.X - _form.Location.X, point.Y - _form.Location.Y);
+            }
+
+            private void Popup(object sender, PopupEventArgs e)
+            {
+                // set the tooltip size
+                e.ToolTipSize = _calculatedSize;
             }
         }
 
@@ -187,10 +364,10 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private PdfDocument _document;
         private readonly string _filePath;
-        private Image[] _imageCache;
-        private Image _previewImage;
-        private Size _previewSize;
-        private GhostscriptRasterizer _rasterizer;
+        private readonly Dictionary<int, Image> _imageCache = new Dictionary<int, Image>();
+        private volatile int _imageStartRange;
+        private int _pageCount;
+        private Preview _preview;
 
         public ExtractForm(string path)
         {
@@ -232,7 +409,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // create the zoom trackbar
             trackBarZoom = new TrackBar();
             trackBarZoom.TickStyle = TickStyle.None;
-            trackBarZoom.MaximumSize = new Size(100, 20);
+            trackBarZoom.MaximumSize = new Size(trackBarZoom.Width, toolStripDropDownButtonSave.Height);
             trackBarZoom.Minimum = 1;
             trackBarZoom.Maximum = 8;
             trackBarZoom.Value = 4;
@@ -249,6 +426,34 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private System.Windows.Forms.CheckBox checkBoxMultipleFiles;
         private System.Windows.Forms.TrackBar trackBarZoom;
+
+        #endregion
+
+        #region Properties
+
+        private float DpiX
+        {
+            get
+            {
+                if (AutoScaleMode != AutoScaleMode.Dpi)
+                {
+                    throw new InvalidOperationException();
+                }
+                return CurrentAutoScaleDimensions.Width;
+            }
+        }
+
+        private float DpiY
+        {
+            get
+            {
+                if (AutoScaleMode != AutoScaleMode.Dpi)
+                {
+                    throw new InvalidOperationException();
+                }
+                return CurrentAutoScaleDimensions.Height;
+            }
+        }
 
         #endregion
 
@@ -291,8 +496,15 @@ namespace Aufbauwerk.Tools.PdfKit
                 // return if cancelled
                 if (isCanelled())
                 {
-                    Array.Resize(ref fileNames, i);
-                    return fileNames;
+                    if (i > 0)
+                    {
+                        Array.Resize(ref fileNames, i);
+                        return fileNames;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
 
                 // get the current index and file name
@@ -393,6 +605,27 @@ namespace Aufbauwerk.Tools.PdfKit
             return buffer.Append(".pdf").ToString();
         }
 
+        private string GetImageName(int itemIndex)
+        {
+            return "image" + itemIndex.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private int GetItemIndexWithImageAt(Point position)
+        {
+            // get the item at the position
+            position = listViewPages.PointToClient(position);
+            var item = listViewPages.GetItemAt(position.X, position.Y);
+            if (item == null)
+            {
+                return -1;
+            }
+
+            // ensure the position is within the image
+            var imageBounds = listViewPages.GetItemRect(item.Index, ItemBoundsPortion.Icon);
+            imageBounds.Inflate(-(imageBounds.Width - imageList.ImageSize.Width) / 2, -(imageBounds.Height - imageList.ImageSize.Height) / 2);
+            return imageBounds.Contains(position) ? item.Index : -1;
+        }
+
         private int[] GetSelectedIndices()
         {
             // get the selected indices   
@@ -402,12 +635,117 @@ namespace Aufbauwerk.Tools.PdfKit
             return selected;
         }
 
+        private Image GetThumbFromImage(Image image)
+        {
+            // create the thumbnail
+            var thumb = new Bitmap(imageList.ImageSize.Width, imageList.ImageSize.Height, PixelFormat.Format32bppArgb);
+            using (var gc = Graphics.FromImage(thumb))
+            {
+                // check if we need to scale the image
+                gc.Clear(Color.Transparent);
+                gc.InterpolationMode = InterpolationMode.High;
+                var thumbSize = (SizeF)imageList.ImageSize;
+                var imageSize = (SizeF)image.Size;
+                if (imageSize.Width > thumbSize.Width || imageSize.Height > thumbSize.Height)
+                {
+                    // fit the image into the thumb size
+                    var imageRatio = imageSize.Width / imageSize.Height;
+                    if (thumbSize.Width / thumbSize.Height > imageRatio)
+                    {
+                        thumbSize.Width = imageRatio * thumbSize.Height;
+                    }
+                    else
+                    {
+                        thumbSize.Height = thumbSize.Width / imageRatio;
+                    }
+                }
+
+                // draw the image centered
+                gc.DrawImage(image, new RectangleF(new PointF((imageList.ImageSize.Width - thumbSize.Width) / 2, (imageList.ImageSize.Height - thumbSize.Height) / 2), thumbSize), new RectangleF(PointF.Empty, imageSize), GraphicsUnit.Pixel);
+            }
+            return thumb;
+        }
+
+        private void ImageLoader()
+        {
+            // repeat infinitely
+            while (true)
+            {
+                int firstIndex;
+                int lastIndex;
+                lock (_imageCache)
+                {
+                    // get the first index to load
+                    var startIndex = _imageStartRange;
+                    firstIndex = startIndex;
+                    while (firstIndex < _pageCount && _imageCache.ContainsKey(firstIndex))
+                    {
+                        firstIndex++;
+                    }
+                    if (firstIndex >= _pageCount)
+                    {
+                        // everything loaded from start, load before
+                        firstIndex = startIndex - 1;
+                        while (firstIndex >= 0 && _imageCache.ContainsKey(firstIndex))
+                        {
+                            firstIndex--;
+                        }
+                        if (firstIndex < 0)
+                        {
+                            // all done, exit thread
+                            break;
+                        }
+                    }
+
+                    // get the last not loaded index
+                    lastIndex = firstIndex;
+                    while (lastIndex + 1 < _pageCount && !_imageCache.ContainsKey(lastIndex + 1))
+                    {
+                        lastIndex++;
+                    }
+                }
+
+                // start loading the range of images
+                var currentIndex = firstIndex;
+                try
+                {
+                    Ghostscript.RenderPages(_filePath, firstIndex + 1, lastIndex + 1, DpiX, DpiY, 1, null, () =>
+                    {
+                        // cancel the operation if the user scrolled before the first index or after the loaded area
+                        var startIndex = _imageStartRange;
+                        return startIndex < firstIndex || currentIndex < startIndex;
+                    }, (pageNumber, image) =>
+                    {
+                        // add and report the image
+                        currentIndex = pageNumber;
+                        lock (_imageCache)
+                        {
+                            _imageCache.Add(pageNumber - 1, image);
+                        }
+                        BeginInvoke(new Action<Image, int>(SetImage), image, pageNumber - 1);
+                    });
+                }
+                catch
+                {
+                    // report the current page as error if it's within range
+                    if (firstIndex <= currentIndex && currentIndex <= lastIndex)
+                    {
+                        lock (_imageCache)
+                        {
+                            _imageCache.Add(currentIndex, null);
+                        }
+                        BeginInvoke(new Action<Image, int>(SetImage), null, currentIndex);
+                    }
+                }
+            }
+        }
+
         private void OpenFolderAndSelectItems(string folder, string[] files)
         {
             // get the folder pidl
             var desktop = Native.SHGetDesktopFolder();
             IntPtr folderPidl;
-            desktop.ParseDisplayName(Handle, IntPtr.Zero, folder, IntPtr.Zero, out folderPidl, IntPtr.Zero);
+            desktop.ParseDisplayName(IntPtr.Zero, IntPtr.Zero, folder, IntPtr.Zero, out folderPidl, IntPtr.Zero);
             try
             {
                 // check if there are any files to select
@@ -422,7 +760,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         foreach (var file in files)
                         {
                             IntPtr filePidl;
-                            folderObject.ParseDisplayName(Handle, IntPtr.Zero, file, IntPtr.Zero, out filePidl, IntPtr.Zero);
+                            folderObject.ParseDisplayName(IntPtr.Zero, IntPtr.Zero, file, IntPtr.Zero, out filePidl, IntPtr.Zero);
                             filesPidl.Add(filePidl);
                         }
 
@@ -453,18 +791,21 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private T PerformSync<T>(Func<string, int[], Func<bool>, Action<int, object>, T> action, string path, int[] indizes)
         {
-            // show the status elements and redraw the form
-            ShowStatus(true, false);
-            Update();
             try
             {
                 // perform the action
                 return action(path, indizes, () => false, (progress, status) =>
                 {
                     // update the status
-                    toolStripProgressBarExtract.Value = progress;
-                    toolStripStatusLabelExtract.Text = (string)status;
-                    statusStrip.Update();
+                    try
+                    {
+                        toolStripProgressBarExtract.Value = progress;
+                        toolStripStatusLabelExtract.Text = (string)status;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // ignore thread call exceptions
+                    }
                 });
             }
             catch (PdfSharpException e)
@@ -479,52 +820,58 @@ namespace Aufbauwerk.Tools.PdfKit
                 MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return default(T);
             }
-            finally
-            {
-                // hide the status elements and redraw the form
-                ShowStatus(false, false);
-                Update();
-            }
         }
 
-        private void SetTooltip(ListViewItem item)
+        private void SetImage(Image image, int itemIndex)
         {
-            // check if a tooltip should be shown
-            if (item != null)
+            // check if there is a preview pending for the image
+            if (_preview != null && _preview.ItemIndex == itemIndex && _preview.IsPrestine)
             {
-                // do nothing if it is already shown
-                if (_previewImage == _imageCache[item.Index])
+                // either initialize it or dispose it if there was an error
+                if (image != null)
                 {
-                    return;
+                    _preview.Initialize(image);
                 }
-
-                // store the image and calculate the best size
-                _previewImage = _imageCache[item.Index];
-                var screenRect = Screen.FromControl(listViewPages).Bounds;
-                var itemRect = listViewPages.RectangleToScreen(item.Bounds);
-                var factor = Math.Min(1, Math.Min((float)((screenRect.Width - 2 - itemRect.Width) / 2) / (float)_previewImage.Size.Width, (float)(screenRect.Height - 2) / (float)_previewImage.Size.Height));
-                _previewSize = new Size((int)(_previewImage.Size.Width * factor), (int)(_previewImage.Size.Height * factor));
-
-                // calculate the location (prefer the right top corner)
-                var pointPreview = new Point()
+                else
                 {
-                    X = itemRect.Right + _previewSize.Width > screenRect.Right ? itemRect.Left - _previewSize.Width : itemRect.Right,
-                    Y = Math.Min(itemRect.Top, screenRect.Bottom - _previewSize.Height),
-                };
-
-                // show the tooltip
-                toolTipPreview.Show(">", listViewPages, listViewPages.PointToClient(pointPreview));
+                    _preview.Dispose();
+                }
             }
-            else
+
+            // invalidate the given item
+            listViewPages.RedrawItems(itemIndex, itemIndex, true);
+        }
+
+        private void SetPreview(int itemIndex)
+        {
+            // do nothing if it is already displayed or clear the old preview
+            if (_preview != null)
             {
-                // clear the preview variables and hide the tooltip if there is one
-                if (_previewImage == null)
+                if (itemIndex > -1 && _preview.ItemIndex == itemIndex)
                 {
                     return;
                 }
-                _previewImage = null;
-                _previewSize = Size.Empty;
-                toolTipPreview.Hide(listViewPages);
+                _preview.Dispose();
+                _preview = null;
+            }
+
+            // check if a tooltip should be shown
+            if (itemIndex > -1)
+            {
+                // create and show the new preview if possible
+                _preview = new Preview(this, itemIndex, GetItemIndexWithImageAt);
+                Image image;
+                if (TryGetImage(itemIndex, out image))
+                {
+                    if (image != null)
+                    {
+                        _preview.Initialize(image);
+                    }
+                    else
+                    {
+                        _preview.Dispose();
+                    }
+                }
             }
         }
 
@@ -548,6 +895,15 @@ namespace Aufbauwerk.Tools.PdfKit
             toolStripStatusLabelExtract.Text = string.Empty;
         }
 
+        private bool TryGetImage(int itemIndex, out Image image)
+        {
+            // query the item cache within a lock
+            lock (_imageCache)
+            {
+                return _imageCache.TryGetValue(itemIndex, out image);
+            }
+        }
+
         #endregion
 
         #region Event Handlers
@@ -559,9 +915,13 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // extract each page as one document and show them in the explorer
                 var files = ExtractToMultipleDocuments(work.Path, work.Indices, () => (sender as BackgroundWorker).CancellationPending, (sender as BackgroundWorker).ReportProgress);
-                e.Result = files;
-                if (files != null)
+                if (files == null)
                 {
+                    e.Cancel = true;
+                }
+                else
+                {
+                    e.Result = files;
                     OpenFolderAndSelectItems(folderBrowserDialog.SelectedPath, files);
                 }
             }
@@ -575,7 +935,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
                 else
                 {
-                    e.Result = false;
+                    e.Cancel = true;
                 }
             }
         }
@@ -607,92 +967,79 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void ExtractForm_Shown(object sender, EventArgs e)
         {
-            // enable the virtual mode and paint the form
-            listViewPages.VirtualMode = true;
+            // draw the form
             Update();
 
-            // open the document and create the rasterizer
-            try
-            {
-                _document = PdfReader.Open(_filePath, PdfDocumentOpenMode.Import);
-                _rasterizer = new GhostscriptRasterizer();
-                _rasterizer.Open(_filePath, Program.GhostscriptVersion, false);
-            }
-            catch
-            {
-                // turn off the virtual mode and rethrow the error
-                listViewPages.VirtualMode = false;
-                throw;
-            }
+            // open the document and set the page count
+            _document = PdfReader.Open(_filePath, PdfDocumentOpenMode.Import);
+            _pageCount = _document.PageCount;
+            listViewPages.VirtualMode = true;
+            listViewPages.VirtualListSize = _pageCount;
 
-            // initialize the cache and set the page count
-            _imageCache = new Image[_document.PageCount];
-            listViewPages.VirtualListSize = _document.PageCount;
+            // start the image loader
+            var loader = new Thread(ImageLoader);
+            loader.IsBackground = true;
+            Disposed += (_, __) => loader.Abort();
+            loader.Start();
+        }
+
+        private void listViewPages_CacheVirtualItems(object sender, CacheVirtualItemsEventArgs e)
+        {
+            // set the range
+            _imageStartRange = e.StartIndex;
         }
 
         private void listViewPages_ItemDrag(object sender, ItemDragEventArgs e)
         {
-            // hide the tooltip and make sure the progress bar handle is created
-            SetTooltip(null);
-            toolStripProgressBarExtract.Control.Handle.GetHashCode();
+            // hide the tooltip
+            SetPreview(-1);
 
             // perform the operation
             using (var data = new FilesDataObject(ExtractForDragAndDrop, GetSelectedIndices(), checkBoxMultipleFiles.Checked))
             {
+                ShowStatus(true, false);
+                Update();
                 data.Result = listViewPages.DoDragDrop(data, DragDropEffects.Copy | DragDropEffects.Move);
+                ShowStatus(false, false);
             }
         }
 
         private void listViewPages_MouseLeave(object sender, EventArgs e)
         {
-            // hide the preview image
-            SetTooltip(null);
+            // hide the preview
+            SetPreview(-1);
         }
 
         private void listViewPages_MouseMove(object sender, MouseEventArgs e)
         {
-            // ensure the cursor is above the image and show the preview
-            var item = listViewPages.GetItemAt(e.X, e.Y);
-            if (item != null)
-            {
-                var imageBounds = listViewPages.GetItemRect(item.Index, ItemBoundsPortion.Icon);
-                imageBounds.Inflate(-(imageBounds.Width - imageList.ImageSize.Width) / 2, -(imageBounds.Height - imageList.ImageSize.Height) / 2);
-                if (!imageBounds.Contains(e.Location))
-                {
-                    item = null;
-                }
-            }
-            SetTooltip(item);
+            // show the preview
+            SetPreview(GetItemIndexWithImageAt((sender as Control).PointToScreen(e.Location)));
         }
 
         private void listViewPages_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
-            // check if the icon already exists
-            var key = e.ItemIndex.ToString(CultureInfo.InvariantCulture);
-            if (!imageList.Images.ContainsKey(key))
+            // check if the thumb needs to be added
+            var imageName = GetImageName(e.ItemIndex);
+            if (!imageList.Images.ContainsKey(imageName))
             {
-                // get the cached image or rasterize the page
-                var image = _imageCache[e.ItemIndex];
-                if (image == null)
+                // try to get a loaded image
+                Image image;
+                if (TryGetImage(e.ItemIndex, out image))
                 {
-                    _imageCache[e.ItemIndex] = image = _rasterizer.GetPage(96, 96, e.ItemIndex + 1);
+                    // store the thumb if it's valid or use the error image
+                    if (image != null)
+                    {
+                        imageList.Images.Add(imageName, GetThumbFromImage(image));
+                    }
+                    else
+                    {
+                        imageName = ErrorImageName;
+                    }
                 }
-
-                // draw the icon
-                var icon = new Bitmap(imageList.ImageSize.Width, imageList.ImageSize.Height, PixelFormat.Format32bppArgb);
-                var factor = Math.Min(1, Math.Min((float)icon.Size.Width / (float)image.Size.Width, (float)icon.Size.Height / (float)image.Size.Height));
-                var sizef = new SizeF(image.Size.Width * factor, image.Size.Height * factor);
-                var rectf = new RectangleF((icon.Width - sizef.Width) / 2, (icon.Height - sizef.Height) / 2, sizef.Width, sizef.Height);
-                using (var graphics = Graphics.FromImage(icon))
-                {
-                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    graphics.DrawImage(image, rectf);
-                }
-                imageList.Images.Add(key, icon);
             }
 
-            // create the item
-            e.Item = new ListViewItem((e.ItemIndex + 1).ToString(), imageList.Images.IndexOfKey(key));
+            // get the image index and create the item
+            e.Item = new ListViewItem((e.ItemIndex + 1).ToString(), imageList.Images.IndexOfKey(imageName));
         }
 
         private void listViewPages_SelectedIndexChanged(object sender, EventArgs e)
@@ -756,39 +1103,28 @@ namespace Aufbauwerk.Tools.PdfKit
             trackBarZoom.Value--;
         }
 
-        private void toolTipPreview_Draw(object sender, DrawToolTipEventArgs e)
-        {
-            // draw the background, image and border
-            e.DrawBackground();
-            var bounds = e.Bounds;
-            bounds.Inflate(-1, 1);
-            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            e.Graphics.DrawImage(_previewImage, bounds);
-            e.DrawBorder();
-        }
-
-        private void toolTipPreview_Popup(object sender, PopupEventArgs e)
-        {
-            // cancel the tooltip or set the tooltip size
-            if (_previewImage == null)
-            {
-                e.Cancel = true;
-            }
-            else
-            {
-                e.ToolTipSize = _previewSize + new Size(2, 2);
-            }
-        }
-
         private void trackBarZoom_ValueChanged(object sender, EventArgs e)
         {
-            // set the enabled state and reset the image list
+            // set the enabled state
             toolStripDropDownButtonZoomOut.Enabled = trackBarZoom.Value > trackBarZoom.Minimum;
             toolStripDropDownButtonZoomIn.Enabled = trackBarZoom.Value < trackBarZoom.Maximum;
-            imageList.Images.Clear();
-            imageList.ImageSize = new Size(trackBarZoom.Value * 32, trackBarZoom.Value * 32);
 
-            // refrash the list
+            // reset the image list
+            imageList.Images.Clear();
+            var maxSize = trackBarZoom.Value * 32;
+            imageList.ImageSize =
+                DpiX > DpiY ? new Size(maxSize, (int)Math.Round(maxSize * (DpiY / DpiX))) :
+                DpiX < DpiY ? new Size((int)Math.Round(maxSize * (DpiX / DpiY)), maxSize) :
+                new Size(maxSize, maxSize);
+
+            // add the loading and error image
+            using (var pictureBox = new PictureBox())
+            {
+                imageList.Images.Add(LoadingImageName, GetThumbFromImage(pictureBox.InitialImage));
+                imageList.Images.Add(ErrorImageName, GetThumbFromImage(pictureBox.ErrorImage));
+            }
+
+            // invalidate all items
             listViewPages.Invalidate();
         }
 

@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExtractForm));
+            this.components = new System.ComponentModel.Container();
             this.listViewPages = new System.Windows.Forms.ListView();
             this.imageList = new System.Windows.Forms.ImageList(this.components);
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -42,7 +42,6 @@
             this.toolStripProgressBarExtract = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabelExtract = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripDropDownButtonCancel = new System.Windows.Forms.ToolStripDropDownButton();
-            this.toolTipPreview = new System.Windows.Forms.ToolTip(this.components);
             this.backgroundWorkerExtract = new System.ComponentModel.BackgroundWorker();
             this.statusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -54,17 +53,18 @@
             this.listViewPages.LargeImageList = this.imageList;
             this.listViewPages.Name = "listViewPages";
             this.listViewPages.UseCompatibleStateImageBehavior = false;
+            this.listViewPages.CacheVirtualItems += new System.Windows.Forms.CacheVirtualItemsEventHandler(this.listViewPages_CacheVirtualItems);
             this.listViewPages.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.listViewPages_ItemDrag);
+            this.listViewPages.MouseLeave += new System.EventHandler(this.listViewPages_MouseLeave);
+            this.listViewPages.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listViewPages_MouseMove);
             this.listViewPages.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.listViewPages_RetrieveVirtualItem);
             this.listViewPages.SelectedIndexChanged += new System.EventHandler(this.listViewPages_SelectedIndexChanged);
             this.listViewPages.VirtualItemsSelectionRangeChanged += new System.Windows.Forms.ListViewVirtualItemsSelectionRangeChangedEventHandler(this.listViewPages_VirtualItemsSelectionRangeChanged);
-            this.listViewPages.MouseLeave += new System.EventHandler(this.listViewPages_MouseLeave);
-            this.listViewPages.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listViewPages_MouseMove);
             // 
             // imageList
             // 
-            this.imageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
             resources.ApplyResources(this.imageList, "imageList");
+            this.imageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
             this.imageList.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // folderBrowserDialog
@@ -73,8 +73,8 @@
             // 
             // saveFileDialog
             // 
-            this.saveFileDialog.DefaultExt = "pdf";
             resources.ApplyResources(this.saveFileDialog, "saveFileDialog");
+            this.saveFileDialog.DefaultExt = "pdf";
             // 
             // statusStrip
             // 
@@ -140,12 +140,6 @@
             this.toolStripDropDownButtonCancel.ShowDropDownArrow = false;
             this.toolStripDropDownButtonCancel.Click += new System.EventHandler(this.toolStripDropDownButtonCancel_Click);
             // 
-            // toolTipPreview
-            // 
-            this.toolTipPreview.OwnerDraw = true;
-            this.toolTipPreview.Draw += new System.Windows.Forms.DrawToolTipEventHandler(this.toolTipPreview_Draw);
-            this.toolTipPreview.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTipPreview_Popup);
-            // 
             // backgroundWorkerExtract
             // 
             this.backgroundWorkerExtract.WorkerReportsProgress = true;
@@ -157,7 +151,7 @@
             // ExtractForm
             // 
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.Controls.Add(this.listViewPages);
             this.Controls.Add(this.statusStrip);
             this.Name = "ExtractForm";
@@ -180,7 +174,6 @@
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonSave;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelSingleFiles;
         private System.Windows.Forms.ImageList imageList;
-        private System.Windows.Forms.ToolTip toolTipPreview;
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBarExtract;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelExtract;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButtonCancel;

@@ -73,7 +73,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 {
                     // create the item
                     var item = new ListViewItem(Path.GetFileName(filePath));
-                    using (var document = PdfReader.Open(filePath, PdfDocumentOpenMode.Import))
+                    using (var document = PdfReader.Open(filePath, PdfDocumentOpenMode.InformationOnly))
                     {
                         item.Tag = new Tuple<string, int>(filePath, document.PageCount);
                         item.SubItems.Add(document.PageCount.ToString());
@@ -167,9 +167,10 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // set the enabled state of all controls
             splitContainer.Enabled = enabled;
-            buttonOK.Enabled = enabled;
-            progressBarStatus.Visible = !enabled;
-            progressBarStatus.Value = 0;
+            toolStripDropDownButtonSave.Enabled = enabled;
+            toolStripProgressBar.Visible = !enabled;
+            toolStripProgressBar.Value = 0;
+            toolStripDropDownButtonCancel.Visible = !enabled;
             listViewFiles.Enabled = enabled;
             SyncToolStrip();
         }
@@ -190,8 +191,9 @@ namespace Aufbauwerk.Tools.PdfKit
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             // get the arguments and create the combined document
+            var worker = sender as BackgroundWorker;
             var allFiles = (Tuple<string, int>[])e.Argument;
-            (sender as BackgroundWorker).ReportProgress(0);
+            worker.ReportProgress(0);
             var prevProgress = 0;
             using (var combinedDocument = new PdfDocument())
             {
@@ -201,8 +203,9 @@ namespace Aufbauwerk.Tools.PdfKit
                 for (var docIndex = 1; docIndex < allFiles.Length; docIndex++)
                 {
                     // quit if cancelled
-                    if ((sender as BackgroundWorker).CancellationPending)
+                    if (worker.CancellationPending)
                     {
+                        e.Cancel = true;
                         return;
                     }
 
@@ -213,6 +216,13 @@ namespace Aufbauwerk.Tools.PdfKit
                         totalPages += document.PageCount - allFiles[docIndex].Item2;
                         for (var pageIndex = 0; pageIndex < document.PageCount; pageIndex++)
                         {
+                            // quit if cancelled
+                            if (worker.CancellationPending)
+                            {
+                                e.Cancel = true;
+                                return;
+                            }
+
                             // import the page
                             combinedDocument.AddPage(document.Pages[pageIndex]);
                             currentPages++;
@@ -221,7 +231,7 @@ namespace Aufbauwerk.Tools.PdfKit
                             var progress = (int)Math.Round((99.0 * currentPages) / totalPages);
                             if (progress != prevProgress)
                             {
-                                (sender as BackgroundWorker).ReportProgress(progress);
+                                worker.ReportProgress(progress);
                                 prevProgress = progress;
                             }
                         }
@@ -231,7 +241,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 // save the document
                 combinedDocument.Save(allFiles[0].Item1);
             }
-            (sender as BackgroundWorker).ReportProgress(100);
+            worker.ReportProgress(100);
 
             // show the combined PDF
             Process.Start(allFiles[0].Item1);
@@ -240,14 +250,13 @@ namespace Aufbauwerk.Tools.PdfKit
         private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             // set the progress bar
-            progressBarStatus.Value = e.ProgressPercentage;
+            toolStripProgressBar.Value = e.ProgressPercentage;
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            // restore the state and reselect the OK button
+            // restore the state
             SetEnabledState(true);
-            buttonOK.Focus();
 
             // handle any potential error
             if (!e.Cancelled && e.Error != null)
@@ -261,44 +270,6 @@ namespace Aufbauwerk.Tools.PdfKit
                 {
                     throw e.Error;
                 }
-            }
-        }
-
-        private void buttonCancel_Click(object sender, EventArgs e)
-        {
-            // either cancel the task or exit the form
-            if (backgroundWorker.IsBusy)
-            {
-                backgroundWorker.CancelAsync();
-            }
-            else
-            {
-                Close();
-            }
-        }
-
-        private void buttonOK_Click(object sender, EventArgs e)
-        {
-            // show the save file dialog
-            if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
-            {
-                // get all file paths and the total page count
-                var allFiles = new Tuple<string, int>[1 + listViewFiles.Items.Count];
-                var totalPages = 0;
-                for (var i = 0; i < listViewFiles.Items.Count; i++)
-                {
-                    var file = (Tuple<string, int>)listViewFiles.Items[i].Tag;
-                    allFiles[i + 1] = file;
-                    totalPages += file.Item2;
-                }
-                allFiles[0] = new Tuple<string, int>(saveFileDialog.FileName, totalPages);
-
-                // clear the selection and disable all elements
-                SetEnabledState(false);
-                buttonCancel.Focus();
-
-                // combine the documents
-                backgroundWorker.RunWorkerAsync(allFiles);
             }
         }
 
@@ -479,6 +450,36 @@ namespace Aufbauwerk.Tools.PdfKit
         private void toolStripButtonUp_Click(object sender, EventArgs e)
         {
             ChangeSelectedIndices(-1);
+        }
+
+        private void toolStripDropDownButtonCancel_Click(object sender, EventArgs e)
+        {
+            // cancel the task
+            backgroundWorker.CancelAsync();
+        }
+
+        private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
+        {
+            // show the save file dialog
+            if (saveFileDialog.ShowDialog(this) == DialogResult.OK)
+            {
+                // get all file paths and the total page count
+                var allFiles = new Tuple<string, int>[1 + listViewFiles.Items.Count];
+                var totalPages = 0;
+                for (var i = 0; i < listViewFiles.Items.Count; i++)
+                {
+                    var file = (Tuple<string, int>)listViewFiles.Items[i].Tag;
+                    allFiles[i + 1] = file;
+                    totalPages += file.Item2;
+                }
+                allFiles[0] = new Tuple<string, int>(saveFileDialog.FileName, totalPages);
+
+                // clear the selection and disable all elements
+                SetEnabledState(false);
+
+                // combine the documents
+                backgroundWorker.RunWorkerAsync(allFiles);
+            }
         }
 
         #endregion

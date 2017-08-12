@@ -29,9 +29,8 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Viewer));
-            this.panelPreview = new System.Windows.Forms.Panel();
-            this.pictureBoxPreview = new System.Windows.Forms.PictureBox();
-            this.toolStripPreview = new System.Windows.Forms.ToolStrip();
+            this.panel = new System.Windows.Forms.Panel();
+            this.toolStrip = new System.Windows.Forms.ToolStrip();
             this.toolStripButtonFirst = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonPrevious = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -41,34 +40,28 @@
             this.toolStripButtonNext = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonLast = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripButtonZoomIn = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonZoomOut = new System.Windows.Forms.ToolStripButton();
-            this.panelPreview.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).BeginInit();
-            this.toolStripPreview.SuspendLayout();
+            this.toolStripButtonZoomIn = new System.Windows.Forms.ToolStripButton();
+            this.toolStripTextBoxZoom = new System.Windows.Forms.ToolStripTextBox();
+            this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.label = new System.Windows.Forms.Label();
+            this.panel.SuspendLayout();
+            this.toolStrip.SuspendLayout();
             this.SuspendLayout();
             // 
-            // panelPreview
+            // panel
             // 
-            resources.ApplyResources(this.panelPreview, "panelPreview");
-            this.panelPreview.Controls.Add(this.pictureBoxPreview);
-            this.panelPreview.Name = "panelPreview";
+            resources.ApplyResources(this.panel, "panel");
+            this.panel.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.panel.Controls.Add(this.label);
+            this.panel.Name = "panel";
+            this.panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.panel_MouseWheel);
             // 
-            // pictureBoxPreview
+            // toolStrip
             // 
-            this.pictureBoxPreview.Cursor = System.Windows.Forms.Cursors.NoMove2D;
-            resources.ApplyResources(this.pictureBoxPreview, "pictureBoxPreview");
-            this.pictureBoxPreview.Name = "pictureBoxPreview";
-            this.pictureBoxPreview.TabStop = false;
-            this.pictureBoxPreview.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxPreview_MouseDown);
-            this.pictureBoxPreview.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxPreview_MouseMove);
-            this.pictureBoxPreview.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBoxPreview_MouseUp);
-            // 
-            // toolStripPreview
-            // 
-            resources.ApplyResources(this.toolStripPreview, "toolStripPreview");
-            this.toolStripPreview.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStripPreview.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            resources.ApplyResources(this.toolStrip, "toolStrip");
+            this.toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButtonFirst,
             this.toolStripButtonPrevious,
             this.toolStripSeparator1,
@@ -78,90 +71,113 @@
             this.toolStripButtonNext,
             this.toolStripButtonLast,
             this.toolStripSeparator3,
+            this.toolStripButtonZoomOut,
             this.toolStripButtonZoomIn,
-            this.toolStripButtonZoomOut});
-            this.toolStripPreview.Name = "toolStripPreview";
+            this.toolStripTextBoxZoom});
+            this.toolStrip.Name = "toolStrip";
             // 
             // toolStripButtonFirst
             // 
-            this.toolStripButtonFirst.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonFirst, "toolStripButtonFirst");
+            this.toolStripButtonFirst.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonFirst.Name = "toolStripButtonFirst";
             this.toolStripButtonFirst.Click += new System.EventHandler(this.toolStripButtonFirst_Click);
             // 
             // toolStripButtonPrevious
             // 
-            this.toolStripButtonPrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonPrevious, "toolStripButtonPrevious");
+            this.toolStripButtonPrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonPrevious.Name = "toolStripButtonPrevious";
             this.toolStripButtonPrevious.Click += new System.EventHandler(this.toolStripButtonPrevious_Click);
             // 
             // toolStripSeparator1
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
             resources.ApplyResources(this.toolStripSeparator1, "toolStripSeparator1");
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
             // 
             // toolStripTextBoxPage
             // 
-            this.toolStripTextBoxPage.Name = "toolStripTextBoxPage";
             resources.ApplyResources(this.toolStripTextBoxPage, "toolStripTextBoxPage");
+            this.toolStripTextBoxPage.Name = "toolStripTextBoxPage";
+            this.toolStripTextBoxPage.KeyDown += new System.Windows.Forms.KeyEventHandler(this.toolStripTextBox_KeyDown);
             this.toolStripTextBoxPage.Validated += new System.EventHandler(this.toolStripTextBoxPage_Validated);
             // 
             // toolStripLabelTotal
             // 
-            this.toolStripLabelTotal.Name = "toolStripLabelTotal";
             resources.ApplyResources(this.toolStripLabelTotal, "toolStripLabelTotal");
+            this.toolStripLabelTotal.Name = "toolStripLabelTotal";
             // 
             // toolStripSeparator2
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
             resources.ApplyResources(this.toolStripSeparator2, "toolStripSeparator2");
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
             // 
             // toolStripButtonNext
             // 
-            this.toolStripButtonNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonNext, "toolStripButtonNext");
+            this.toolStripButtonNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonNext.Name = "toolStripButtonNext";
             this.toolStripButtonNext.Click += new System.EventHandler(this.toolStripButtonNext_Click);
             // 
             // toolStripButtonLast
             // 
-            this.toolStripButtonLast.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonLast, "toolStripButtonLast");
+            this.toolStripButtonLast.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonLast.Name = "toolStripButtonLast";
             this.toolStripButtonLast.Click += new System.EventHandler(this.toolStripButtonLast_Click);
             // 
             // toolStripSeparator3
             // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
             resources.ApplyResources(this.toolStripSeparator3, "toolStripSeparator3");
-            // 
-            // toolStripButtonZoomIn
-            // 
-            this.toolStripButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButtonZoomIn, "toolStripButtonZoomIn");
-            this.toolStripButtonZoomIn.Name = "toolStripButtonZoomIn";
-            this.toolStripButtonZoomIn.Click += new System.EventHandler(this.toolStripButtonZoomIn_Click);
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
             // 
             // toolStripButtonZoomOut
             // 
-            this.toolStripButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             resources.ApplyResources(this.toolStripButtonZoomOut, "toolStripButtonZoomOut");
+            this.toolStripButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonZoomOut.Name = "toolStripButtonZoomOut";
             this.toolStripButtonZoomOut.Click += new System.EventHandler(this.toolStripButtonZoomOut_Click);
+            // 
+            // toolStripButtonZoomIn
+            // 
+            resources.ApplyResources(this.toolStripButtonZoomIn, "toolStripButtonZoomIn");
+            this.toolStripButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonZoomIn.Name = "toolStripButtonZoomIn";
+            this.toolStripButtonZoomIn.Click += new System.EventHandler(this.toolStripButtonZoomIn_Click);
+            // 
+            // toolStripTextBoxZoom
+            // 
+            resources.ApplyResources(this.toolStripTextBoxZoom, "toolStripTextBoxZoom");
+            this.toolStripTextBoxZoom.Name = "toolStripTextBoxZoom";
+            this.toolStripTextBoxZoom.KeyDown += new System.Windows.Forms.KeyEventHandler(this.toolStripTextBox_KeyDown);
+            this.toolStripTextBoxZoom.Validated += new System.EventHandler(this.toolStripTextBoxZoom_Validated);
+            // 
+            // backgroundWorker
+            // 
+            this.backgroundWorker.WorkerReportsProgress = true;
+            this.backgroundWorker.WorkerSupportsCancellation = true;
+            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerRenderPage_DoWork);
+            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerRenderPage_ProgressChanged);
+            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerRenderPage_RunWorkerCompleted);
+            // 
+            // label
+            // 
+            resources.ApplyResources(this.label, "label");
+            this.label.BackColor = System.Drawing.SystemColors.Info;
+            this.label.ForeColor = System.Drawing.SystemColors.InfoText;
+            this.label.Name = "label";
             // 
             // Viewer
             // 
             resources.ApplyResources(this, "$this");
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.panelPreview);
-            this.Controls.Add(this.toolStripPreview);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.Controls.Add(this.panel);
+            this.Controls.Add(this.toolStrip);
             this.Name = "Viewer";
-            this.panelPreview.ResumeLayout(false);
-            this.panelPreview.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxPreview)).EndInit();
-            this.toolStripPreview.ResumeLayout(false);
-            this.toolStripPreview.PerformLayout();
+            this.panel.ResumeLayout(false);
+            this.panel.PerformLayout();
+            this.toolStrip.ResumeLayout(false);
+            this.toolStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -169,9 +185,8 @@
 
         #endregion
 
-        private System.Windows.Forms.Panel panelPreview;
-        private System.Windows.Forms.PictureBox pictureBoxPreview;
-        private System.Windows.Forms.ToolStrip toolStripPreview;
+        private System.Windows.Forms.Panel panel;
+        private System.Windows.Forms.ToolStrip toolStrip;
         private System.Windows.Forms.ToolStripButton toolStripButtonFirst;
         private System.Windows.Forms.ToolStripButton toolStripButtonPrevious;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
@@ -183,5 +198,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton toolStripButtonZoomIn;
         private System.Windows.Forms.ToolStripButton toolStripButtonZoomOut;
+        private System.ComponentModel.BackgroundWorker backgroundWorker;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBoxZoom;
+        private System.Windows.Forms.Label label;
     }
 }

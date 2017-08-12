@@ -18,220 +18,417 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using Ghostscript.NET.Viewer;
+using PdfSharp.Pdf.IO;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class Viewer : UserControl
     {
-        private static string GetShortPathName(string path)
+        private class GhostscriptImage : Control
         {
-            // return the 8.3 version of the path
-            var buffer = new StringBuilder(300);
-            int len;
-            while ((len = Native.GetShortPathNameW(path, buffer, buffer.Capacity)) > buffer.Capacity)
+            private Point? _dragLocation;
+            private Image _image;
+            private Size _imageSize;
+            private Page _page;
+
+            protected override Cursor DefaultCursor
             {
-                buffer.EnsureCapacity(len);
+                get { return Cursors.NoMove2D; }
             }
-            if (len == 0)
+
+            public Page Page
             {
-                throw new Win32Exception();
+                get { return _page; }
+                set
+                {
+                    _page = value;
+                    UpdateImage(null);
+                }
             }
-            return buffer.ToString();
+
+            private void DoScroll(ScrollProperties scrollProperties, int delta)
+            {
+                // perform the scroll operation if possible and within bounds
+                if (scrollProperties.Enabled)
+                {
+                    scrollProperties.Value = Math.Min(scrollProperties.Maximum, Math.Max(scrollProperties.Minimum, scrollProperties.Value - delta));
+                }
+            }
+
+            public override Size GetPreferredSize(Size proposedSize)
+            {
+                // use the image size
+                return _imageSize;
+            }
+
+            private void SetImage(Image image)
+            {
+                // set a new image and issue a repaint
+                _image = image;
+                Size = _imageSize = image == null ? Size.Empty : image.Size;
+                Invalidate();
+            }
+
+            protected override void OnMouseDown(MouseEventArgs e)
+            {
+                // focus the picture and start draging
+                Focus();
+                _dragLocation = e.Location;
+            }
+
+            protected override void OnMouseMove(MouseEventArgs e)
+            {
+                // perform a scroll operation if the mouse is pressed
+                if (_dragLocation.HasValue)
+                {
+                    // get and clear the last location
+                    var lastLocation = _dragLocation.Value;
+                    _dragLocation = null;
+
+                    // convert the current location to screen coords and scroll
+                    var currentScreen = PointToScreen(e.Location);
+                    DoScroll((Parent as ScrollableControl).HorizontalScroll, e.Location.X - lastLocation.X);
+                    DoScroll((Parent as ScrollableControl).VerticalScroll, e.Location.Y - lastLocation.Y);
+
+                    // get the changed current location and store it
+                    _dragLocation = PointToClient(currentScreen);
+                }
+            }
+
+            protected override void OnMouseUp(MouseEventArgs e)
+            {
+                // stop draging
+                _dragLocation = null;
+            }
+
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                if (_image == null)
+                {
+                    e.Graphics.Clear(BackColor);
+                }
+                else if (_image.Tag == null)
+                {
+                    e.Graphics.DrawImage(_image, e.ClipRectangle, e.ClipRectangle, GraphicsUnit.Pixel);
+                }
+                else
+                {
+                    lock (_image)
+                    {
+                        if ((bool)_image.Tag)
+                        {
+                            e.Graphics.DrawImage(_image, e.ClipRectangle, e.ClipRectangle, GraphicsUnit.Pixel);
+                        }
+                    }
+                }
+            }
+
+            internal void UpdateImage(Rectangle? area)
+            {
+                // check if the image has changed
+                var newImage = _page != null ? _page.Image : null;
+                if (newImage != _image)
+                {
+                    // simply set empty and complete images
+                    if (newImage == null || newImage.Tag == null)
+                    {
+                        SetImage(newImage);
+                    }
+                    else
+                    {
+                        // set the preview image if it's valid or an empty image otherwise (should not happen)
+                        lock (newImage)
+                        {
+                            SetImage((bool)newImage.Tag ? newImage : null);
+                        }
+                    }
+                }
+                else if (area.HasValue)
+                {
+                    // only invalidate the given area
+                    Invalidate(area.Value);
+                }
+            }
         }
 
-        private GhostscriptViewer _currentViewer = null;
-        private Point? _previewDragLocation = null;
+        private class Bookmark
+        {
+            public int PageNumber;
+            public double Zoom;
+        }
+
+        private class Page
+        {
+            public string FilePath;
+            public int PageNumber;
+            public double Zoom;
+            public volatile Image Image;
+        }
+
+        private const double ZoomMinimum = 10;
+        private const double ZoomMaximum = 1600;
+        private const double ZoomDefault = 100;
+        private const double ZoomStep = 25;
+
+        private readonly Color _backgroundColor;
+        private readonly Dictionary<string, Bookmark> _bookmarks = new Dictionary<string, Bookmark>();
+        private string _error;
+        private string _filePath;
+        private int _pageNumber;
+        private int _totalPages;
         private readonly string _totalPagesFormat;
-        private readonly Dictionary<string, GhostscriptViewerState> _viewerStates = new Dictionary<string, GhostscriptViewerState>();
+        private GhostscriptImage _view;
+        private double _zoom;
+        private readonly string _zoomFormat;
 
         public Viewer()
         {
             InitializeComponent();
+            _view = new GhostscriptImage();
+            panel.Controls.Add(_view);
+            toolStripTextBoxPage.Size = new Size(toolStripTextBoxPage.Size.Width / 2, toolStripTextBoxPage.Size.Height);
+            toolStripTextBoxZoom.Size = new Size(toolStripTextBoxZoom.Size.Width / 2, toolStripTextBoxZoom.Size.Height);
+            _backgroundColor = panel.BackColor;
             _totalPagesFormat = toolStripLabelTotal.Text;
-            pictureBoxPreview.MouseWheel += new MouseEventHandler(pictureBoxPreview_MouseWheel);
+            _zoomFormat = toolStripTextBoxZoom.Text;
             SyncStates();
         }
 
-        [Bindable(true), Localizable(true)]
+        #region Properties
+
+        [Browsable(false)]
+        public bool IsReady
+        {
+            get
+            {
+                return _filePath != null && _totalPages > 0;
+            }
+        }
+
+        [DefaultValue(null), Localizable(true), Bindable(true)]
         public string Path
         {
             get
             {
-                return _currentViewer == null ? string.Empty : _currentViewer.FilePath;
+                return _filePath;
             }
             set
             {
-                SetViewer(value);
-            }
-        }
-
-        #region Methods
-
-        private void DoScroll(ScrollProperties scrollProperties, int delta)
-        {
-            // perform the scroll operation if possible and within bounds
-            if (scrollProperties.Enabled)
-            {
-                scrollProperties.Value = Math.Min(scrollProperties.Maximum, Math.Max(scrollProperties.Minimum, scrollProperties.Value - delta));
-            }
-        }
-
-        private void SetViewer(string path, bool saveState = true)
-        {
-            // get the 8.3 path to circumvent unicode issues
-            if (!string.IsNullOrEmpty(path))
-            {
-                path = GetShortPathName(path);
-            }
-
-            // remove the old viewer
-            if (_currentViewer != null)
-            {
-                // do nothing if it's the same path
-                if (path == _currentViewer.FilePath)
+                // check if the path has changed
+                var newFilePath = string.IsNullOrEmpty(value) ? null : value;
+                if (_filePath == newFilePath)
                 {
                     return;
                 }
 
-                // unhook the viewer
-                _currentViewer.DisplayPage -= currentViewer_DisplayPage;
-                _currentViewer.DisplaySize -= currentViewer_DisplaySize;
-                _currentViewer.DisplayUpdate -= currentViewer_DisplayUpdate;
-
-                // clear the image
-                pictureBoxPreview.Image = null;
-                panelPreview.Update();
-
-                // save the state and dispose of the viewer
-                try
+                // clear everything first and redraw the control
+                _filePath = null;
+                _totalPages = 0;
+                _error = null;
+                if (backgroundWorker.IsBusy)
                 {
-                    if (saveState)
-                    {
-                        _viewerStates[_currentViewer.FilePath] = _currentViewer.SaveState();
-                    }
-                    _currentViewer.Dispose();
+                    backgroundWorker.CancelAsync();
                 }
-                catch
-                {
-                    // don't care on the way out
-                }
-
-                // clear the viewer and update the controls
-                _currentViewer = null;
                 SyncStates();
-            }
+                Update();
 
-            // set the new viewer if a path is given
-            if (!string.IsNullOrEmpty(path))
+                // set the new file
+                if (newFilePath != null)
+                {
+                    // set the bookmarked variables
+                    Bookmark bookmark;
+                    var hasBookmark = _bookmarks.TryGetValue(newFilePath, out bookmark);
+                    _pageNumber = hasBookmark ? bookmark.PageNumber : 1;
+                    _zoom = hasBookmark ? bookmark.Zoom : ZoomDefault;
+
+                    // set the path and already start rendering if possible
+                    _filePath = newFilePath;
+                    if (!backgroundWorker.IsBusy)
+                    {
+                        StartRenderIfNecessary();
+                    }
+
+                    // try to get the page count
+                    var prevCursor = Cursor;
+                    Cursor = Cursors.WaitCursor;
+                    try
+                    {
+                        _totalPages = GetPageCount(newFilePath);
+                    }
+                    catch (Exception e)
+                    {
+                        _error = e.Message;
+                    }
+                    Cursor = prevCursor;
+
+                    // sync the controls
+                    SyncStates();
+                }
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        private int GetPageCount(string fileName)
+        {
+            using (var doc = PdfReader.Open(_filePath, PdfDocumentOpenMode.InformationOnly))
             {
-                // create, hook and open the viewer and restore the state if possible
-                _currentViewer = new GhostscriptViewer();
-                _currentViewer.ShowPageAfterOpen = false;
-                _currentViewer.DisplayUpdate += currentViewer_DisplayUpdate;
-                _currentViewer.DisplaySize += currentViewer_DisplaySize;
-                _currentViewer.DisplayPage += currentViewer_DisplayPage;
-                try
-                {
-                    _currentViewer.Open(path, Program.GhostscriptVersion, false);
-                    GhostscriptViewerState state;
-                    if (_viewerStates.TryGetValue(_currentViewer.FilePath, out state))
-                    {
-                        _currentViewer.RestoreState(state);
-                        _currentViewer.RefreshPage();
-                    }
-                    else
-                    {
-                        _currentViewer.ShowPage(_currentViewer.FirstPageNumber, true);
-                    }
-                }
-                catch
-                {
-                    // clear the viewer and rethrow the error
-                    SetViewer(null, false);
-                    throw;
-                }
-
-                // update the controls
-                SyncStates();
+                return doc.PageCount;
             }
+        }
+
+        private void SetRenderAttribute<T>(ref T field, T value)
+        {
+            // only do something if the viewer is ready and a value changes
+            if (!IsReady || object.Equals(field, value))
+            {
+                return;
+            }
+
+            // set the new value and sync the states
+            field = value;
+            SyncStates();
+
+            // store the current view
+            Bookmark bookmark;
+            if (!_bookmarks.TryGetValue(_filePath, out bookmark))
+            {
+                _bookmarks.Add(_filePath, bookmark = new Bookmark());
+            }
+            bookmark.PageNumber = _pageNumber;
+            bookmark.Zoom = _zoom;
+
+            // render the page if not busy or cancel the current render
+            if (!backgroundWorker.IsBusy)
+            {
+                StartRenderIfNecessary();
+            }
+            else
+            {
+                backgroundWorker.CancelAsync();
+            }
+        }
+
+        private void SetRenderError(string error)
+        {
+            // only do something if the viewer is ready and the error changes
+            if (!IsReady || _error == error)
+            {
+                return;
+            }
+
+            // set the new error and sync the states
+            _error = error;
+            SyncStates();
+        }
+
+        private void StartRenderIfNecessary()
+        {
+            // do nothing if the complete same page is rendered or has an error, or there is no file path
+            if
+            (
+                _filePath == null ||
+                _view.Page != null && _view.Page.FilePath == _filePath && _view.Page.PageNumber == _pageNumber && _view.Page.Zoom == _zoom &&
+                (_view.Page.Image != null && _view.Page.Image.Tag == null || _error != null)
+            )
+            {
+                return;
+            }
+
+            // start rendering the new page
+            var page = new Page()
+            {
+                FilePath = _filePath,
+                PageNumber = _pageNumber,
+                Zoom = _zoom,
+            };
+            _view.Page = page;
+            SetRenderError(null);
+            backgroundWorker.RunWorkerAsync(page);
         }
 
         private void SyncStates()
         {
-            // update the controls
-            toolStripButtonFirst.Enabled = _currentViewer != null && _currentViewer.CanShowFirstPage;
-            toolStripButtonPrevious.Enabled = _currentViewer != null && _currentViewer.CanShowPreviousPage;
-            toolStripButtonNext.Enabled = _currentViewer != null && _currentViewer.CanShowNextPage;
-            toolStripButtonLast.Enabled = _currentViewer != null && _currentViewer.CanShowLastPage;
-            toolStripButtonZoomIn.Enabled = _currentViewer != null && _currentViewer.CanZoomIn;
-            toolStripButtonZoomOut.Enabled = _currentViewer != null && _currentViewer.CanZoomOut;
-            toolStripTextBoxPage.Enabled = _currentViewer != null;
-            toolStripTextBoxPage.Text = _currentViewer != null ? (_currentViewer.CurrentPageNumber - _currentViewer.FirstPageNumber + 1).ToString() : string.Empty;
-            toolStripLabelTotal.Text = _currentViewer != null ? string.Format(_totalPagesFormat, _currentViewer.LastPageNumber - _currentViewer.FirstPageNumber + 1) : string.Empty;
+            // set the panel
+            label.Text = _error ?? string.Empty;
+            label.Visible = _filePath != null && _error != null;
+            panel.BackColor = label.Visible ? label.BackColor : _backgroundColor;
+            _view.Visible = _filePath != null && _error == null;
+
+            // update the tool controls
+            toolStripButtonFirst.Enabled = IsReady && _pageNumber > 1;
+            toolStripButtonPrevious.Enabled = IsReady && _pageNumber > 1;
+            toolStripTextBoxPage.Enabled = IsReady;
+            toolStripTextBoxPage.Text = IsReady ? _pageNumber.ToString() : string.Empty;
+            toolStripLabelTotal.Text = IsReady ? string.Format(_totalPagesFormat, _totalPages) : string.Empty;
+            toolStripButtonNext.Enabled = IsReady && _pageNumber < _totalPages;
+            toolStripButtonLast.Enabled = IsReady && _pageNumber < _totalPages;
+            toolStripButtonZoomOut.Enabled = IsReady && _zoom > ZoomMinimum;
+            toolStripButtonZoomIn.Enabled = IsReady && _zoom < ZoomMaximum;
+            toolStripTextBoxZoom.Enabled = IsReady;
+            toolStripTextBoxZoom.Text = IsReady ? string.Format(_zoomFormat, _zoom) : string.Empty;
         }
 
         #endregion
 
         #region Event Handlers
 
-        private void currentViewer_DisplayPage(object sender, GhostscriptViewerViewEventArgs e)
+        private void backgroundWorkerRenderPage_DoWork(object sender, DoWorkEventArgs e)
         {
-            // redraw the image and update the controls
-            pictureBoxPreview.Invalidate();
-            pictureBoxPreview.Update();
-            SyncStates();
-        }
-
-        private void currentViewer_DisplaySize(object sender, GhostscriptViewerViewEventArgs e)
-        {
-            // set the image
-            pictureBoxPreview.Image = e.Image;
-            panelPreview.Update();
-        }
-
-        private void currentViewer_DisplayUpdate(object sender, GhostscriptViewerViewEventArgs e)
-        {
-            // redraw the image
-            pictureBoxPreview.Invalidate();
-            pictureBoxPreview.Update();
-        }
-
-        private void pictureBoxPreview_MouseDown(object sender, MouseEventArgs e)
-        {
-            // focus the picture and start draging
-            pictureBoxPreview.Focus();
-            _previewDragLocation = e.Location;
-        }
-
-        private void pictureBoxPreview_MouseMove(object sender, MouseEventArgs e)
-        {
-            // perform a scroll operation if the mouse is pressed
-            if (_previewDragLocation.HasValue)
+            // render the page
+            var page = (Page)e.Argument;
+            var worker = (sender as BackgroundWorker);
+            page.Image = Ghostscript.RenderPage(page.FilePath, page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, (image, area) =>
             {
-                // get and clear the last location
-                var lastLocation = _previewDragLocation.Value;
-                _previewDragLocation = null;
-
-                // convert the current location to screen coords and scroll
-                var currentScreen = pictureBoxPreview.PointToScreen(e.Location);
-                DoScroll(panelPreview.HorizontalScroll, e.Location.X - lastLocation.X);
-                DoScroll(panelPreview.VerticalScroll, e.Location.Y - lastLocation.Y);
-
-                // get the changed current location and store it
-                _previewDragLocation = pictureBoxPreview.PointToClient(currentScreen);
-            }
+                page.Image = image;
+                worker.ReportProgress(-1, area);
+            }, () =>
+            {
+                // check if a cancellation was requested
+                if (worker.CancellationPending)
+                {
+                    // abort rendering
+                    e.Cancel = true;
+                    return true;
+                }
+                else
+                {
+                    // keep going
+                    return false;
+                }
+            });
         }
 
-        private void pictureBoxPreview_MouseUp(object sender, MouseEventArgs e)
+        private void backgroundWorkerRenderPage_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            // stop draging
-            _previewDragLocation = null;
+            // update the image
+            _view.UpdateImage((Rectangle)e.UserState);
         }
 
-        private void pictureBoxPreview_MouseWheel(object sender, MouseEventArgs e)
+        private void backgroundWorkerRenderPage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // handle the different results
+            if (!e.Cancelled)
+            {
+                // either set the error or update the image
+                if (e.Error != null)
+                {
+                    SetRenderError(e.Error.Message);
+                }
+                else
+                {
+                    _view.UpdateImage(null);
+                }
+            }
+
+            // rerender if necessary
+            StartRenderIfNecessary();
+        }
+
+        private void panel_MouseWheel(object sender, MouseEventArgs e)
         {
             // zoom instead of scroll if CTRL is pressed
             if ((ModifierKeys & Keys.Control) != 0)
@@ -250,45 +447,64 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void toolStripButtonFirst_Click(object sender, EventArgs e)
         {
-            _currentViewer.ShowFirstPage();
+            SetRenderAttribute(ref _pageNumber, 1);
         }
 
         private void toolStripButtonLast_Click(object sender, EventArgs e)
         {
-            _currentViewer.ShowLastPage();
+            SetRenderAttribute(ref _pageNumber, _totalPages);
         }
 
         private void toolStripButtonNext_Click(object sender, EventArgs e)
         {
-            _currentViewer.ShowNextPage();
+            SetRenderAttribute(ref _pageNumber, Math.Min(_totalPages, _pageNumber + 1));
         }
 
         private void toolStripButtonPrevious_Click(object sender, EventArgs e)
         {
-            _currentViewer.ShowPreviousPage();
+            SetRenderAttribute(ref _pageNumber, Math.Max(1, _pageNumber - 1));
         }
 
         private void toolStripButtonZoomIn_Click(object sender, EventArgs e)
         {
-            _currentViewer.ZoomIn();
+            SetRenderAttribute(ref _zoom, Math.Min(ZoomMaximum, _zoom + ZoomStep));
         }
 
         private void toolStripButtonZoomOut_Click(object sender, EventArgs e)
         {
-            _currentViewer.ZoomOut();
+            SetRenderAttribute(ref _zoom, Math.Max(ZoomMinimum, _zoom - ZoomStep));
+        }
+
+        private void toolStripTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            // focus the panel if enter is pressed
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+                panel.Focus();
+            }
         }
 
         private void toolStripTextBoxPage_Validated(object sender, EventArgs e)
         {
-            // parse the text and constrain the page number within the its bounds
+            // parse the text and constrain the page number within its bounds
             int page;
             if (int.TryParse(toolStripTextBoxPage.Text, out page))
             {
-                page += _currentViewer.FirstPageNumber - 1;
-                _currentViewer.ShowPage(Math.Min(_currentViewer.LastPageNumber, Math.Max(_currentViewer.FirstPageNumber, page)), true);
+                SetRenderAttribute(ref _pageNumber, Math.Max(1, Math.Min(_totalPages, page)));
             }
+            SyncStates();
+        }
 
-            // always update the label
+        private void toolStripTextBoxZoom_Validated(object sender, EventArgs e)
+        {
+            // parse the text and constrain the zoom factor within its bounds
+            double zoom;
+            if (double.TryParse((sender as ToolStripTextBox).Text.Replace('%', ' '), out zoom))
+            {
+                SetRenderAttribute(ref _zoom, Math.Max(ZoomMinimum, Math.Min(ZoomMaximum, zoom)));
+            }
             SyncStates();
         }
 

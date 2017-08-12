@@ -17,7 +17,6 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
@@ -25,6 +24,7 @@ namespace Aufbauwerk.Tools.PdfKit
     {
         private static class Dll
         {
+            public const string GsDll32 = "gsdll32.dll";
             public const string Kernel32 = "Kernel32.dll";
             public const string Ole32 = "Ole32.dll";
             public const string Shell32 = "Shell32.dll";
@@ -102,11 +102,99 @@ namespace Aufbauwerk.Tools.PdfKit
         }
 
         internal const uint CLSCTX_LOCAL_SERVER = 0x4;
+        internal const uint DISPLAY_COLORS_RGB = 1 << 2;
+        internal const uint DISPLAY_DEPTH_8 = 1 << 11;
+        internal const uint DISPLAY_LITTLEENDIAN = 1 << 16;
+        internal const uint DISPLAY_UNUSED_LAST = 1 << 7;
+        internal const int DISPLAY_VERSION_MAJOR_V1 = 1;
+        internal const int DISPLAY_VERSION_MINOR_V1 = 0;
         internal const int E_ILLEGAL_METHOD_CALL = -2147483634;
+        internal const int GS_ARG_ENCODING_UTF8 = 1;
+        internal const int gs_error_interrupt = -6;
+        internal const int gs_error_Quit = -101;
+        internal const int gs_error_undefinedresult = -23; 
         internal const uint REGCLS_SINGLEUSE = 0;
         internal const int S_OK = 0;
         internal const uint SIGDN_FILESYSPATH = 0x80058000;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_close(IntPtr handle, IntPtr device);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate IntPtr display_memalloc(IntPtr handle, IntPtr device, int size);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_memfree(IntPtr handle, IntPtr device, IntPtr mem);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_open(IntPtr handle, IntPtr device);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_page(IntPtr handle, IntPtr device, int copies, int flush);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_preclose(IntPtr handle, IntPtr device);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_presize(IntPtr handle, IntPtr device, int width, int height, int raster, uint format);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_size(IntPtr handle, IntPtr device, int width, int height, int raster, uint format, IntPtr pimage);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_sync(IntPtr handle, IntPtr device);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        internal delegate int display_update(IntPtr handle, IntPtr device, int x, int y, int w, int h);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        internal delegate int poll_fn(IntPtr caller_handle);
         
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        internal delegate int stderr_fn(IntPtr caller_handle, IntPtr buf, int len);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        internal delegate int stdin_fn(IntPtr caller_handle, IntPtr buf, int len);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        internal delegate int stdout_fn(IntPtr caller_handle, IntPtr buf, int len);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        internal struct display_callback_v1
+        {
+            public int size;
+            public int version_major;
+            public int version_minor;
+            public display_open display_open;
+            public display_preclose display_preclose;
+            public display_close display_close;
+            public display_presize display_presize;
+            public display_size display_size;
+            public display_sync display_sync;
+            public display_page display_page;
+            public display_update display_update;
+            public display_memalloc display_memalloc;
+            public display_memfree display_memfree;
+
+            public display_callback_v1(bool useHGlobal)
+            {
+                size = Marshal.SizeOf(typeof(display_callback_v1));
+                version_major = Native.DISPLAY_VERSION_MAJOR_V1;
+                version_minor = Native.DISPLAY_VERSION_MINOR_V1;
+                display_open = (handle, device) => 0;
+                display_preclose = (handle, device) => 0;
+                display_close = (handle, device) => 0;
+                display_presize = (handle, device, width, height, raster, format) => 0;
+                display_size = (handle, device, width, height, raster, format, pimage) => 0;
+                display_sync = (handle, device) => 0;
+                display_page = (handle, device, copies, flush) => 0;
+                display_update = null;
+                display_memalloc = useHGlobal ? new display_memalloc((handle, device, size2) => Marshal.AllocHGlobal(size2)): null;
+                display_memfree = useHGlobal ? new display_memfree((handle, device, mem) => { Marshal.FreeHGlobal(mem); return 0; }) : null;
+                display_memfree = null;
+            }
+        };
+
         [DllImport(Dll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
         internal static extern int CoLockObjectExternal([MarshalAs(UnmanagedType.IUnknown)] object pUnk, bool fLock, bool fLastUnlockReleases);
 
@@ -121,8 +209,29 @@ namespace Aufbauwerk.Tools.PdfKit
             return hr < 0;
         }
 
-        [DllImport(Dll.Kernel32, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern int GetShortPathNameW(string lpszLongPath, StringBuilder lpszShortPath, int cchBuffer);
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern void gsapi_delete_instance(IntPtr instance);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_exit(IntPtr instance);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_init_with_args(IntPtr instance, int argc, IntPtr[] argv);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_new_instance(out IntPtr pinstance, IntPtr caller_handle);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_set_arg_encoding(IntPtr instance, int encoding);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_set_display_callback(IntPtr instance, IntPtr callback);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_set_poll(IntPtr instance, poll_fn poll_fn);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_set_stdio(IntPtr instance, stdin_fn stdin_fn, stdout_fn stdout_fn, stderr_fn stderr_fn);
 
         [DllImport(Dll.User32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -132,7 +241,7 @@ namespace Aufbauwerk.Tools.PdfKit
         internal static extern IShellFolder SHGetDesktopFolder();
 
         [DllImport(Dll.Shell32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
-        internal static extern void SHOpenFolderAndSelectItems([In] IntPtr pidlFolder, [In] int cidl, [In] IntPtr[] apidl, [In] uint dwFlags);
+        internal static extern void SHOpenFolderAndSelectItems(IntPtr pidlFolder, int cidl, IntPtr[] apidl, uint dwFlags);
 
         internal static bool SUCCEEDED(int hr)
         {
