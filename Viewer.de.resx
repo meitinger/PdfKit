@@ -117,33 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="toolStripButtonFirst.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAF3SURBVDhPYyAWhK76zwxlkg7q6/8zpXQ8loFysYPCWc//
-        18979ium48EbqBAYgDQnTvugFN7+4D9UCDvInfns/6oj7/8jKwQ5O37Sa4347gf/gxuu4TcgY8rT/wv3
-        fYArBGlO6HxqG9354NfS/f//+1dfwG9AQs+T/9O2vAcrBGlO7H1kH9F+/z9Ic+as//+9Sk/gNyCy69H/
-        3tUfwApBmkNb74E1t64D2t75979L/gH8BgQ2P/xfN/8dWGFwy93/i/b+/98B1Jwx5+d/u7qf/+0ztuM3
-        wKPq/v/8aW/ACmW8VwbaFd/+nz7n93//rm//dQrf/bdIWI/fAPvSu/+zJ7+GK5T2XuGln3L+v0nRi/8q
-        WZ/+G0cuw2+ARd6d/6n9r1EUSvqssjFIOvFfNu3rf93gefgNMMy6/T+s5SWGQknPZa76qZf/a/hOw2+A
-        TtqN/37VD7EqlPJZ46viMQG/AXZZl3+BFGFVGLqKWcp7rR+UN6gAAwMA3mvhj487H9EAAAAASUVORK5C
-        YII=
-</value>
-  </data>
   <data name="toolStripButtonFirst.ToolTipText" xml:space="preserve">
     <value>Erste Seite</value>
-  </data>
-  <data name="toolStripButtonPrevious.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAEGSURBVDhPY6AbCF31nxnKJA3U1/9nipnyUiW8/cF/qBDx
-        AGRr/KTXGvHdD/4HN1wjzQCQ5oTOp7bRnQ9+Ld3//79/9QXiDQBpTux9ZB/Rfv8/SHPmrP//vUpPEGcA
-        THNo6z2w5tZ1QNs7//53yT9AnAGOxWecglvu/l+09///DqDmjDk//9vV/fxvn7GdeC/IeK8MtCu+/T99
-        zu///l3f/usUvvtvkbCetECU9l7hpZ9y/r9J0Yv/Klmf/htHLiPNABCQ9FllY5B04r9s2tf/usHzSDcA
-        BCQ9l7nqp17+r+E7DbcB/+sZmKBMrEDKZ42viscE8lwABqGrmKW81/pBeYMKMDAAAGIYgw3DVvNuAAAA
-        AElFTkSuQmCC
-</value>
   </data>
   <data name="toolStripButtonPrevious.ToolTipText" xml:space="preserve">
     <value>Vorige Seite</value>
@@ -151,69 +126,14 @@
   <data name="toolStripLabelTotal.Text" xml:space="preserve">
     <value> von {0}</value>
   </data>
-  <data name="toolStripButtonNext.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAD2SURBVDhPY8AGQlf9Z4YyyQMpHY9l6uv/M0G5pIPCWc//
-        J077oES2Ibkzn/1P6L73P37Saw2yvJMx5en/eft//w9quPk6ofOpLcmGJPQ8+T9736//nVv//ncrvfw/
-        sfeRPUmGRHY9+j9l26//JUv//k+Y/ve/Te5Z0gwJbH74v3Xte7Bm45Iv/6Wjr/03jlz236HgdDxRhnhU
-        3f9fMvcdXLOiS89/Ge+VgVBpwsC+9O7/wJZncM3S3iu8oFLEAYu8O/9tCq6ANUv6rLKBChMPDLNuQzR7
-        LnOFCpEGdNJu/JfyWeML5ZIOpLzX+gFzFOkpcAAAAwMAylWGggwmxE0AAAAASUVORK5CYII=
-</value>
-  </data>
   <data name="toolStripButtonNext.ToolTipText" xml:space="preserve">
     <value>Nächste Seite</value>
-  </data>
-  <data name="toolStripButtonLast.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6
-        JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAAF2+SX8VGAAAACXBIWXMAAAsMAAALDAE/QCLIAAABi0lE
-        QVQ4T2P4//8/Bk7oecKGTRwbxioINMAUiFmwyaFjrIKFs57/j5/81h7dEJB4w7znv2I7Hr6BicElkXHu
-        zGf/E7rv/Y+b8NoL2Tsg8VVH3v8Pb38A5ELEUDTCcMaUp//n7f/9P6jh5l+gAdkwQ0DiC/d9+B/ccA3I
-        xWMAUMP/2ft+/e/c+ve/W+nl/0B+HsgQkPi0Le//+1dfACrDY0Bk16P/U7b9+l+y9O//hOl//9vkngUb
-        AhLvXf3hv1fpCaAyPAYENj/837r2PVizccmX/9LR1/4bRy77DxKvm//uv0v+AaAyPAZ4VN3/XzL3HVyz
-        okvPf2mf1R0g8fxpb/7bZ2wHKsNjgH3p3f+BLc+QNK+sh4lnT3793yJhPZCLxwCLvDv/bQquwDRnIYun
-        9r8GewcmhqIRhg2zboM1S3ktL0cXD2t5+V83eB6QCxGDSyJjnbQbQJvXNGMT96t++F/DdxqQCxFDUQDD
-        Ut5rW6S9V2BkKLusy79UPCb8B2GYGIoCcjBWQeLxfwYAOF/O528D7PEAAAAASUVORK5CYII=
-</value>
   </data>
   <data name="toolStripButtonLast.ToolTipText" xml:space="preserve">
     <value>Letzte Seite</value>
   </data>
-  <data name="toolStripButtonZoomIn.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAJaSURBVDhPpZJtT1JhHMb7CH2EPkAvHOsVvXHrXW/YbIPIFx4WIq1ExBJN7AHSXEpHi0iScdIc
-        lgtZWpo9rBpZQ7aOy5bKNAWseDLQ0DSSq/vmnI2Yy631266d7ey+rv/1v8/Z8yeWDts+1tHHtd/gXvQM
-        jKC1y8kbmtu4ypqmUvHI3yFG1ua6i8FHPoxPfMRz/zw8T3l0u0ehM13BUbWBFY/uxHrzNtvjHsbEVAhL
-        0U18XtnGl2/bCCeymA1n4PBM4kRjB+TH9ZxoKWDvvV9y1dEP/3QEsXQOiTUIWgXiRLE0MBPZhMX5GpVn
-        WnCEqS5ep6mF5dzDrxBN5bC8AizFQaYDh+sXkBSDYkSjgTSM1kEc0xq9olWgwcLyLwPB/OFURhCdeqh6
-        CpGk0IKGvFvIgXVPokLXDNEqUH32MgIfwnnj2oYwmZoPqn04UD6G/WX3sBgD3oeAO2OzUNdZigMYnWnx
-        2ZtpfP8BbGwSbQmiZhqYXgcWyVpkBgaeBHGysa04QKE2eG+5HxJTDltZ4CcRfdLJGRK4SkLoKjPLgOtB
-        ALXn2nnRKlBWcapUQ253PhTFdg55ZX8JIbQJXe0TWcE/m4HV6UHd+XZGtBagLcydLnxNkOsn0BDaZJ00
-        oF8kMJeGpbMXmppGKBSKEtFWQFau3avUnPbWXmDheezLtwmGEpheSGL8bRD2/hFo9CYYjQ2QyWQprVa7
-        M4RC/jRGU3eRr790DeYuDm22PrRe53iztZsZGhpi7HY75HL57iG7UVVVVRSiVCr/L0QqlcbF1/+GSqVi
-        9Ho9JBIJ8xvKk+5gYhJGTwAAAABJRU5ErkJggg==
-</value>
-  </data>
   <data name="toolStripButtonZoomIn.ToolTipText" xml:space="preserve">
     <value>Vergrößern</value>
-  </data>
-  <data name="toolStripButtonZoomOut.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAJbSURBVDhPpZLfT1JhGMf7E/oT+gO6cKwrunHrrgvabIPIC48L0FbSUUoksR+SxlI6WUSSjJNm
-        WC5gaWlZrRpZQ7Zw0ZKYpoiVgCYaKmbw7X05ZyPmcmt9t+/O2dnz/TzP875nx58ytVt3cfYevu06/6Kr
-        bxCtHY5gXZOZV59oLBVL/i4S5KzOu+h/5MOT0Y947p+E+2kQnXeGoDVewiFVHSeWbpXlxi2uyzWA0fEo
-        ZuYz+LKYxdfvWcwmNxGeTcPuHsNRQzvkR1hejBRk675fctneC38ohngqh+QKBC8DCeJ4CpiIZWByvIb6
-        VAsOMjXF6zS2cLxr4BXml3KYWwRmEiDdgQUCoaagOPFQIAW9pR+Hq/VeMSqowcQFXwYi+eKltGDaNZoE
-        YgvCFBTybioHzjWGCm0TxKigmtMXEfgwmw+urAH766ewr2Yce1U+7Ckfxu6ye5iOA++jwO3hMFQ6UzGA
-        0Rqnn70J4cc6sJYh3hCcJu8UmFoFpslapAf6RiI4ZjAXAxSqOu9N10MSymFjE/hJTJ/rImSZQOgqE3OA
-        80EAtWfagmJUUFnF8VINOd3J6DyyOeS9+UuA0Enoap/JCv5wGhaHG7qzbYwYLYhO0XzFiW9JcvxEFEIn
-        WSUT0BsJfErB1NENDWuAQqEoEWMFHSiv3qnUnPTWnuPgfuzLTxMh1xCaWsDI2whsvYNQs0bo9Q2QyWRL
-        VVVVWyFU5E9jNLrzwfoLV0lHHmZrD1qv8cFmSyfj8XgYm80GuVy+PWQ7kVARRKlU/h9EKpUmxM//psrK
-        SoZlWUgkEuY38Qj0SyAkbZoAAAAASUVORK5CYII=
-</value>
   </data>
   <data name="toolStripButtonZoomOut.ToolTipText" xml:space="preserve">
     <value>Verkleinern</value>
