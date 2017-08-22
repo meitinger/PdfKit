@@ -181,16 +181,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         }
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    // dispose any image and return null
-                    if (image != null)
-                    {
-                        image.Dispose();
-                    }
-                    return null;
-                }
-                catch (GhostscriptException)
+                catch (Exception)
                 {
                     // dispose the renderer and rethrow
                     EnsureNoOpenRenderer();
