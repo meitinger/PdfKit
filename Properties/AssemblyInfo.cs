@@ -18,8 +18,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Pdf Kit")]
-[assembly: AssemblyDescription("Combines and extracts pages from PDFs.")]
+[assembly: AssemblyDescription("Combines, converts, extracts and views PDFs.")]
 [assembly: AssemblyCompany("AufBauWerk - Unternehmen für junge Menschen")]
 [assembly: AssemblyCopyright("Copyright © 2016-2017 by Manuel Meitinger")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion("1.2.0.1")]
+[assembly: AssemblyVersion("1.3.0.2")]

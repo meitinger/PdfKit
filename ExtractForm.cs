@@ -367,7 +367,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private readonly Dictionary<int, Image> _imageCache = new Dictionary<int, Image>();
         private volatile int _imageStartRange;
         private int _pageCount;
-        private Preview _preview;
+        private volatile Preview _preview;
 
         public ExtractForm(string path)
         {
@@ -426,34 +426,6 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private System.Windows.Forms.CheckBox checkBoxMultipleFiles;
         private System.Windows.Forms.TrackBar trackBarZoom;
-
-        #endregion
-
-        #region Properties
-
-        private float DpiX
-        {
-            get
-            {
-                if (AutoScaleMode != AutoScaleMode.Dpi)
-                {
-                    throw new InvalidOperationException();
-                }
-                return CurrentAutoScaleDimensions.Width;
-            }
-        }
-
-        private float DpiY
-        {
-            get
-            {
-                if (AutoScaleMode != AutoScaleMode.Dpi)
-                {
-                    throw new InvalidOperationException();
-                }
-                return CurrentAutoScaleDimensions.Height;
-            }
-        }
 
         #endregion
 
@@ -646,7 +618,11 @@ namespace Aufbauwerk.Tools.PdfKit
                 gc.InterpolationMode = InterpolationMode.High;
                 var thumbSize = (SizeF)imageList.ImageSize;
                 var imageSize = (SizeF)image.Size;
-                if (imageSize.Width > thumbSize.Width || imageSize.Height > thumbSize.Height)
+                if (imageSize.Width <= thumbSize.Width && imageSize.Height <= thumbSize.Height)
+                {
+                    thumbSize = imageSize;
+                }
+                else
                 {
                     // fit the image into the thumb size
                     var imageRatio = imageSize.Width / imageSize.Height;
@@ -668,74 +644,85 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void ImageLoader()
         {
-            // repeat infinitely
-            while (true)
+            // get the ducument
+            using (var document = Document.FromFile(_filePath))
             {
-                int firstIndex;
-                int lastIndex;
-                lock (_imageCache)
+                // initialize and repeat until every image is loaded or the form is disposed
+                var lastStartRange = _imageStartRange;
+                var lastIndex = lastStartRange;
+                while (!IsDisposed)
                 {
-                    // get the first index to load
-                    var startIndex = _imageStartRange;
-                    firstIndex = startIndex;
-                    while (firstIndex < _pageCount && _imageCache.ContainsKey(firstIndex))
+                    // get the next index to load
+                    int index;
+                    lock (_imageCache)
                     {
-                        firstIndex++;
-                    }
-                    if (firstIndex >= _pageCount)
-                    {
-                        // everything loaded from start, load before
-                        firstIndex = startIndex - 1;
-                        while (firstIndex >= 0 && _imageCache.ContainsKey(firstIndex))
+                        // check if we should load the preview
+                        var preview = _preview;
+                        if (preview != null && !_imageCache.ContainsKey(preview.ItemIndex))
                         {
-                            firstIndex--;
+                            // set the preview index
+                            index = preview.ItemIndex;
                         }
-                        if (firstIndex < 0)
+                        else
                         {
-                            // all done, exit thread
-                            break;
+                            // update the start index if it has changed
+                            var newStartRange = _imageStartRange;
+                            if (lastStartRange != newStartRange)
+                            {
+                                lastStartRange = newStartRange;
+                                lastIndex = lastStartRange;
+                            }
+
+                            // skip all loaded indices until the end
+                            while (lastIndex < _pageCount && _imageCache.ContainsKey(lastIndex))
+                            {
+                                lastIndex++;
+                            }
+
+                            // check if we reached the end
+                            if (lastIndex >= _pageCount)
+                            {
+                                // skip all loaded indices until the start
+                                lastIndex = lastStartRange - 1;
+                                while (lastIndex >= 0 && _imageCache.ContainsKey(lastIndex))
+                                {
+                                    lastIndex--;
+                                }
+
+                                // check if we reached the start
+                                if (lastIndex < 0)
+                                {
+                                    // all done, exit thread
+                                    break;
+                                }
+                            }
+
+                            // set the index
+                            index = lastIndex;
                         }
                     }
 
-                    // get the last not loaded index
-                    lastIndex = firstIndex;
-                    while (lastIndex + 1 < _pageCount && !_imageCache.ContainsKey(lastIndex + 1))
+                    // try to load the image
+                    Image image;
+                    try
                     {
-                        lastIndex++;
+                        image = document.RenderPage(index + 1, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, 1, 0, null, () => IsDisposed);
                     }
-                }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch
+                    {
+                        image = null;
+                    }
 
-                // start loading the range of images
-                var currentIndex = firstIndex;
-                try
-                {
-                    Ghostscript.RenderPages(_filePath, firstIndex + 1, lastIndex + 1, DpiX, DpiY, 1, null, () =>
+                    // report the result
+                    lock (_imageCache)
                     {
-                        // cancel the operation if the user scrolled before the first index or after the loaded area
-                        var startIndex = _imageStartRange;
-                        return startIndex < firstIndex || currentIndex < startIndex;
-                    }, (pageNumber, image) =>
-                    {
-                        // add and report the image
-                        currentIndex = pageNumber;
-                        lock (_imageCache)
-                        {
-                            _imageCache.Add(pageNumber - 1, image);
-                        }
-                        BeginInvoke(new Action<Image, int>(SetImage), image, pageNumber - 1);
-                    });
-                }
-                catch
-                {
-                    // report the current page as error if it's within range
-                    if (firstIndex <= currentIndex && currentIndex <= lastIndex)
-                    {
-                        lock (_imageCache)
-                        {
-                            _imageCache.Add(currentIndex, null);
-                        }
-                        BeginInvoke(new Action<Image, int>(SetImage), null, currentIndex);
+                        _imageCache.Add(index, image);
                     }
+                    BeginInvoke(new Action<Image, int>(SetImage), image, index);
                 }
             }
         }
@@ -808,17 +795,15 @@ namespace Aufbauwerk.Tools.PdfKit
                     }
                 });
             }
-            catch (PdfSharpException e)
+            catch (Exception e)
             {
-                // show the error
-                MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return default(T);
-            }
-            catch (IOException e)
-            {
-                // show the error
-                MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return default(T);
+                // display PdfSharp an I/O errors and rethrow others
+                if (e is PdfSharpException || e is IOException)
+                {
+                    MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return default(T);
+                }
+                throw;
             }
         }
 
@@ -971,7 +956,16 @@ namespace Aufbauwerk.Tools.PdfKit
             Update();
 
             // open the document and set the page count
-            _document = PdfReader.Open(_filePath, PdfDocumentOpenMode.Import);
+            try
+            {
+                _document = PdfReader.Open(_filePath, PdfDocumentOpenMode.Import);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Close();
+                return;
+            }
             _pageCount = _document.PageCount;
             listViewPages.VirtualMode = true;
             listViewPages.VirtualListSize = _pageCount;
@@ -979,7 +973,6 @@ namespace Aufbauwerk.Tools.PdfKit
             // start the image loader
             var loader = new Thread(ImageLoader);
             loader.IsBackground = true;
-            Disposed += (_, __) => loader.Abort();
             loader.Start();
         }
 
@@ -1035,6 +1028,10 @@ namespace Aufbauwerk.Tools.PdfKit
                     {
                         imageName = ErrorImageName;
                     }
+                }
+                else
+                {
+                    imageName = LoadingImageName;
                 }
             }
 
@@ -1111,11 +1108,8 @@ namespace Aufbauwerk.Tools.PdfKit
 
             // reset the image list
             imageList.Images.Clear();
-            var maxSize = trackBarZoom.Value * 32;
-            imageList.ImageSize =
-                DpiX > DpiY ? new Size(maxSize, (int)Math.Round(maxSize * (DpiY / DpiX))) :
-                DpiX < DpiY ? new Size((int)Math.Round(maxSize * (DpiX / DpiY)), maxSize) :
-                new Size(maxSize, maxSize);
+            var maxSize = (double)(trackBarZoom.Value * 32);
+            imageList.ImageSize = new Size((int)Math.Round(maxSize * ((double)CurrentAutoScaleDimensions.Width / 96.0)), (int)Math.Round(maxSize * ((double)CurrentAutoScaleDimensions.Height / 96.0)));
 
             // add the loading and error image
             using (var pictureBox = new PictureBox())

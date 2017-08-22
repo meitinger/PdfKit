@@ -52,7 +52,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         #region Methods
 
-        internal void InsertFiles(IEnumerable<string> filePaths, int startIndex)
+        private void InsertFiles(IEnumerable<string> filePaths, int startIndex)
         {
             // ensure the insertion of files is allowed at the time
             if (!listViewFiles.Enabled)
@@ -71,13 +71,41 @@ namespace Aufbauwerk.Tools.PdfKit
                 // insert all files
                 foreach (var filePath in filePaths)
                 {
+                    // get the number of pages
+                    int pageCount;
+                Retry:
+                    try
+                    {
+                        using (var document = PdfReader.Open(filePath, PdfDocumentOpenMode.InformationOnly))
+                        {
+                            pageCount = document.PageCount;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // show a dialog and follow the user's choice
+                        switch (MessageBox.Show(filePath + ":\n" + e.Message, Text, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
+                        {
+                            case DialogResult.Ignore:
+                            {
+                                continue;
+                            }
+                            case DialogResult.Retry:
+                            {
+                                goto Retry;
+                            }
+                            case DialogResult.Abort:
+                            {
+                                return;
+                            }
+                        }
+                        throw;
+                    }
+
                     // create the item
                     var item = new ListViewItem(Path.GetFileName(filePath));
-                    using (var document = PdfReader.Open(filePath, PdfDocumentOpenMode.InformationOnly))
-                    {
-                        item.Tag = new Tuple<string, int>(filePath, document.PageCount);
-                        item.SubItems.Add(document.PageCount.ToString());
-                    }
+                    item.Tag = new Tuple<string, int>(filePath, pageCount);
+                    item.SubItems.Add(pageCount.ToString());
                     item.SubItems.Add(Path.GetDirectoryName(filePath));
 
                     // insert, select and focus the item

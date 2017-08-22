@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public class Native
+    internal static class Native
     {
         private static class Dll
         {
@@ -40,6 +40,12 @@ namespace Aufbauwerk.Tools.PdfKit
             int LockServer([In] bool fLock);
         }
 
+        [ComImport, Guid("85075acf-231f-40ea-9610-d26b7b58f638"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IInitializeCommand
+        {
+            void Initialize([In, MarshalAs(UnmanagedType.LPWStr)] string pszCommandName, [In] IntPtr ppb);
+        }
+
         [ComImport, Guid("7F9185B0-CB92-43c5-80A9-92277A4F7B54"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         public interface IExecuteCommand
         {
@@ -55,10 +61,24 @@ namespace Aufbauwerk.Tools.PdfKit
         [ComImport, Guid("1c9cd5bb-98e9-4491-a60f-31aacc72b83c"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         public interface IObjectWithSelection
         {
-            [PreserveSig]
-            int SetSelection([In] IntPtr psia);
-            [PreserveSig]
-            int GetSelection([In, MarshalAs(UnmanagedType.LPStruct)] Guid riid, [Out] out IntPtr ppv);
+            void SetSelection([In] IntPtr psia);
+            void GetSelection([In, MarshalAs(UnmanagedType.LPStruct)] Guid riid, [Out] out IntPtr ppv);
+        }
+
+        [ComImport, Guid("EBBC7C04-315E-11d2-B62F-006097DF5BD4"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IProgressDialog
+        {
+            void StartProgressDialog([In] IntPtr hwndParent, [In] IntPtr punkEnableModless, [In] uint dwFlags, [In] IntPtr pvReserved);
+            void StopProgressDialog();
+            void SetTitle([In, MarshalAs(UnmanagedType.LPWStr)] string pwzTitle);
+            void Dummy_SetAnimation();
+            [return: MarshalAs(UnmanagedType.Bool)]
+            bool HasUserCancelled();
+            void SetProgress([In] int dwCompleted, [In] int dwTotal);
+            void Dummy_SetProgress64();
+            void SetLine([In] int dwLineNum, [In, MarshalAs(UnmanagedType.LPWStr)] string pwzString, [In, MarshalAs(UnmanagedType.Bool)] bool fCompactPath, [In] IntPtr pvResevered);
+            void SetCancelMsg([In, MarshalAs(UnmanagedType.LPWStr)] string pwzCancelMsg, [In] IntPtr pvReserved);
+            void Timer([In] uint dwTimerAction, [In] IntPtr pvResevered);
         }
 
         [ComImport, Guid("000214E6-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -102,17 +122,22 @@ namespace Aufbauwerk.Tools.PdfKit
         }
 
         internal const uint CLSCTX_LOCAL_SERVER = 0x4;
+        internal static readonly Guid CLSID_ProgressDialog = new Guid("F8383852-FCD3-11d1-A6B9-006097DF5BD4");
         internal const uint DISPLAY_COLORS_RGB = 1 << 2;
         internal const uint DISPLAY_DEPTH_8 = 1 << 11;
         internal const uint DISPLAY_LITTLEENDIAN = 1 << 16;
         internal const uint DISPLAY_UNUSED_LAST = 1 << 7;
         internal const int DISPLAY_VERSION_MAJOR_V1 = 1;
         internal const int DISPLAY_VERSION_MINOR_V1 = 0;
-        internal const int E_ILLEGAL_METHOD_CALL = -2147483634;
         internal const int GS_ARG_ENCODING_UTF8 = 1;
         internal const int gs_error_interrupt = -6;
+        internal const int gs_error_Fatal = -100;
+        internal const int gs_error_NeedInput = -106;
         internal const int gs_error_Quit = -101;
-        internal const int gs_error_undefinedresult = -23; 
+        internal const int gs_error_undefinedresult = -23;
+        internal const uint PDTIMER_PAUSE = 0x00000002;
+        internal const uint PDTIMER_RESUME = 0x00000003;
+        internal const uint PROGDLG_AUTOTIME = 0x00000002;
         internal const uint REGCLS_SINGLEUSE = 0;
         internal const int S_OK = 0;
         internal const uint SIGDN_FILESYSPATH = 0x80058000;
@@ -149,7 +174,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         internal delegate int poll_fn(IntPtr caller_handle);
-        
+
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         internal delegate int stderr_fn(IntPtr caller_handle, IntPtr buf, int len);
 
@@ -189,7 +214,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 display_sync = (handle, device) => 0;
                 display_page = (handle, device, copies, flush) => 0;
                 display_update = null;
-                display_memalloc = useHGlobal ? new display_memalloc((handle, device, size2) => Marshal.AllocHGlobal(size2)): null;
+                display_memalloc = useHGlobal ? new display_memalloc((handle, device, size2) => Marshal.AllocHGlobal(size2)) : null;
                 display_memfree = useHGlobal ? new display_memfree((handle, device, mem) => { Marshal.FreeHGlobal(mem); return 0; }) : null;
                 display_memfree = null;
             }
@@ -204,11 +229,6 @@ namespace Aufbauwerk.Tools.PdfKit
         [DllImport(Dll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
         internal static extern void CoRevokeClassObject(uint dwRegister);
 
-        internal static bool FAILED(int hr)
-        {
-            return hr < 0;
-        }
-
         [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern void gsapi_delete_instance(IntPtr instance);
 
@@ -222,6 +242,18 @@ namespace Aufbauwerk.Tools.PdfKit
         internal static extern int gsapi_new_instance(out IntPtr pinstance, IntPtr caller_handle);
 
         [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_run_string_begin(IntPtr instance, int user_errors, out int pexit_code);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_run_string_continue(IntPtr instance, IntPtr str, int length, int user_errors, out int pexit_code);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_run_string_end(IntPtr instance, int user_errors, out int pexit_code);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern int gsapi_run_string_with_length(IntPtr instance, IntPtr str, int length, int user_errors, out int pexit_code);
+
+        [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern int gsapi_set_arg_encoding(IntPtr instance, int encoding);
 
         [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
@@ -233,19 +265,11 @@ namespace Aufbauwerk.Tools.PdfKit
         [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern int gsapi_set_stdio(IntPtr instance, stdin_fn stdin_fn, stdout_fn stdout_fn, stderr_fn stderr_fn);
 
-        [DllImport(Dll.User32, ExactSpelling = true, CharSet = CharSet.Unicode)]
-        internal static extern bool SetForegroundWindow(IntPtr hWnd);
-
         [DllImport(Dll.Shell32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
         [return: MarshalAs(UnmanagedType.Interface)]
         internal static extern IShellFolder SHGetDesktopFolder();
 
         [DllImport(Dll.Shell32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
         internal static extern void SHOpenFolderAndSelectItems(IntPtr pidlFolder, int cidl, IntPtr[] apidl, uint dwFlags);
-
-        internal static bool SUCCEEDED(int hr)
-        {
-            return hr >= 0;
-        }
     }
 }

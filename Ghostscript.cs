@@ -15,61 +15,42 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using Aufbauwerk.Tools.PdfKit.Properties;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    internal static class Ghostscript
+    public class GhostscriptException : Exception
     {
-        private class GhostscriptException : Exception
+        public GhostscriptException(string message, int errorCode)
+            : base(message)
         {
-            internal static bool CheckResult(string api, int result, Tuple<StringBuilder, StringBuilder> stdio = null)
-            {
-                // return true if the operation was successful
-                if (result >= 0)
-                {
-                    return true;
-                }
-
-                // return false if a cancellation in the main phase occured
-                if (stdio != null && (result == Native.gs_error_Quit || result == Native.gs_error_interrupt))
-                {
-                    return false;
-                }
-
-                // throw standard error if quit was called outside of main phase
-                if (result == Native.gs_error_Quit)
-                {
-                    throw new OperationCanceledException();
-                }
-
-                // on error throw an exception
-                var message = new StringBuilder();
-                message.Append(api).Append(": ").Append(result.ToString(CultureInfo.InvariantCulture));
-                if (stdio != null)
-                {
-                    message.Append("\n\nOutput:\n").Append(stdio.Item1).Append("\n\nError:\n").Append(stdio.Item2);
-                }
-                throw new GhostscriptException(message.ToString());
-            }
-
-            private GhostscriptException(string message) : base(message) { }
+            ErrorCode = errorCode;
         }
 
-        private static readonly object instanceLock = new object();
+        public int ErrorCode { get; private set; }
+    }
 
-        private static int AppendString(StringBuilder stdBuffer, IntPtr strBuffer, int len)
+    public class GhostscriptDisplayEventArgs : EventArgs
+    {
+        internal GhostscriptDisplayEventArgs(Bitmap image, Rectangle updateArea)
         {
-            var buffer = new byte[len];
-            Marshal.Copy(strBuffer, buffer, 0, len);
-            stdBuffer.Append(Encoding.UTF8.GetString(buffer));
-            return len;
+            Image = image;
+            UpdateArea = updateArea;
         }
 
+        public Bitmap Image { get; private set; }
+
+        public Rectangle UpdateArea { get; private set; }
+    }
+
+    public class Ghostscript : IDisposable
+    {
         private static IntPtr[] BuildArgs(string[] args)
         {
             // convert every arg to utf8
@@ -103,265 +84,515 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        public static Image RenderPage(string filePath, int pageNumber, float dpiX = 96, float dpiY = 96, double scaleFactor = 1, Action<Image, Rectangle> progressiveUpdate = null, Func<bool> cancellationCallback = null)
+        private static int ReadStdBuffer(StringBuilder stdBuffer, IntPtr output, int len)
         {
-            var result = RenderPages(filePath, pageNumber, pageNumber, dpiX, dpiY, scaleFactor, progressiveUpdate == null ? null : new Action<int, Image, Rectangle>((_, image, rect) => progressiveUpdate(image, rect)), cancellationCallback);
-            return result.Length > 0 ? result[0] : null;
+            if (output == IntPtr.Zero)
+            {
+                return -1;
+            }
+
+            // read utf8 from buffer
+            var buffer = new char[Math.Min(len, stdBuffer.Length)];
+            stdBuffer.CopyTo(0, buffer, 0, buffer.Length);
+            var charCount = len;
+            while (charCount > 0 && Encoding.UTF8.GetByteCount(buffer, 0, charCount) > len)
+            {
+                charCount--;
+            }
+            var bytes = Encoding.UTF8.GetBytes(buffer, 0, charCount);
+            Marshal.Copy(bytes, 0, output, bytes.Length);
+            stdBuffer.Remove(0, charCount);
+            return bytes.Length;
         }
 
-        public static Image[] RenderPages(string filePath, int firstPageNumber, int lastPageNumber, float dpiX = 96, float dpiY = 96, double scaleFactor = 1, Action<int, Image, Rectangle> progressiveUpdate = null, Func<bool> cancellationCallback = null, Action<int, Image> pageCallback = null)
+        private static int WriteStdBuffer(StringBuilder stdBuffer, IntPtr input, int len)
         {
-            // check the input arguments
-            if (filePath == null)
+            if (input == IntPtr.Zero)
             {
-                throw new ArgumentNullException("filePath");
-            }
-            if (firstPageNumber < 1)
-            {
-                throw new ArgumentOutOfRangeException("firstPageNumber");
-            }
-            if (lastPageNumber < firstPageNumber)
-            {
-                throw new ArgumentOutOfRangeException("lastPageNumber");
-            }
-            if (dpiX <= 0)
-            {
-                throw new ArgumentOutOfRangeException("dpiX");
-            }
-            if (dpiY <= 0)
-            {
-                throw new ArgumentOutOfRangeException("dpiY");
-            }
-            if (scaleFactor <= 0)
-            {
-                throw new ArgumentOutOfRangeException("scaleFactor");
+                return -1;
             }
 
-            // create the display device callbacks
-            var nextImageIndex = 0;
-            var progressThreshold = 0;
-            var dirtyRect = Rectangle.Empty;
-            var images = new Image[lastPageNumber - firstPageNumber + 1];
-            var gsImage = (Bitmap)null;
-            var deleteGsImage = new Action(() =>
-            {
-                // delete any old source image
-                if (gsImage != null)
-                {
-                    lock (gsImage)
-                    {
-                        gsImage.Tag = false;
-                        gsImage.Dispose();
-                    }
-                    gsImage = null;
-                }
-            });
-            var displayCallback = new Native.display_callback_v1(false)
-            {
-                display_preclose = (h, d) =>
-                {
-                    deleteGsImage();
-                    return 0;
-                },
-                display_presize = (h, d, width, height, raster, format) =>
-                {
-                    deleteGsImage();
-                    return 0;
-                },
-                display_size = (h, d, width, height, raster, format, pimage) =>
-                {
-                    // ensure the operation isn't completed
-                    if (nextImageIndex < images.Length)
-                    {
-                        // create the new source image
-                        gsImage = new Bitmap(width, height, raster, PixelFormat.Format32bppRgb, pimage);
-                        gsImage.Tag = true;
-
-                        // notify the caller
-                        if (progressiveUpdate != null)
-                        {
-                            progressThreshold = (width * height) / 100;
-                            dirtyRect = new Rectangle(0, 0, width, height);
-                            progressiveUpdate(firstPageNumber + nextImageIndex, gsImage, dirtyRect);
-                            dirtyRect = Rectangle.Empty;
-                        }
-                    }
-                    return 0;
-                },
-                display_page = (h, d, c, f) =>
-                {
-                    // ensure the operation isn't completed
-                    if (nextImageIndex < images.Length)
-                    {
-                        // store null and return an error if display_size has not been called yet
-                        if (gsImage == null)
-                        {
-                            images[nextImageIndex++] = null;
-                            return Native.gs_error_undefinedresult;
-                        }
-
-                        // notify the caller if not everything is drawn yet
-                        if (progressiveUpdate != null && !dirtyRect.IsEmpty)
-                        {
-                            progressiveUpdate(firstPageNumber + nextImageIndex, gsImage, dirtyRect);
-                            dirtyRect = Rectangle.Empty;
-                        }
-
-                        // store the result image and increment the index
-                        Bitmap image;
-                        lock (gsImage)
-                        {
-                            image = new Bitmap(gsImage);
-                        }
-                        image.SetResolution(dpiX, dpiY);
-                        images[nextImageIndex++] = image;
-
-                        // notify the caller
-                        if (pageCallback != null)
-                        {
-                            pageCallback(firstPageNumber + nextImageIndex - 1, image);
-                        }
-                    }
-                    return 0;
-                },
-                display_update = progressiveUpdate == null ? null : new Native.display_update((h, d, x, y, width, height) =>
-                {
-                    // ensure the operation isn't completed and has an image
-                    if (nextImageIndex < images.Length && gsImage != null)
-                    {
-                        // enlarge the dirty area and notify the caller if it's sufficiently large
-                        var newRect = new Rectangle(x, y, width, height);
-                        dirtyRect = dirtyRect.IsEmpty ? newRect : Rectangle.Union(dirtyRect, newRect);
-                        if (dirtyRect.Width * dirtyRect.Height > progressThreshold)
-                        {
-                            progressiveUpdate(firstPageNumber + nextImageIndex, gsImage, dirtyRect);
-                            dirtyRect = Rectangle.Empty;
-                        }
-                    }
-                    return 0;
-                }),
-            };
-
-            // run ghostscript
-            var cancelled = !Run(new string[]
-            {
-                "PdfKit",
-                "-dNOPAUSE",
-                "-dBATCH",
-                "-dSAFER",
-                "-sDEVICE=display",
-                "-dTextAlphaBits=4",
-                "-dGraphicsAlphaBits=4",
-                string.Format(CultureInfo.InvariantCulture, "-r{0}x{1}", dpiX * scaleFactor, dpiY* scaleFactor),
-                "-dDisplayFormat=" + (Native.DISPLAY_COLORS_RGB | Native.DISPLAY_UNUSED_LAST | Native.DISPLAY_DEPTH_8 | Native.DISPLAY_LITTLEENDIAN).ToString(CultureInfo.InvariantCulture),
-                "-dFirstPage=" + firstPageNumber.ToString(CultureInfo.InvariantCulture),
-                "-dLastPage=" + lastPageNumber.ToString(CultureInfo.InvariantCulture),
-                "-dAutoRotatePages=/None",
-                "-f",
-                filePath,
-            }, cancellationCallback, displayCallback);
-
-            // check if some pages have not been rendered
-            if (nextImageIndex < images.Length)
-            {
-                // throw an error if the operation wasn't cancelled by the caller
-                if (!cancelled)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                // resize the result array
-                Array.Resize(ref images, nextImageIndex);
-            }
-
-            // return the images
-            return images;
+            // write utf8 to buffer
+            var buffer = new byte[len];
+            Marshal.Copy(input, buffer, 0, len);
+            stdBuffer.Append(Encoding.UTF8.GetString(buffer));
+            return len;
         }
 
-        public static bool Run(string[] args, Func<bool> cancellationCallback = null, Native.display_callback_v1? displayCallback = null)
+        private bool _cancelled = false;
+        private bool _initialized = false;
+        private IntPtr _instance = IntPtr.Zero;
+        private readonly Native.poll_fn _poll;
+        private readonly Native.stderr_fn _stdErr;
+        private readonly Native.stdin_fn _stdIn;
+        private readonly Native.stdout_fn _stdOut;
+
+        internal readonly StringBuilder StdIn = new StringBuilder();
+        internal readonly StringBuilder StdErr = new StringBuilder();
+        internal readonly StringBuilder StdOut = new StringBuilder();
+
+        protected Ghostscript()
         {
-            // acquire the instance lock
-            lock (instanceLock)
+            // store the delegates
+            _stdIn = new Native.stdin_fn(StdInFunction);
+            _stdOut = new Native.stdout_fn(StdOutFunction);
+            _stdErr = new Native.stderr_fn(StdErrFunction);
+            _poll = new Native.poll_fn(PollFunction);
+        }
+
+
+        public Ghostscript(string[] arguments)
+            : this()
+        {
+            // check the arguments array
+            if (arguments == null)
             {
-                // create a new instance
-                var argumentsBuffer = (IntPtr[])null;
-                var callbackBuffer = IntPtr.Zero;
-                IntPtr instance;
-                GhostscriptException.CheckResult("gsapi_new_instance", Native.gsapi_new_instance(out instance, IntPtr.Zero));
-                try
+                throw new ArgumentNullException("arguments");
+            }
+
+            // initialize ghostscript
+            try
+            {
+                Prepare();
+                Inialize(arguments);
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
+        }
+
+        ~Ghostscript()
+        {
+            Dispose(false);
+        }
+
+        protected IntPtr Instance
+        {
+            get { return _instance; }
+        }
+
+        private void CheckDisposed()
+        {
+            // throw an exception if instance is null
+            if (_instance == IntPtr.Zero)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
+            }
+        }
+
+        protected void CheckResult(string api, int result)
+        {
+            // on error throw an exception
+            if (result < 0)
+            {
+                if (result == Native.gs_error_interrupt)
                 {
-                    // ensure utf8 is selected
-                    GhostscriptException.CheckResult("gsapi_set_arg_encoding", Native.gsapi_set_arg_encoding(instance, Native.GS_ARG_ENCODING_UTF8));
-
-                    // set the stdio redirection
-                    var stdoutBuffer = new StringBuilder();
-                    var stderrBuffer = new StringBuilder();
-                    var stdinCallback = new Native.stdin_fn((h, b, l) => 0);
-                    var stdoutCallback = new Native.stdout_fn((h, b, l) => AppendString(stdoutBuffer, b, l));
-                    var stderrCallback = new Native.stderr_fn((h, b, l) => AppendString(stderrBuffer, b, l));
-                    GhostscriptException.CheckResult("gsapi_set_stdio", Native.gsapi_set_stdio(instance, stdinCallback, stdoutCallback, stderrCallback));
-
-                    // set the poll callback
-                    var cancelled = false;
-                    if (cancellationCallback != null)
+                    // check the two causes for interrupt
+                    if (_cancelled)
                     {
-                        var pollCallback = new Native.poll_fn(_ =>
-                        {
-                            if (cancelled)
-                            {
-                                return Native.gs_error_interrupt;
-                            }
-                            else if (cancellationCallback())
-                            {
-                                cancelled = true;
-                                return Native.gs_error_interrupt;
-                            }
-                            else
-                            {
-                                return 0;
-                            }
-                        });
-                        GhostscriptException.CheckResult("gsapi_set_poll", Native.gsapi_set_poll(instance, pollCallback));
-                    }
-
-                    // set the display callback
-                    if (displayCallback.HasValue)
-                    {
-                        callbackBuffer = Marshal.AllocHGlobal(displayCallback.Value.size);
-                        Marshal.StructureToPtr(displayCallback.Value, callbackBuffer, false);
-                        GhostscriptException.CheckResult("gsapi_set_display_callback", Native.gsapi_set_display_callback(instance, callbackBuffer));
-                    }
-
-                    // run ghostscript
-                    argumentsBuffer = BuildArgs(args);
-                    var interrupted = !GhostscriptException.CheckResult("gsapi_init_with_args", Native.gsapi_init_with_args(instance, argumentsBuffer.Length, argumentsBuffer), Tuple.Create(stdoutBuffer, stderrBuffer));
-                    if (interrupted && !cancelled)
-                    {
-                        // throw an error if the operation was aborted elsewhere
                         throw new OperationCanceledException();
                     }
-                    return !interrupted;
+                    CheckDisposed();
                 }
-                finally
-                {
-                    // exit and delete the instance
-                    Native.gsapi_exit(instance);
-                    Native.gsapi_delete_instance(instance);
-
-                    // free the callback buffer
-                    if (callbackBuffer != IntPtr.Zero)
-                    {
-                        Marshal.DestroyStructure(callbackBuffer, typeof(Native.display_callback_v1));
-                        Marshal.FreeHGlobal(callbackBuffer);
-                    }
-
-                    // free the argument strings
-                    if (argumentsBuffer != null)
-                    {
-                        FreeArgs(argumentsBuffer);
-                    }
-                }
+                throw new GhostscriptException(string.Format(Resources.Ghostscript_Exception, api, result, StdOut, StdErr), result);
             }
         }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            // exit and delete the instance
+            if (_instance != IntPtr.Zero)
+            {
+                var instance = _instance;
+                _instance = IntPtr.Zero;
+                if (_initialized)
+                {
+                    _initialized = false;
+                    Native.gsapi_exit(instance);
+                }
+                Native.gsapi_delete_instance(instance);
+            }
+        }
+
+        protected void Inialize(string[] arguments)
+        {
+            // ensure the instance is prepared and not initialized
+            if (_instance == IntPtr.Zero || _initialized)
+            {
+                throw new InvalidOperationException();
+            }
+            _initialized = true;
+
+            // initialize ghostscript
+            var argumentsBuffer = BuildArgs(arguments);
+            try
+            {
+                CheckResult("gsapi_init_with_args", Native.gsapi_init_with_args(_instance, argumentsBuffer.Length, argumentsBuffer));
+            }
+            finally
+            {
+                FreeArgs(argumentsBuffer);
+            }
+        }
+
+        private int PollFunction(IntPtr caller_handle)
+        {
+            // if already cancelled or disposed then interrupt immediatelly
+            if (_cancelled || _instance == IntPtr.Zero)
+            {
+                return Native.gs_error_interrupt;
+            }
+
+            // query the event handlers
+            var poll = Poll;
+            if (poll != null)
+            {
+                try
+                {
+                    var e = new CancelEventArgs();
+                    poll(this, e);
+                    if (e.Cancel)
+                    {
+                        // set the flag and interrupt
+                        _cancelled = true;
+                        return Native.gs_error_interrupt;
+                    }
+                }
+                catch
+                {
+                    return Native.gs_error_Fatal;
+                }
+            }
+
+            // everything is fine, continue
+            return 0;
+        }
+
+        protected void Prepare()
+        {
+            // check the state
+            if (_instance != IntPtr.Zero)
+            {
+                throw new InvalidOperationException();
+            }
+
+            // create a new instance
+            CheckResult("gsapi_new_instance", Native.gsapi_new_instance(out _instance, IntPtr.Zero));
+
+            // ensure utf8 is selected
+            CheckResult("gsapi_set_arg_encoding", Native.gsapi_set_arg_encoding(_instance, Native.GS_ARG_ENCODING_UTF8));
+
+            // set the stdio redirection
+            CheckResult("gsapi_set_stdio", Native.gsapi_set_stdio(_instance, _stdIn, _stdOut, _stdErr));
+
+            // set the poll callback
+            CheckResult("gsapi_set_poll", Native.gsapi_set_poll(_instance, _poll));
+        }
+
+        public void Run(string str)
+        {
+            // check the arguments and state
+            if (str == null)
+            {
+                throw new ArgumentNullException("str");
+            }
+            CheckDisposed();
+
+            // convert the string to utf8 and call run
+            var bytes = Encoding.UTF8.GetBytes(str);
+            var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            try
+            {
+                Run(handle.AddrOfPinnedObject(), bytes.Length);
+            }
+            finally
+            {
+                handle.Free();
+            }
+        }
+
+        public void Run(IntPtr str, int len)
+        {
+            // check the arguments and state
+            if (str == null)
+            {
+                throw new ArgumentNullException("str");
+            }
+            if (len < 0)
+            {
+                throw new ArgumentOutOfRangeException("len");
+            }
+            CheckDisposed();
+
+            // check if the string is too long for a single call
+            int exitCode;
+            if (len > ushort.MaxValue)
+            {
+                // run the string in parts
+                CheckResult("gsapi_run_string_begin", Native.gsapi_run_string_begin(_instance, 0, out exitCode));
+                for (var offset = 0; offset < len; offset += ushort.MaxValue)
+                {
+                    var result = Native.gsapi_run_string_continue(_instance, str + offset, Math.Min(len - offset, ushort.MaxValue), 0, out exitCode);
+                    if (result == Native.gs_error_NeedInput)
+                    {
+                        continue;
+                    }
+                    CheckResult("gsapi_run_string_continue", result);
+                }
+                CheckResult("gsapi_run_string_end", Native.gsapi_run_string_end(_instance, 0, out exitCode));
+            }
+            else
+            {
+                CheckResult("gsapi_run_string_with_length", Native.gsapi_run_string_with_length(_instance, str, len, 0, out exitCode));
+            }
+        }
+
+        private int StdInFunction(IntPtr caller_handle, IntPtr buf, int len)
+        {
+            try
+            {
+                return ReadStdBuffer(StdIn, buf, len);
+            }
+            catch (Exception e)
+            {
+                StdErr.Append(e);
+                return -1;
+            }
+        }
+
+        private int StdErrFunction(IntPtr caller_handle, IntPtr buf, int len)
+        {
+            try
+            {
+                return WriteStdBuffer(StdErr, buf, len);
+            }
+            catch (Exception e)
+            {
+                StdErr.Append(e);
+                return -1;
+            }
+        }
+
+        private int StdOutFunction(IntPtr caller_handle, IntPtr buf, int len)
+        {
+            try
+            {
+                return WriteStdBuffer(StdOut, buf, len);
+            }
+            catch (Exception e)
+            {
+                StdErr.Append(e);
+                return -1;
+            }
+        }
+
+        public event EventHandler<CancelEventArgs> Poll;
+    }
+
+    internal class GhostscriptRenderer : Ghostscript
+    {
+        private static readonly string[] Arguments = new string[]
+        {
+            "PdfKit",
+            "-dNOPAUSE",
+            "-dQUIET",
+            "-sDEVICE=display",
+            "-dDisplayFormat=" + (Native.DISPLAY_COLORS_RGB | Native.DISPLAY_UNUSED_LAST | Native.DISPLAY_DEPTH_8 | Native.DISPLAY_LITTLEENDIAN).ToString(CultureInfo.InvariantCulture),
+            "-dTextAlphaBits=4",
+            "-dGraphicsAlphaBits=4",
+            "-dAutoRotatePages=/None",
+        };
+
+        private IntPtr _callbackBuffer = IntPtr.Zero;
+        private Rectangle _dirtyRect = Rectangle.Empty;
+        private readonly Native.display_callback_v1 _displayCallback;
+        private bool _filledStruct = false;
+        private Bitmap _temporaryImage = null;
+        private int _thresholdArea = 0;
+
+        public GhostscriptRenderer()
+        {
+            // set the callback buffer
+            _displayCallback = new Native.display_callback_v1(false)
+            {
+                display_preclose = new Native.display_preclose(DisplayPreClose),
+                display_presize = new Native.display_presize(DisplayPreSize),
+                display_size = new Native.display_size(DisplaySize),
+                display_page = new Native.display_page(DisplayPage),
+                display_update = new Native.display_update(DisplayUpdate),
+            };
+
+            // initialize Ghostscript with the display callback
+            try
+            {
+                _callbackBuffer = Marshal.AllocHGlobal(_displayCallback.size);
+                Marshal.StructureToPtr(_displayCallback, _callbackBuffer, false);
+                _filledStruct = true;
+                Prepare();
+                CheckResult("gsapi_set_display_callback", Native.gsapi_set_display_callback(Instance, _callbackBuffer));
+                Inialize(Arguments);
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
+        }
+
+        private void ClearProgressiveImage()
+        {
+            // delete any old source image
+            if (_temporaryImage != null)
+            {
+                lock (_temporaryImage)
+                {
+                    _temporaryImage.Tag = false;
+                    _temporaryImage.Dispose();
+                }
+                _temporaryImage = null;
+                _thresholdArea = 0;
+                _dirtyRect = Rectangle.Empty;
+            }
+        }
+
+        private int DisplayPage(IntPtr handle, IntPtr device, int copies, int flush)
+        {
+            // return an error if display_size has not been called yet
+            if (_temporaryImage == null)
+            {
+                return Native.gs_error_undefinedresult;
+            }
+
+            // notify the page handler if any
+            var page = Page;
+            if (page != null)
+            {
+                try
+                {
+                    // store the resulting image
+                    Bitmap image;
+                    lock (_temporaryImage)
+                    {
+                        image = new Bitmap(_temporaryImage);
+                    }
+                    page(this, new GhostscriptDisplayEventArgs(image, new Rectangle(Point.Empty, image.Size)));
+                }
+                catch (Exception e)
+                {
+                    StdErr.Append(e);
+                    return Native.gs_error_Fatal;
+                }
+            }
+            return 0;
+        }
+
+        private int DisplayPreClose(IntPtr handle, IntPtr device)
+        {
+            try
+            {
+                ClearProgressiveImage();
+            }
+            catch (Exception e)
+            {
+                StdErr.Append(e);
+                return Native.gs_error_Fatal;
+            }
+            return 0;
+        }
+
+        private int DisplayPreSize(IntPtr handle, IntPtr device, int width, int height, int raster, uint format)
+        {
+            try
+            {
+                ClearProgressiveImage();
+            }
+            catch (Exception e)
+            {
+                StdErr.Append(e);
+                return Native.gs_error_Fatal;
+            }
+            return 0;
+        }
+
+        private int DisplaySize(IntPtr handle, IntPtr device, int width, int height, int raster, uint format, IntPtr pimage)
+        {
+            try
+            {
+                // create the new source image
+                _temporaryImage = new Bitmap(width, height, raster, PixelFormat.Format32bppRgb, pimage);
+                _temporaryImage.Tag = true;
+                _thresholdArea = (width * height) / 100;
+                _dirtyRect = new Rectangle(0, 0, width, height);
+
+                // notify the update listeners
+                var update = Update;
+                if (update != null)
+                {
+                    update(this, new GhostscriptDisplayEventArgs(_temporaryImage, _dirtyRect));
+                    _dirtyRect = Rectangle.Empty;
+                }
+            }
+            catch (Exception e)
+            {
+                StdErr.Append(e);
+                return Native.gs_error_Fatal;
+            }
+            return 0;
+        }
+
+        private int DisplayUpdate(IntPtr handle, IntPtr device, int x, int y, int width, int height)
+        {
+            // ensure there are listeners and an image
+            var update = Update;
+            if (update != null && _temporaryImage != null)
+            {
+                try
+                {
+                    // enlarge the dirty area and notify the listeners if it's sufficiently large
+                    var newRect = new Rectangle(x, y, width, height);
+                    _dirtyRect = _dirtyRect.IsEmpty ? newRect : Rectangle.Union(_dirtyRect, newRect);
+                    if (_dirtyRect.Width * _dirtyRect.Height > _thresholdArea)
+                    {
+                        update(this, new GhostscriptDisplayEventArgs(_temporaryImage, _dirtyRect));
+                        _dirtyRect = Rectangle.Empty;
+                    }
+                }
+                catch (Exception e)
+                {
+                    StdErr.Append(e);
+                    return Native.gs_error_Fatal;
+                }
+            }
+            return 0;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            // free the buffer
+            if (_callbackBuffer != IntPtr.Zero)
+            {
+                if (_filledStruct)
+                {
+                    Marshal.DestroyStructure(_callbackBuffer, typeof(Native.display_callback_v1));
+                    _filledStruct = false;
+                }
+                Marshal.FreeHGlobal(_callbackBuffer);
+                _callbackBuffer = IntPtr.Zero;
+            }
+        }
+
+        public event EventHandler<GhostscriptDisplayEventArgs> Page;
+
+        public event EventHandler<GhostscriptDisplayEventArgs> Update;
     }
 }

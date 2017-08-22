@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using PdfSharp.Pdf.IO;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
@@ -27,7 +26,9 @@ namespace Aufbauwerk.Tools.PdfKit
     {
         private class GhostscriptImage : Control
         {
-            private Point? _dragLocation;
+            private bool _doDrag;
+            private Point _dragLocation;
+            private Point _dragScroll;
             private Image _image;
             private Size _imageSize;
             private Page _page;
@@ -47,12 +48,12 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
             }
 
-            private void DoScroll(ScrollProperties scrollProperties, int delta)
+            private void DoScroll(ScrollProperties scrollProperties, int value)
             {
                 // perform the scroll operation if possible and within bounds
                 if (scrollProperties.Enabled)
                 {
-                    scrollProperties.Value = Math.Min(scrollProperties.Maximum, Math.Max(scrollProperties.Minimum, scrollProperties.Value - delta));
+                    scrollProperties.Value = Math.Min(scrollProperties.Maximum, Math.Max(scrollProperties.Minimum, value));
                 }
             }
 
@@ -74,32 +75,26 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // focus the picture and start draging
                 Focus();
-                _dragLocation = e.Location;
+                _doDrag = true;
+                _dragLocation = Cursor.Position;
+                _dragScroll = new Point((Parent as ScrollableControl).HorizontalScroll.Value, (Parent as ScrollableControl).VerticalScroll.Value);
             }
 
             protected override void OnMouseMove(MouseEventArgs e)
             {
                 // perform a scroll operation if the mouse is pressed
-                if (_dragLocation.HasValue)
+                if (_doDrag)
                 {
-                    // get and clear the last location
-                    var lastLocation = _dragLocation.Value;
-                    _dragLocation = null;
-
-                    // convert the current location to screen coords and scroll
-                    var currentScreen = PointToScreen(e.Location);
-                    DoScroll((Parent as ScrollableControl).HorizontalScroll, e.Location.X - lastLocation.X);
-                    DoScroll((Parent as ScrollableControl).VerticalScroll, e.Location.Y - lastLocation.Y);
-
-                    // get the changed current location and store it
-                    _dragLocation = PointToClient(currentScreen);
+                    var location = Cursor.Position;
+                    DoScroll((Parent as ScrollableControl).HorizontalScroll, _dragScroll.X + _dragLocation.X - location.X);
+                    DoScroll((Parent as ScrollableControl).VerticalScroll, _dragScroll.Y + _dragLocation.Y - location.Y);
                 }
             }
 
             protected override void OnMouseUp(MouseEventArgs e)
             {
                 // stop draging
-                _dragLocation = null;
+                _doDrag = false;
             }
 
             protected override void OnPaint(PaintEventArgs e)
@@ -160,7 +155,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private class Page
         {
-            public string FilePath;
+            public Document Document;
             public int PageNumber;
             public double Zoom;
             public volatile Image Image;
@@ -173,10 +168,9 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private readonly Color _backgroundColor;
         private readonly Dictionary<string, Bookmark> _bookmarks = new Dictionary<string, Bookmark>();
+        private Document _document;
         private string _error;
-        private string _filePath;
         private int _pageNumber;
-        private int _totalPages;
         private readonly string _totalPagesFormat;
         private GhostscriptImage _view;
         private double _zoom;
@@ -197,34 +191,28 @@ namespace Aufbauwerk.Tools.PdfKit
 
         #region Properties
 
-        [Browsable(false)]
-        public bool IsReady
-        {
-            get
-            {
-                return _filePath != null && _totalPages > 0;
-            }
-        }
-
         [DefaultValue(null), Localizable(true), Bindable(true)]
         public string Path
         {
             get
             {
-                return _filePath;
+                return _document != null ? _document.FilePath : null;
             }
             set
             {
                 // check if the path has changed
                 var newFilePath = string.IsNullOrEmpty(value) ? null : value;
-                if (_filePath == newFilePath)
+                if (Path == newFilePath)
                 {
                     return;
                 }
 
                 // clear everything first and redraw the control
-                _filePath = null;
-                _totalPages = 0;
+                if (_document != null)
+                {
+                    _document.Dispose();
+                    _document = null;
+                }
                 _error = null;
                 if (backgroundWorker.IsBusy)
                 {
@@ -236,31 +224,31 @@ namespace Aufbauwerk.Tools.PdfKit
                 // set the new file
                 if (newFilePath != null)
                 {
-                    // set the bookmarked variables
-                    Bookmark bookmark;
-                    var hasBookmark = _bookmarks.TryGetValue(newFilePath, out bookmark);
-                    _pageNumber = hasBookmark ? bookmark.PageNumber : 1;
-                    _zoom = hasBookmark ? bookmark.Zoom : ZoomDefault;
 
-                    // set the path and already start rendering if possible
-                    _filePath = newFilePath;
-                    if (!backgroundWorker.IsBusy)
-                    {
-                        StartRenderIfNecessary();
-                    }
-
-                    // try to get the page count
+                    // try to open the document
                     var prevCursor = Cursor;
                     Cursor = Cursors.WaitCursor;
                     try
                     {
-                        _totalPages = GetPageCount(newFilePath);
+                        _document = Document.FromFile(newFilePath);
                     }
                     catch (Exception e)
                     {
                         _error = e.Message;
                     }
                     Cursor = prevCursor;
+
+                    // set the bookmarked variables
+                    Bookmark bookmark;
+                    var hasBookmark = _bookmarks.TryGetValue(newFilePath, out bookmark);
+                    _pageNumber = hasBookmark ? Math.Min(_document == null ? 1 : _document.PageCount, bookmark.PageNumber) : 1;
+                    _zoom = hasBookmark ? bookmark.Zoom : ZoomDefault;
+
+                    // start rendering if possible
+                    if (!backgroundWorker.IsBusy)
+                    {
+                        StartRenderIfNecessary();
+                    }
 
                     // sync the controls
                     SyncStates();
@@ -272,18 +260,10 @@ namespace Aufbauwerk.Tools.PdfKit
 
         #region Methods
 
-        private int GetPageCount(string fileName)
-        {
-            using (var doc = PdfReader.Open(_filePath, PdfDocumentOpenMode.InformationOnly))
-            {
-                return doc.PageCount;
-            }
-        }
-
         private void SetRenderAttribute<T>(ref T field, T value)
         {
             // only do something if the viewer is ready and a value changes
-            if (!IsReady || object.Equals(field, value))
+            if (_document == null || object.Equals(field, value))
             {
                 return;
             }
@@ -294,9 +274,9 @@ namespace Aufbauwerk.Tools.PdfKit
 
             // store the current view
             Bookmark bookmark;
-            if (!_bookmarks.TryGetValue(_filePath, out bookmark))
+            if (!_bookmarks.TryGetValue(_document.FilePath, out bookmark))
             {
-                _bookmarks.Add(_filePath, bookmark = new Bookmark());
+                _bookmarks.Add(_document.FilePath, bookmark = new Bookmark());
             }
             bookmark.PageNumber = _pageNumber;
             bookmark.Zoom = _zoom;
@@ -315,7 +295,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private void SetRenderError(string error)
         {
             // only do something if the viewer is ready and the error changes
-            if (!IsReady || _error == error)
+            if (_document == null || _error == error)
             {
                 return;
             }
@@ -330,8 +310,8 @@ namespace Aufbauwerk.Tools.PdfKit
             // do nothing if the complete same page is rendered or has an error, or there is no file path
             if
             (
-                _filePath == null ||
-                _view.Page != null && _view.Page.FilePath == _filePath && _view.Page.PageNumber == _pageNumber && _view.Page.Zoom == _zoom &&
+                _document == null ||
+                _view.Page != null && _view.Page.Document.FilePath == _document.FilePath && _view.Page.PageNumber == _pageNumber && _view.Page.Zoom == _zoom &&
                 (_view.Page.Image != null && _view.Page.Image.Tag == null || _error != null)
             )
             {
@@ -341,7 +321,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // start rendering the new page
             var page = new Page()
             {
-                FilePath = _filePath,
+                Document = _document,
                 PageNumber = _pageNumber,
                 Zoom = _zoom,
             };
@@ -354,22 +334,22 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // set the panel
             label.Text = _error ?? string.Empty;
-            label.Visible = _filePath != null && _error != null;
+            label.Visible = _document != null && _error != null;
             panel.BackColor = label.Visible ? label.BackColor : _backgroundColor;
-            _view.Visible = _filePath != null && _error == null;
+            _view.Visible = _document != null && _error == null;
 
             // update the tool controls
-            toolStripButtonFirst.Enabled = IsReady && _pageNumber > 1;
-            toolStripButtonPrevious.Enabled = IsReady && _pageNumber > 1;
-            toolStripTextBoxPage.Enabled = IsReady;
-            toolStripTextBoxPage.Text = IsReady ? _pageNumber.ToString() : string.Empty;
-            toolStripLabelTotal.Text = IsReady ? string.Format(_totalPagesFormat, _totalPages) : string.Empty;
-            toolStripButtonNext.Enabled = IsReady && _pageNumber < _totalPages;
-            toolStripButtonLast.Enabled = IsReady && _pageNumber < _totalPages;
-            toolStripButtonZoomOut.Enabled = IsReady && _zoom > ZoomMinimum;
-            toolStripButtonZoomIn.Enabled = IsReady && _zoom < ZoomMaximum;
-            toolStripTextBoxZoom.Enabled = IsReady;
-            toolStripTextBoxZoom.Text = IsReady ? string.Format(_zoomFormat, _zoom) : string.Empty;
+            toolStripButtonFirst.Enabled = _document != null && _pageNumber > 1;
+            toolStripButtonPrevious.Enabled = _document != null && _pageNumber > 1;
+            toolStripTextBoxPage.Enabled = _document != null;
+            toolStripTextBoxPage.Text = _document != null ? _pageNumber.ToString() : string.Empty;
+            toolStripLabelTotal.Text = _document != null ? string.Format(_totalPagesFormat, _document.PageCount) : string.Empty;
+            toolStripButtonNext.Enabled = _document != null && _pageNumber < _document.PageCount;
+            toolStripButtonLast.Enabled = _document != null && _pageNumber < _document.PageCount;
+            toolStripButtonZoomOut.Enabled = _document != null && _zoom > ZoomMinimum;
+            toolStripButtonZoomIn.Enabled = _document != null && _zoom < ZoomMaximum;
+            toolStripTextBoxZoom.Enabled = _document != null;
+            toolStripTextBoxZoom.Text = _document != null ? string.Format(_zoomFormat, _zoom) : string.Empty;
         }
 
         #endregion
@@ -381,7 +361,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // render the page
             var page = (Page)e.Argument;
             var worker = (sender as BackgroundWorker);
-            page.Image = Ghostscript.RenderPage(page.FilePath, page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, (image, area) =>
+            page.Image = page.Document.RenderPage(page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, 0, (image, area) =>
             {
                 page.Image = image;
                 worker.ReportProgress(-1, area);
@@ -394,11 +374,9 @@ namespace Aufbauwerk.Tools.PdfKit
                     e.Cancel = true;
                     return true;
                 }
-                else
-                {
-                    // keep going
-                    return false;
-                }
+
+                // keep going
+                return false;
             });
         }
 
@@ -452,12 +430,12 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void toolStripButtonLast_Click(object sender, EventArgs e)
         {
-            SetRenderAttribute(ref _pageNumber, _totalPages);
+            SetRenderAttribute(ref _pageNumber, _document.PageCount);
         }
 
         private void toolStripButtonNext_Click(object sender, EventArgs e)
         {
-            SetRenderAttribute(ref _pageNumber, Math.Min(_totalPages, _pageNumber + 1));
+            SetRenderAttribute(ref _pageNumber, Math.Min(_document.PageCount, _pageNumber + 1));
         }
 
         private void toolStripButtonPrevious_Click(object sender, EventArgs e)
@@ -492,7 +470,7 @@ namespace Aufbauwerk.Tools.PdfKit
             int page;
             if (int.TryParse(toolStripTextBoxPage.Text, out page))
             {
-                SetRenderAttribute(ref _pageNumber, Math.Max(1, Math.Min(_totalPages, page)));
+                SetRenderAttribute(ref _pageNumber, Math.Max(1, Math.Min(_document.PageCount, page)));
             }
             SyncStates();
         }

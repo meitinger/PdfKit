@@ -1,0 +1,1423 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="&gt;&gt;radioButtonRgb48.Parent" xml:space="preserve">
+    <value>tableLayoutPanelRgb</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="radioButtonRgb48.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk4.Name" xml:space="preserve">
+    <value>radioButtonCmyk4</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelMonochromeUnscaled.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelAdjustWidth.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="numericUpDownMaxStripSize.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 0</value>
+  </data>
+  <data name="buttonPostRenderProfile.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="radioButtonMonochromeUnscaled.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonAdjustWidthOff.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeUnscaled.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>96, 96</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownMinFeatureSize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelCompression.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="&gt;&gt;checkBoxScaled.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelPostRenderProfile.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="&gt;&gt;checkBoxUseBigTiff.ZOrder" xml:space="preserve">
+    <value>22</value>
+  </data>
+  <data name="&gt;&gt;labelAdditional.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionPack.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="radioButtonRgb24.Text" xml:space="preserve">
+    <value>24 bit</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownMaxStripSize.Name" xml:space="preserve">
+    <value>numericUpDownMaxStripSize</value>
+  </data>
+  <data name="tableLayoutPanelTiff.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="radioButtonMonochromeLzw.Text" xml:space="preserve">
+    <value>LZW</value>
+  </data>
+  <data name="radioButtonMonochromeScaled.Text" xml:space="preserve">
+    <value>scaled</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelRgb.Name" xml:space="preserve">
+    <value>tableLayoutPanelRgb</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelTiff.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tableLayoutPanelCmyk.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonCmyk4" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonCmyk32" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonCmyk64" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="Percent,50" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="&gt;&gt;checkBoxTiffDateTime.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="tableLayoutPanelG3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="radioButtonMonochromeLzw.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="checkBoxScaled.Text" xml:space="preserve">
+    <value>scaled</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionLzw.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCompression</value>
+  </data>
+  <data name="&gt;&gt;checkBoxScaled.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownMaxStripSize.ZOrder" xml:space="preserve">
+    <value>20</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG3Crle.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="numericUpDownDownscaleFactor.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 0</value>
+  </data>
+  <data name="numericUpDownDownscaleFactor.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthOff.Parent" xml:space="preserve">
+    <value>tableLayoutPanelAdjustWidth</value>
+  </data>
+  <data name="numericUpDownMaxStripSize.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonCmyk.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonMonochrome.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownDownscaleFactor.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelG3.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb48.Name" xml:space="preserve">
+    <value>radioButtonRgb48</value>
+  </data>
+  <data name="checkBoxScaled.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb24.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelAdjustWidth.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="checkBoxScaled.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="numericUpDownMinFeatureSize.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;checkBoxUseBigTiff.Name" xml:space="preserve">
+    <value>checkBoxUseBigTiff</value>
+  </data>
+  <data name="&gt;&gt;labelAdjustWidth.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelAdjustWidth.ZOrder" xml:space="preserve">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;radioButtonGrayscale.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="tableLayoutPanelAdjustWidth.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="labelMaxStripSize.Text" xml:space="preserve">
+    <value>max strip size</value>
+  </data>
+  <data name="&gt;&gt;labelCompression.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonMonochromeUnscaled.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk32.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelTiff.ColumnCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionLzw.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="radioButtonG32D.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="groupBoxTiff.Text" xml:space="preserve">
+    <value>TIFF (Tagged Image File Format) settings</value>
+  </data>
+  <data name="buttonPostRenderProfile.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelMonochrome.RowCount" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="radioButtonG3Crle.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelCmyk.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb48.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelAdjustWidth.Name" xml:space="preserve">
+    <value>tableLayoutPanelAdjustWidth</value>
+  </data>
+  <data name="&gt;&gt;labelMinFeatureSize.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="radioButtonCompressionPack.Text" xml:space="preserve">
+    <value>pack</value>
+  </data>
+  <data name="tableLayoutPanelRgb.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG3Crle.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelMonochrome.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="checkBoxFillOrder.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelTiff.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonMonochrome" Row="0" RowSpan="3" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonGrayscale" Row="3" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonRgb" Row="4" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonCmyk" Row="5" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanelRgb" Row="4" RowSpan="1" Column="1" ColumnSpan="2" /&gt;&lt;Control Name="tableLayoutPanelCmyk" Row="5" RowSpan="1" Column="1" ColumnSpan="2" /&gt;&lt;Control Name="checkBoxScaled" Row="6" RowSpan="3" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="labelDownscaleFactor" Row="6" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="numericUpDownDownscaleFactor" Row="6" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="labelCompression" Row="7" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanelCompression" Row="7" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="labelPostRenderProfile" Row="8" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="buttonPostRenderProfile" Row="8" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanelMonochrome" Row="0" RowSpan="1" Column="1" ColumnSpan="2" /&gt;&lt;Control Name="labelMinFeatureSize" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="numericUpDownMinFeatureSize" Row="1" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="labelAdjustWidth" Row="2" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanelAdjustWidth" Row="2" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="labelAdditional" Row="9" RowSpan="4" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="labelMaxStripSize" Row="9" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="numericUpDownMaxStripSize" Row="9" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;Control Name="checkBoxFillOrder" Row="10" RowSpan="1" Column="1" ColumnSpan="2" /&gt;&lt;Control Name="checkBoxUseBigTiff" Row="11" RowSpan="1" Column="1" ColumnSpan="2" /&gt;&lt;Control Name="checkBoxTiffDateTime" Row="12" RowSpan="1" Column="1" ColumnSpan="2" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,20,AutoSize,20,AutoSize,20,AutoSize,20,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb.Name" xml:space="preserve">
+    <value>radioButtonRgb</value>
+  </data>
+  <data name="&gt;&gt;labelAdjustWidth.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelCmyk.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelCmyk.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonMonochromeG3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="&gt;&gt;buttonPostRenderProfile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelMonochrome.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="labelAdditional.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="radioButtonCmyk.Text" xml:space="preserve">
+    <value>CMYK</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonCmyk.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelMonochromeUnscaled.Parent" xml:space="preserve">
+    <value>tableLayoutPanelMonochrome</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG32D.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelAdjustWidth.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="labelAdditional.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthOff.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownAdjustWidthValue.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelMonochromeUnscaled.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelAdjustWidth.ZOrder" xml:space="preserve">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionNone.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeScaled.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="radioButtonRgb24.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonRgb48.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelRgb.RowCount" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthCommon.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionPack.Name" xml:space="preserve">
+    <value>radioButtonCompressionPack</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelTiff.Name" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="labelMaxStripSize.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeScaled.Parent" xml:space="preserve">
+    <value>tableLayoutPanelMonochrome</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG32D.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownMaxStripSize.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonCmyk4.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelRgb.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="radioButtonMonochromeG4.Text" xml:space="preserve">
+    <value>G4 fax</value>
+  </data>
+  <data name="&gt;&gt;radioButtonGrayscale.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMaxStripSize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelTiff.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 19</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk32.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;buttonPostRenderProfile.Name" xml:space="preserve">
+    <value>buttonPostRenderProfile</value>
+  </data>
+  <data name="tableLayoutPanelMonochrome.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionPack.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="radioButtonGrayscale.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromePack.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve">
+    <value>Aufbauwerk.Tools.PdfKit.ImageFormatDialog, PdfKit, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionLzw.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="radioButtonAdjustWidthValue.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFillOrder.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk.Name" xml:space="preserve">
+    <value>radioButtonCmyk</value>
+  </data>
+  <data name="checkBoxTiffDateTime.TabIndex" type="System.Int32, mscorlib">
+    <value>23</value>
+  </data>
+  <data name="radioButtonCmyk32.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonCmyk64.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="radioButtonG32D.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="radioButtonGrayscale.Text" xml:space="preserve">
+    <value>grayscale</value>
+  </data>
+  <data name="radioButtonCmyk32.Text" xml:space="preserve">
+    <value>32 bit</value>
+  </data>
+  <data name="radioButtonG3Crle.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonGrayscale.Name" xml:space="preserve">
+    <value>radioButtonGrayscale</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochrome.Name" xml:space="preserve">
+    <value>radioButtonMonochrome</value>
+  </data>
+  <data name="labelMinFeatureSize.Text" xml:space="preserve">
+    <value>min. feature size</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelRgb.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="labelMinFeatureSize.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="labelDownscaleFactor.Text" xml:space="preserve">
+    <value>downscale factor</value>
+  </data>
+  <data name="&gt;&gt;labelAdjustWidth.Name" xml:space="preserve">
+    <value>labelAdjustWidth</value>
+  </data>
+  <data name="checkBoxUseBigTiff.Text" xml:space="preserve">
+    <value>use BigTIFF (larger than 4GB)</value>
+  </data>
+  <data name="radioButtonMonochromeG3.Text" xml:space="preserve">
+    <value>G3 fax</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthCommon.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochrome.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="checkBoxUseBigTiff.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="groupBoxTiff.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthOff.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="numericUpDownMaxStripSize.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="numericUpDownAdjustWidthValue.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="labelPostRenderProfile.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG3.Parent" xml:space="preserve">
+    <value>tableLayoutPanelG3</value>
+  </data>
+  <data name="checkBoxUseBigTiff.TabIndex" type="System.Int32, mscorlib">
+    <value>22</value>
+  </data>
+  <data name="checkBoxFillOrder.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
+  <data name="tableLayoutPanelRgb.ColumnCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelTiff.Parent" xml:space="preserve">
+    <value>groupBoxTiff</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelMonochrome.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromePack.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="radioButtonMonochromeScaled.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonRgb.Text" xml:space="preserve">
+    <value>RGB</value>
+  </data>
+  <data name="radioButtonG3Crle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="tableLayoutPanelCompression.RowCount" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="radioButtonCmyk4.Text" xml:space="preserve">
+    <value>4 bit</value>
+  </data>
+  <data name="radioButtonRgb48.Text" xml:space="preserve">
+    <value>48 bit</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelMonochromeUnscaled.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb24.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelCompression.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="radioButtonCmyk32.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="radioButtonRgb.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="labelDownscaleFactor.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelDownscaleFactor.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="tableLayoutPanelMonochrome.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="radioButtonCompressionLzw.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="buttonPostRenderProfile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 3</value>
+  </data>
+  <data name="&gt;&gt;checkBoxTiffDateTime.ZOrder" xml:space="preserve">
+    <value>23</value>
+  </data>
+  <data name="tableLayoutPanelMonochromeUnscaled.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelMonochromeUnscaled.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelMonochrome.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMinFeatureSize.Name" xml:space="preserve">
+    <value>labelMinFeatureSize</value>
+  </data>
+  <data name="radioButtonAdjustWidthOff.Text" xml:space="preserve">
+    <value>off</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownDownscaleFactor.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk32.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCmyk</value>
+  </data>
+  <data name="numericUpDownAdjustWidthValue.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelCompression.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="radioButtonCmyk4.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG3Crle.Parent" xml:space="preserve">
+    <value>tableLayoutPanelG3</value>
+  </data>
+  <data name="radioButtonMonochromeG3.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelRgb.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="groupBoxTiff.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonCmyk64.Text" xml:space="preserve">
+    <value>64 bit</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelMonochrome.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="labelDownscaleFactor.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="radioButtonCompressionNone.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb12.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthCommon.Parent" xml:space="preserve">
+    <value>tableLayoutPanelAdjustWidth</value>
+  </data>
+  <data name="tableLayoutPanelCompression.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonCompressionNone" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonCompressionLzw" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonCompressionPack" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,Absolute,23,Absolute,23" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="tableLayoutPanelCompression.ColumnCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="labelMaxStripSize.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="groupBoxTiff.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="labelMinFeatureSize.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb24.Parent" xml:space="preserve">
+    <value>tableLayoutPanelRgb</value>
+  </data>
+  <data name="radioButtonAdjustWidthValue.Text" xml:space="preserve">
+    <value>value</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFillOrder.Name" xml:space="preserve">
+    <value>checkBoxFillOrder</value>
+  </data>
+  <data name="radioButtonCompressionLzw.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeScaled.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownMinFeatureSize.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionNone.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;openFileDialog.Name" xml:space="preserve">
+    <value>openFileDialog</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="radioButtonMonochromeUnscaled.Text" xml:space="preserve">
+    <value>unscaled</value>
+  </data>
+  <data name="labelPostRenderProfile.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxTiffDateTime.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;labelCompression.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeG3.Parent" xml:space="preserve">
+    <value>tableLayoutPanelMonochrome</value>
+  </data>
+  <data name="radioButtonMonochromePack.Text" xml:space="preserve">
+    <value>pack</value>
+  </data>
+  <data name="openFileDialog.Filter" xml:space="preserve">
+    <value>ICC profile file|*.icc</value>
+  </data>
+  <data name="radioButtonMonochromeG4.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonRgb12.Text" xml:space="preserve">
+    <value>12 bit</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeG3.Name" xml:space="preserve">
+    <value>radioButtonMonochromeG3</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFillOrder.ZOrder" xml:space="preserve">
+    <value>21</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthOff.Name" xml:space="preserve">
+    <value>radioButtonAdjustWidthOff</value>
+  </data>
+  <data name="tableLayoutPanelCompression.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="tableLayoutPanelAdjustWidth.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonAdjustWidthValue.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelDownscaleFactor.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG3.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="radioButtonMonochromeUnscaled.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeG4.Parent" xml:space="preserve">
+    <value>tableLayoutPanelMonochrome</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeG4.Name" xml:space="preserve">
+    <value>radioButtonMonochromeG4</value>
+  </data>
+  <data name="radioButtonCompressionNone.Text" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="labelAdditional.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeG3.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="labelCompression.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAdjustWidthCommon.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="radioButtonG3Crle.Text" xml:space="preserve">
+    <value>CRLE</value>
+  </data>
+  <data name="&gt;&gt;radioButtonGrayscale.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownAdjustWidthValue.Name" xml:space="preserve">
+    <value>numericUpDownAdjustWidthValue</value>
+  </data>
+  <data name="&gt;&gt;labelMaxStripSize.Name" xml:space="preserve">
+    <value>labelMaxStripSize</value>
+  </data>
+  <data name="labelAdjustWidth.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;labelAdditional.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonMonochromeLzw.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAdjustWidthCommon.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeG4.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthCommon.Name" xml:space="preserve">
+    <value>radioButtonAdjustWidthCommon</value>
+  </data>
+  <data name="checkBoxTiffDateTime.Text" xml:space="preserve">
+    <value>write DateTime tag</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk64.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelCompression.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelAdjustWidth.RowCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeG3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="labelPostRenderProfile.Text" xml:space="preserve">
+    <value>ICC profile</value>
+  </data>
+  <data name="labelAdjustWidth.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;buttonPostRenderProfile.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="buttonPostRenderProfile.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="tableLayoutPanelRgb.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonRgb12" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonRgb24" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonRgb48" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="tableLayoutPanelAdjustWidth.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonAdjustWidthOff" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonAdjustWidthValue" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonAdjustWidthCommon" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="numericUpDownAdjustWidthValue" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="&gt;&gt;labelAdditional.ZOrder" xml:space="preserve">
+    <value>18</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthValue.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelMonochrome.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonMonochromeUnscaled" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonMonochromeScaled" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonMonochromeG3" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonMonochromeG4" Row="3" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanelMonochromeUnscaled" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="tableLayoutPanelG3" Row="2" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk32.Name" xml:space="preserve">
+    <value>radioButtonCmyk32</value>
+  </data>
+  <data name="radioButtonMonochromeG4.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="radioButtonMonochrome.Text" xml:space="preserve">
+    <value>monochrome</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG32D.Parent" xml:space="preserve">
+    <value>tableLayoutPanelG3</value>
+  </data>
+  <data name="labelMinFeatureSize.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelCompression.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeG4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelCompression.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="tableLayoutPanelAdjustWidth.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonMonochromePack.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeUnscaled.Parent" xml:space="preserve">
+    <value>tableLayoutPanelMonochrome</value>
+  </data>
+  <data name="&gt;&gt;groupBoxTiff.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="radioButtonCompressionPack.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelCmyk.RowCount" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;openFileDialog.Type" xml:space="preserve">
+    <value>System.Windows.Forms.OpenFileDialog, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>TiffFormatDialog</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb24.Name" xml:space="preserve">
+    <value>radioButtonRgb24</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelMonochrome.Name" xml:space="preserve">
+    <value>tableLayoutPanelMonochrome</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownDownscaleFactor.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk64.Name" xml:space="preserve">
+    <value>radioButtonCmyk64</value>
+  </data>
+  <data name="&gt;&gt;groupBoxTiff.Name" xml:space="preserve">
+    <value>groupBoxTiff</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownAdjustWidthValue.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelMaxStripSize.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionNone.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCompression</value>
+  </data>
+  <data name="&gt;&gt;labelAdditional.Name" xml:space="preserve">
+    <value>labelAdditional</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk64.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;labelPostRenderProfile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeUnscaled.Name" xml:space="preserve">
+    <value>radioButtonMonochromeUnscaled</value>
+  </data>
+  <data name="labelPostRenderProfile.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelCmyk.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="radioButtonRgb.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochrome.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="radioButtonRgb12.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeLzw.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;labelDownscaleFactor.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="labelAdditional.Text" xml:space="preserve">
+    <value>additional
+settings</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelTiff.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="labelAdjustWidth.Text" xml:space="preserve">
+    <value>adjust width</value>
+  </data>
+  <data name="labelMaxStripSize.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="radioButtonRgb24.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="radioButtonMonochromeScaled.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonMonochrome.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxUseBigTiff.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb12.Name" xml:space="preserve">
+    <value>radioButtonRgb12</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelG3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelCmyk.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="&gt;&gt;labelMaxStripSize.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonCompressionLzw.Text" xml:space="preserve">
+    <value>LZW</value>
+  </data>
+  <data name="&gt;&gt;checkBoxUseBigTiff.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="radioButtonG3.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;labelDownscaleFactor.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonPostRenderProfile.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;groupBoxTiff.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="checkBoxScaled.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonRgb12.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownDownscaleFactor.Name" xml:space="preserve">
+    <value>numericUpDownDownscaleFactor</value>
+  </data>
+  <data name="&gt;&gt;labelDownscaleFactor.Name" xml:space="preserve">
+    <value>labelDownscaleFactor</value>
+  </data>
+  <data name="radioButtonG3.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;labelPostRenderProfile.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="radioButtonG32D.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeUnscaled.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="labelAdditional.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromePack.Name" xml:space="preserve">
+    <value>radioButtonMonochromePack</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelCompression.Name" xml:space="preserve">
+    <value>tableLayoutPanelCompression</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownMinFeatureSize.Name" xml:space="preserve">
+    <value>numericUpDownMinFeatureSize</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthValue.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelCmyk.Name" xml:space="preserve">
+    <value>tableLayoutPanelCmyk</value>
+  </data>
+  <data name="radioButtonAdjustWidthValue.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthValue.Name" xml:space="preserve">
+    <value>radioButtonAdjustWidthValue</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb48.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="labelPostRenderProfile.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownMinFeatureSize.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="tableLayoutPanelCmyk.ColumnCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;labelMaxStripSize.ZOrder" xml:space="preserve">
+    <value>19</value>
+  </data>
+  <data name="&gt;&gt;labelMinFeatureSize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;checkBoxScaled.Name" xml:space="preserve">
+    <value>checkBoxScaled</value>
+  </data>
+  <data name="&gt;&gt;labelCompression.Name" xml:space="preserve">
+    <value>labelCompression</value>
+  </data>
+  <data name="tableLayoutPanelCompression.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;labelCompression.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionLzw.Name" xml:space="preserve">
+    <value>radioButtonCompressionLzw</value>
+  </data>
+  <data name="groupBoxTiff.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="&gt;&gt;radioButtonAdjustWidthValue.Parent" xml:space="preserve">
+    <value>tableLayoutPanelAdjustWidth</value>
+  </data>
+  <data name="&gt;&gt;groupBoxTiff.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeLzw.Name" xml:space="preserve">
+    <value>radioButtonMonochromeLzw</value>
+  </data>
+  <data name="radioButtonMonochromeG4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="&gt;&gt;checkBoxUseBigTiff.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="&gt;&gt;checkBoxTiffDateTime.Name" xml:space="preserve">
+    <value>checkBoxTiffDateTime</value>
+  </data>
+  <data name="radioButtonMonochrome.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="labelCompression.Text" xml:space="preserve">
+    <value>compression</value>
+  </data>
+  <data name="tableLayoutPanelAdjustWidth.ColumnCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeScaled.Name" xml:space="preserve">
+    <value>radioButtonMonochromeScaled</value>
+  </data>
+  <data name="radioButtonG3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonCompressionPack.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelG3.RowCount" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeLzw.Parent" xml:space="preserve">
+    <value>tableLayoutPanelMonochromeUnscaled</value>
+  </data>
+  <data name="numericUpDownAdjustWidthValue.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="&gt;&gt;checkBoxFillOrder.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelG3.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="checkBoxFillOrder.Text" xml:space="preserve">
+    <value>lowest column in the high-order bit</value>
+  </data>
+  <data name="checkBoxFillOrder.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonCompressionNone.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="radioButtonCmyk64.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelG3.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelRgb.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="checkBoxTiffDateTime.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="&gt;&gt;labelPostRenderProfile.Name" xml:space="preserve">
+    <value>labelPostRenderProfile</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromePack.Parent" xml:space="preserve">
+    <value>tableLayoutPanelMonochromeUnscaled</value>
+  </data>
+  <data name="tableLayoutPanelMonochromeUnscaled.RowCount" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk4.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;labelMinFeatureSize.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonAdjustWidthValue.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb12.Parent" xml:space="preserve">
+    <value>tableLayoutPanelRgb</value>
+  </data>
+  <data name="buttonPostRenderProfile.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="tableLayoutPanelMonochromeUnscaled.ColumnCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochrome.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownAdjustWidthValue.Parent" xml:space="preserve">
+    <value>tableLayoutPanelAdjustWidth</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelG3.Parent" xml:space="preserve">
+    <value>tableLayoutPanelMonochrome</value>
+  </data>
+  <data name="numericUpDownDownscaleFactor.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="labelAdjustWidth.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="radioButtonMonochromeScaled.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelMonochromeUnscaled.Name" xml:space="preserve">
+    <value>tableLayoutPanelMonochromeUnscaled</value>
+  </data>
+  <data name="tableLayoutPanelTiff.RowCount" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelCompression.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="radioButtonG32D.Text" xml:space="preserve">
+    <value>2D</value>
+  </data>
+  <data name="tableLayoutPanelG3.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonG3" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonG32D" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonG3Crle" Row="0" RowSpan="1" Column="2" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="tableLayoutPanelG3.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk4.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCmyk</value>
+  </data>
+  <data name="tableLayoutPanelCmyk.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAdjustWidthCommon.Text" xml:space="preserve">
+    <value>fax sizes</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG3Crle.Name" xml:space="preserve">
+    <value>radioButtonG3Crle</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMonochromeLzw.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG3.Name" xml:space="preserve">
+    <value>radioButtonG3</value>
+  </data>
+  <data name="labelCompression.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="radioButtonMonochromeLzw.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;radioButtonRgb12.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionPack.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCompression</value>
+  </data>
+  <data name="tableLayoutPanelMonochromeUnscaled.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCompressionNone.Name" xml:space="preserve">
+    <value>radioButtonCompressionNone</value>
+  </data>
+  <data name="&gt;&gt;radioButtonCmyk64.Parent" xml:space="preserve">
+    <value>tableLayoutPanelCmyk</value>
+  </data>
+  <data name="radioButtonMonochromePack.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelCmyk.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonMonochromeG3.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="radioButtonAdjustWidthValue.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="tableLayoutPanelMonochromeUnscaled.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonMonochromeLzw" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonMonochromePack" Row="0" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  </data>
+  <data name="&gt;&gt;numericUpDownMaxStripSize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="tableLayoutPanelTiff.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="&gt;&gt;radioButtonG32D.Name" xml:space="preserve">
+    <value>radioButtonG32D</value>
+  </data>
+  <data name="tableLayoutPanelG3.ColumnCount" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="labelAdjustWidth.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="radioButtonMonochromePack.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="tableLayoutPanelMonochrome.ColumnCount" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelRgb.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonGrayscale.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonAdjustWidthOff.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="&gt;&gt;checkBoxTiffDateTime.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelDownscaleFactor.Parent" xml:space="preserve">
+    <value>tableLayoutPanelTiff</value>
+  </data>
+  <data name="tableLayoutPanelTiff.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelRgb.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonG3.Text" xml:space="preserve">
+    <value>normal</value>
+  </data>
+  <data name="numericUpDownMinFeatureSize.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;checkBoxScaled.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;tableLayoutPanelG3.Name" xml:space="preserve">
+    <value>tableLayoutPanelG3</value>
+  </data>
+  <data name="labelMinFeatureSize.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tableLayoutPanelAdjustWidth.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tableLayoutPanelCmyk.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="labelAdditional.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tableLayoutPanelG3.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="groupBoxTiff.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tableLayoutPanelRgb.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tableLayoutPanelMonochrome.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tableLayoutPanelCompression.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="$this.Localizable" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="tableLayoutPanelMonochromeUnscaled.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="labelMaxStripSize.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+</root>
