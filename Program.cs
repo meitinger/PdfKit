@@ -121,6 +121,7 @@ namespace Aufbauwerk.Tools.PdfKit
             Combine = 1,
             CombineDirectory,
             Extract,
+            View,
         }
 
         private enum ComServerTask
@@ -265,6 +266,16 @@ namespace Aufbauwerk.Tools.PdfKit
                                     }
                                     break;
                                 }
+                                case CommandLineTask.View:
+                                {
+                                    if (args.Length == 2)
+                                    {
+                                        // show the document
+                                        Application.Run(new ViewForm(args[1]));
+                                        return;
+                                    }
+                                    break;
+                                }
                                 default:
                                 {
                                     throw new NotImplementedException();
@@ -275,7 +286,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
 
                 // show the usage dialog
-                MessageBox.Show(string.Format(Resources.Program_Usage, Environment.GetCommandLineArgs()[0], ComEmbedding, CommandLineTask.Combine, CommandLineTask.CombineDirectory, CommandLineTask.Extract), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(string.Format(Resources.Program_Usage, Environment.GetCommandLineArgs()[0], ComEmbedding, CommandLineTask.Combine, CommandLineTask.CombineDirectory, CommandLineTask.Extract, CommandLineTask.View), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception e)
             {

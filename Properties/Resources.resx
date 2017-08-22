@@ -180,6 +180,7 @@ The following verbs are supported: {1}.</value>
   {0} {1}
   {0} {2} [&lt;file&gt; [...]]
   {0} {3} &lt;directory&gt;
-  {0} {4} &lt;file&gt;</value>
+  {0} {4} &lt;file&gt;
+  {0} {5} &lt;file&gt;</value>
   </data>
 </root>

@@ -179,6 +179,7 @@ Fehlerprotokol:
   {0} {1}
   {0} {2} [&lt;Datei&gt; [...]]
   {0} {3} &lt;Verzeichnis&gt;
-  {0} {4} &lt;Datei&gt;</value>
+  {0} {4} &lt;Datei&gt;
+  {0} {5} &lt;Datei&gt;</value>
   </data>
 </root>

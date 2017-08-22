@@ -102,11 +102,10 @@ namespace Aufbauwerk.Tools.PdfKit
                 EnsureNoOpenRenderer();
             }
 
-            protected override Image DoRenderPage(int pageNumber, float dpiX, float dpiY, double scaleFactor, int rotate, Action<Image, Rectangle> progressiveUpdate, Func<bool> cancellationCallback)
+            protected override Image DoRenderPage(int pageNumber, float dpiX, float dpiY, double scaleFactor, int rotate, Action<Image> progressiveUpdate, Func<bool> cancellationCallback)
             {
                 // try to render the page
                 var image = (Bitmap)null;
-                var cancelled = false;
                 try
                 {
                     // ensure there is a renderer
@@ -121,13 +120,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     _renderer.StdErr.Clear();
 
                     // hook up the poll event
-                    var poll = new EventHandler<CancelEventArgs>((o, e) =>
-                    {
-                        if (cancellationCallback())
-                        {
-                            e.Cancel = cancelled = true;
-                        }
-                    });
+                    var poll = new EventHandler<CancelEventArgs>((o, e) => e.Cancel = cancellationCallback());
                     if (cancellationCallback != null)
                     {
                         _renderer.Poll += poll;
@@ -135,13 +128,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     try
                     {
                         // hook up the progressive update event
-                        var update = new EventHandler<GhostscriptDisplayEventArgs>((o, e) =>
-                        {
-                            if (!cancelled && image == null)
-                            {
-                                progressiveUpdate(e.Image, e.UpdateArea);
-                            }
-                        });
+                        var update = new EventHandler<GhostscriptRendererEventArgs>((o, e) => { if (image == null) { progressiveUpdate(e.Image); } });
                         if (progressiveUpdate != null)
                         {
                             _renderer.Update += update;
@@ -149,7 +136,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         try
                         {
                             // hook up the page event
-                            var page = new EventHandler<GhostscriptDisplayEventArgs>((o, e) => image = e.Image);
+                            var page = new EventHandler<GhostscriptRendererEventArgs>((o, e) => image = e.Image);
                             _renderer.Page += page;
                             try
                             {
@@ -455,7 +442,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 throw new NotSupportedException();
             }
 
-            protected override Image DoRenderPage(int pageNumber, float dpiX, float dpiY, double scaleFactor, int rotate, Action<Image, Rectangle> progressiveUpdate, Func<bool> cancellationCallback)
+            protected override Image DoRenderPage(int pageNumber, float dpiX, float dpiY, double scaleFactor, int rotate, Action<Image> progressiveUpdate, Func<bool> cancellationCallback)
             {
                 lock (_image)
                 {
@@ -584,7 +571,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         protected abstract void DoRunPage(Ghostscript ghostscript, int pageNumber);
 
-        protected abstract Image DoRenderPage(int pageNumber, float dpiX, float dpiY, double scaleFactor, int rotate, Action<Image, Rectangle> progressiveUpdate, Func<bool> cancellationCallback);
+        protected abstract Image DoRenderPage(int pageNumber, float dpiX, float dpiY, double scaleFactor, int rotate, Action<Image> progressiveUpdate, Func<bool> cancellationCallback);
 
         public abstract void EnsureNoOpenRenderer();
 
@@ -618,7 +605,7 @@ namespace Aufbauwerk.Tools.PdfKit
             DoRunPage(ghostscript, pageNumber);
         }
 
-        public Image RenderPage(int pageNumber, float dpiX = 96, float dpiY = 96, double scaleFactor = 1, int rotate = 0, Action<Image, Rectangle> progressiveUpdate = null, Func<bool> cancellationCallback = null)
+        public Image RenderPage(int pageNumber, float dpiX = 96, float dpiY = 96, double scaleFactor = 1, int rotate = 0, Action<Image> progressiveUpdate = null, Func<bool> cancellationCallback = null)
         {
             // check the arguments and state
             if (pageNumber < 1 || pageNumber > PageCount)

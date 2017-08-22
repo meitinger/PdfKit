@@ -22,4 +22,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("AufBauWerk - Unternehmen für junge Menschen")]
 [assembly: AssemblyCopyright("Copyright © 2016-2017 by Manuel Meitinger")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion("1.3.0.2")]
+[assembly: AssemblyVersion("1.3.0.3")]

@@ -180,7 +180,7 @@
     <value>viewer</value>
   </data>
   <data name="&gt;&gt;viewer.Type" xml:space="preserve">
-    <value>Aufbauwerk.Tools.PdfKit.Viewer, PdfKit, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null</value>
+    <value>Aufbauwerk.Tools.PdfKit.Viewer, PdfKit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;viewer.Parent" xml:space="preserve">
     <value>splitContainer.Panel2</value>

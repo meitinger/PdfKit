@@ -36,17 +36,14 @@ namespace Aufbauwerk.Tools.PdfKit
         public int ErrorCode { get; private set; }
     }
 
-    public class GhostscriptDisplayEventArgs : EventArgs
+    public class GhostscriptRendererEventArgs : EventArgs
     {
-        internal GhostscriptDisplayEventArgs(Bitmap image, Rectangle updateArea)
+        internal GhostscriptRendererEventArgs(Bitmap image)
         {
             Image = image;
-            UpdateArea = updateArea;
         }
 
         public Bitmap Image { get; private set; }
-
-        public Rectangle UpdateArea { get; private set; }
     }
 
     public class Ghostscript : IDisposable
@@ -412,11 +409,9 @@ namespace Aufbauwerk.Tools.PdfKit
         };
 
         private IntPtr _callbackBuffer = IntPtr.Zero;
-        private Rectangle _dirtyRect = Rectangle.Empty;
         private readonly Native.display_callback_v1 _displayCallback;
         private bool _filledStruct = false;
         private Bitmap _temporaryImage = null;
-        private int _thresholdArea = 0;
 
         public GhostscriptRenderer()
         {
@@ -458,8 +453,6 @@ namespace Aufbauwerk.Tools.PdfKit
                     _temporaryImage.Dispose();
                 }
                 _temporaryImage = null;
-                _thresholdArea = 0;
-                _dirtyRect = Rectangle.Empty;
             }
         }
 
@@ -483,7 +476,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     {
                         image = new Bitmap(_temporaryImage);
                     }
-                    page(this, new GhostscriptDisplayEventArgs(image, new Rectangle(Point.Empty, image.Size)));
+                    page(this, new GhostscriptRendererEventArgs(image));
                 }
                 catch (Exception e)
                 {
@@ -529,15 +522,12 @@ namespace Aufbauwerk.Tools.PdfKit
                 // create the new source image
                 _temporaryImage = new Bitmap(width, height, raster, PixelFormat.Format32bppRgb, pimage);
                 _temporaryImage.Tag = true;
-                _thresholdArea = (width * height) / 100;
-                _dirtyRect = new Rectangle(0, 0, width, height);
 
                 // notify the update listeners
                 var update = Update;
                 if (update != null)
                 {
-                    update(this, new GhostscriptDisplayEventArgs(_temporaryImage, _dirtyRect));
-                    _dirtyRect = Rectangle.Empty;
+                    update(this, new GhostscriptRendererEventArgs(_temporaryImage));
                 }
             }
             catch (Exception e)
@@ -556,13 +546,10 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 try
                 {
-                    // enlarge the dirty area and notify the listeners if it's sufficiently large
-                    var newRect = new Rectangle(x, y, width, height);
-                    _dirtyRect = _dirtyRect.IsEmpty ? newRect : Rectangle.Union(_dirtyRect, newRect);
-                    if (_dirtyRect.Width * _dirtyRect.Height > _thresholdArea)
+                    if (!(bool)_temporaryImage.Tag)
                     {
-                        update(this, new GhostscriptDisplayEventArgs(_temporaryImage, _dirtyRect));
-                        _dirtyRect = Rectangle.Empty;
+                        _temporaryImage.Tag = true;
+                        update(this, new GhostscriptRendererEventArgs(_temporaryImage));
                     }
                 }
                 catch (Exception e)
@@ -591,8 +578,8 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        public event EventHandler<GhostscriptDisplayEventArgs> Page;
+        public event EventHandler<GhostscriptRendererEventArgs> Page;
 
-        public event EventHandler<GhostscriptDisplayEventArgs> Update;
+        public event EventHandler<GhostscriptRendererEventArgs> Update;
     }
 }

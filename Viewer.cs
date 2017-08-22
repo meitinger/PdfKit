@@ -43,8 +43,12 @@ namespace Aufbauwerk.Tools.PdfKit
                 get { return _page; }
                 set
                 {
-                    _page = value;
-                    UpdateImage(null);
+                    if (_page != value)
+                    {
+                        _page = value;
+                        SetImage(null);
+                    }
+                    UpdateImage();
                 }
             }
 
@@ -114,12 +118,13 @@ namespace Aufbauwerk.Tools.PdfKit
                         if ((bool)_image.Tag)
                         {
                             e.Graphics.DrawImage(_image, e.ClipRectangle, e.ClipRectangle, GraphicsUnit.Pixel);
+                            _image.Tag = false;
                         }
                     }
                 }
             }
 
-            internal void UpdateImage(Rectangle? area)
+            internal void UpdateImage()
             {
                 // check if the image has changed
                 var newImage = _page != null ? _page.Image : null;
@@ -132,17 +137,20 @@ namespace Aufbauwerk.Tools.PdfKit
                     }
                     else
                     {
-                        // set the preview image if it's valid or an empty image otherwise (should not happen)
+                        // set the preview image if it's valid
                         lock (newImage)
                         {
-                            SetImage((bool)newImage.Tag ? newImage : null);
+                            if ((bool)newImage.Tag)
+                            {
+                                SetImage(newImage);
+                            }
                         }
                     }
                 }
-                else if (area.HasValue)
+                else
                 {
-                    // only invalidate the given area
-                    Invalidate(area.Value);
+                    // only invalidate the view
+                    Invalidate();
                 }
             }
         }
@@ -361,10 +369,10 @@ namespace Aufbauwerk.Tools.PdfKit
             // render the page
             var page = (Page)e.Argument;
             var worker = (sender as BackgroundWorker);
-            page.Image = page.Document.RenderPage(page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, 0, (image, area) =>
+            page.Image = page.Document.RenderPage(page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, 0, image =>
             {
                 page.Image = image;
-                worker.ReportProgress(-1, area);
+                worker.ReportProgress(-1);
             }, () =>
             {
                 // check if a cancellation was requested
@@ -383,7 +391,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private void backgroundWorkerRenderPage_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             // update the image
-            _view.UpdateImage((Rectangle)e.UserState);
+            _view.UpdateImage();
         }
 
         private void backgroundWorkerRenderPage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -398,7 +406,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
                 else
                 {
-                    _view.UpdateImage(null);
+                    _view.UpdateImage();
                 }
             }
 

@@ -283,7 +283,7 @@
     <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>Aufbauwerk.Tools.PdfKit.ImageFormatDialog, PdfKit, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null</value>
+    <value>Aufbauwerk.Tools.PdfKit.ImageFormatDialog, PdfKit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;groupBoxBmp.ZOrder" xml:space="preserve">
     <value>2</value>

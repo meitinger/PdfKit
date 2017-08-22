@@ -207,7 +207,8 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         ///  {0} {1}
         ///  {0} {2} [&lt;file&gt; [...]]
         ///  {0} {3} &lt;directory&gt;
-        ///  {0} {4} &lt;file&gt; ähnelt.
+        ///  {0} {4} &lt;file&gt;
+        ///  {0} {5} &lt;file&gt; ähnelt.
         /// </summary>
         internal static string Program_Usage {
             get {

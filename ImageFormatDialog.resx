@@ -651,6 +651,6 @@
     <value>ImageFormatDialog</value>
   </data>
   <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>Aufbauwerk.Tools.PdfKit.FormatDialog, PdfKit, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null</value>
+    <value>Aufbauwerk.Tools.PdfKit.FormatDialog, PdfKit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
 </root>
