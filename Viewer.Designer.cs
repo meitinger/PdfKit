@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Viewer));
             this.panel = new System.Windows.Forms.Panel();
+            this.label = new System.Windows.Forms.Label();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
             this.toolStripButtonFirst = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonPrevious = new System.Windows.Forms.ToolStripButton();
@@ -43,8 +44,10 @@
             this.toolStripButtonZoomOut = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonZoomIn = new System.Windows.Forms.ToolStripButton();
             this.toolStripTextBoxZoom = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripButtonRotateLeft = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonRotateRight = new System.Windows.Forms.ToolStripButton();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this.label = new System.Windows.Forms.Label();
             this.panel.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.SuspendLayout();
@@ -56,6 +59,13 @@
             this.panel.Controls.Add(this.label);
             this.panel.Name = "panel";
             this.panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.panel_MouseWheel);
+            // 
+            // label
+            // 
+            resources.ApplyResources(this.label, "label");
+            this.label.BackColor = System.Drawing.SystemColors.Info;
+            this.label.ForeColor = System.Drawing.SystemColors.InfoText;
+            this.label.Name = "label";
             // 
             // toolStrip
             // 
@@ -73,7 +83,10 @@
             this.toolStripSeparator3,
             this.toolStripButtonZoomOut,
             this.toolStripButtonZoomIn,
-            this.toolStripTextBoxZoom});
+            this.toolStripTextBoxZoom,
+            this.toolStripSeparator4,
+            this.toolStripButtonRotateLeft,
+            this.toolStripButtonRotateRight});
             this.toolStrip.Name = "toolStrip";
             // 
             // toolStripButtonFirst
@@ -152,6 +165,25 @@
             this.toolStripTextBoxZoom.KeyDown += new System.Windows.Forms.KeyEventHandler(this.toolStripTextBox_KeyDown);
             this.toolStripTextBoxZoom.Validated += new System.EventHandler(this.toolStripTextBoxZoom_Validated);
             // 
+            // toolStripSeparator4
+            // 
+            resources.ApplyResources(this.toolStripSeparator4, "toolStripSeparator4");
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            // 
+            // toolStripButtonRotateLeft
+            // 
+            resources.ApplyResources(this.toolStripButtonRotateLeft, "toolStripButtonRotateLeft");
+            this.toolStripButtonRotateLeft.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonRotateLeft.Name = "toolStripButtonRotateLeft";
+            this.toolStripButtonRotateLeft.Click += new System.EventHandler(this.toolStripButtonRotateLeft_Click);
+            // 
+            // toolStripButtonRotateRight
+            // 
+            resources.ApplyResources(this.toolStripButtonRotateRight, "toolStripButtonRotateRight");
+            this.toolStripButtonRotateRight.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonRotateRight.Name = "toolStripButtonRotateRight";
+            this.toolStripButtonRotateRight.Click += new System.EventHandler(this.toolStripButtonRotateRight_Click);
+            // 
             // backgroundWorker
             // 
             this.backgroundWorker.WorkerReportsProgress = true;
@@ -159,13 +191,6 @@
             this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerRenderPage_DoWork);
             this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerRenderPage_ProgressChanged);
             this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerRenderPage_RunWorkerCompleted);
-            // 
-            // label
-            // 
-            resources.ApplyResources(this.label, "label");
-            this.label.BackColor = System.Drawing.SystemColors.Info;
-            this.label.ForeColor = System.Drawing.SystemColors.InfoText;
-            this.label.Name = "label";
             // 
             // Viewer
             // 
@@ -201,5 +226,8 @@
         private System.ComponentModel.BackgroundWorker backgroundWorker;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBoxZoom;
         private System.Windows.Forms.Label label;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripButton toolStripButtonRotateLeft;
+        private System.Windows.Forms.ToolStripButton toolStripButtonRotateRight;
     }
 }

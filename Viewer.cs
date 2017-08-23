@@ -159,6 +159,7 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             public int PageNumber;
             public double Zoom;
+            public int Rotate;
         }
 
         private class Page
@@ -166,6 +167,7 @@ namespace Aufbauwerk.Tools.PdfKit
             public Document Document;
             public int PageNumber;
             public double Zoom;
+            public int Rotate;
             public volatile Image Image;
         }
 
@@ -179,6 +181,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private Document _document;
         private string _error;
         private int _pageNumber;
+        private int _rotate;
         private readonly string _totalPagesFormat;
         private GhostscriptImage _view;
         private double _zoom;
@@ -251,6 +254,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     var hasBookmark = _bookmarks.TryGetValue(newFilePath, out bookmark);
                     _pageNumber = hasBookmark ? Math.Min(_document == null ? 1 : _document.PageCount, bookmark.PageNumber) : 1;
                     _zoom = hasBookmark ? bookmark.Zoom : ZoomDefault;
+                    _rotate = hasBookmark ? bookmark.Rotate : 0;
 
                     // start rendering if possible
                     if (!backgroundWorker.IsBusy)
@@ -288,6 +292,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             bookmark.PageNumber = _pageNumber;
             bookmark.Zoom = _zoom;
+            bookmark.Rotate = _rotate;
 
             // render the page if not busy or cancel the current render
             if (!backgroundWorker.IsBusy)
@@ -319,7 +324,7 @@ namespace Aufbauwerk.Tools.PdfKit
             if
             (
                 _document == null ||
-                _view.Page != null && _view.Page.Document.FilePath == _document.FilePath && _view.Page.PageNumber == _pageNumber && _view.Page.Zoom == _zoom &&
+                _view.Page != null && _view.Page.Document.FilePath == _document.FilePath && _view.Page.PageNumber == _pageNumber && _view.Page.Zoom == _zoom && _view.Page.Rotate == _rotate &&
                 (_view.Page.Image != null && _view.Page.Image.Tag == null || _error != null)
             )
             {
@@ -332,6 +337,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 Document = _document,
                 PageNumber = _pageNumber,
                 Zoom = _zoom,
+                Rotate = _rotate,
             };
             _view.Page = page;
             SetRenderError(null);
@@ -358,6 +364,8 @@ namespace Aufbauwerk.Tools.PdfKit
             toolStripButtonZoomIn.Enabled = _document != null && _zoom < ZoomMaximum;
             toolStripTextBoxZoom.Enabled = _document != null;
             toolStripTextBoxZoom.Text = _document != null ? string.Format(_zoomFormat, _zoom) : string.Empty;
+            toolStripButtonRotateLeft.Enabled = _document != null;
+            toolStripButtonRotateRight.Enabled = _document != null;
         }
 
         #endregion
@@ -369,7 +377,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // render the page
             var page = (Page)e.Argument;
             var worker = (sender as BackgroundWorker);
-            page.Image = page.Document.RenderPage(page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, 0, image =>
+            page.Image = page.Document.RenderPage(page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, page.Rotate, image =>
             {
                 page.Image = image;
                 worker.ReportProgress(-1);
@@ -449,6 +457,16 @@ namespace Aufbauwerk.Tools.PdfKit
         private void toolStripButtonPrevious_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _pageNumber, Math.Max(1, _pageNumber - 1));
+        }
+
+        private void toolStripButtonRotateLeft_Click(object sender, EventArgs e)
+        {
+            SetRenderAttribute(ref _rotate, _rotate + 90);
+        }
+
+        private void toolStripButtonRotateRight_Click(object sender, EventArgs e)
+        {
+            SetRenderAttribute(ref _rotate, _rotate - 90);
         }
 
         private void toolStripButtonZoomIn_Click(object sender, EventArgs e)

@@ -170,8 +170,13 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
                 catch (Exception)
                 {
-                    // dispose the renderer and rethrow
+                    // dispose the renderer and image and rethrow
                     EnsureNoOpenRenderer();
+                    if (image != null)
+                    {
+                        image.Dispose();
+                        image = null;
+                    }
                     throw;
                 }
 
@@ -458,17 +463,11 @@ namespace Aufbauwerk.Tools.PdfKit
 
                     // calculate the new size
                     var size = _image.Size;
-                    var doRotate = rotate % 180 != 0;
-                    var newSize = new Size
-                    (
-                        (int)Math.Round(scaleFactor * ((doRotate ? _image.VerticalResolution : _image.HorizontalResolution) / dpiX) * (doRotate ? size.Height : size.Width)),
-                        (int)Math.Round(scaleFactor * ((doRotate ? _image.HorizontalResolution : _image.VerticalResolution) / dpiY) * (doRotate ? size.Width : size.Height))
-                    );
+                    var newSize = new Size((int)Math.Round(scaleFactor * (dpiX / _image.HorizontalResolution) * size.Width), (int)Math.Round(scaleFactor * (dpiY / _image.VerticalResolution) * size.Height));
                     if (cancellationCallback != null && cancellationCallback())
                     {
                         return null;
                     }
-
 
                     // create the new image
                     var result = new Bitmap(newSize.Width, newSize.Height);
@@ -485,7 +484,6 @@ namespace Aufbauwerk.Tools.PdfKit
                     {
                         gc.Clear(Color.Transparent);
                         gc.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        gc.RotateTransform(rotate);
                         if (cancellationCallback == null)
                         {
                             gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel);
@@ -495,6 +493,9 @@ namespace Aufbauwerk.Tools.PdfKit
                             gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel, null, _ => cancelled = cancellationCallback());
                         }
                     }
+
+                    // rotate the image
+                    result.RotateFlip((RotateFlipType)((4 - (rotate / 90)) % 4));
 
                     // handle cancellation
                     if (cancelled)
@@ -627,6 +628,11 @@ namespace Aufbauwerk.Tools.PdfKit
             if (rotate % 90 != 0)
             {
                 throw new ArgumentOutOfRangeException("rotate");
+            }
+            rotate %= 360;
+            if (rotate < 0)
+            {
+                rotate += 360;
             }
             CheckDisposed();
 

@@ -138,4 +138,10 @@
   <data name="toolStripButtonZoomOut.ToolTipText" xml:space="preserve">
     <value>Verkleinern</value>
   </data>
+  <data name="toolStripButtonRotateLeft.ToolTipText" xml:space="preserve">
+    <value>Drehen nach Links</value>
+  </data>
+  <data name="toolStripButtonRotateRight.ToolTipText" xml:space="preserve">
+    <value>Drehen nach Rechts</value>
+  </data>
 </root>
