@@ -33,6 +33,11 @@ namespace Aufbauwerk.Tools.PdfKit
             private Size _imageSize;
             private Page _page;
 
+            public GhostscriptImage()
+            {
+                DoubleBuffered = true;
+            }
+
             protected override Cursor DefaultCursor
             {
                 get { return Cursors.NoMove2D; }
@@ -348,8 +353,8 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // set the panel
             label.Text = _error ?? string.Empty;
-            label.Visible = _document != null && _error != null;
-            panel.BackColor = label.Visible ? label.BackColor : _backgroundColor;
+            label.Visible = _error != null;
+            panel.BackColor = _error != null ? label.BackColor : _backgroundColor;
             _view.Visible = _document != null && _error == null;
 
             // update the tool controls

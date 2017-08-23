@@ -147,6 +147,9 @@ Wollen Sie den Fehler ignorieren und mit der nächsten Datei fortfahren, die akt
     <value>Der Dateityp wird nicht unterstützt.
 Nur folgende Formate sind zugelassen: {0}</value>
   </data>
+  <data name="Document_InvalidPageNumber" xml:space="preserve">
+    <value>Die Seitennummer  '{0}' is ungültig.</value>
+  </data>
   <data name="Document_PageCountOutOfRange" xml:space="preserve">
     <value>Die Seitenzahl beträgt laut Metadaten {0}.</value>
   </data>

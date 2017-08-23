@@ -133,6 +133,15 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The page number &apos;{0}&apos; is invalid. ähnelt.
+        /// </summary>
+        internal static string Document_InvalidPageNumber {
+            get {
+                return ResourceManager.GetString("Document_InvalidPageNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The file reports a page count of {0}. ähnelt.
         /// </summary>
         internal static string Document_PageCountOutOfRange {

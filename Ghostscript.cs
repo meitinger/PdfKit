@@ -294,61 +294,58 @@ namespace Aufbauwerk.Tools.PdfKit
             CheckResult("gsapi_set_poll", Native.gsapi_set_poll(_instance, _poll));
         }
 
-        public void Run(string str)
+        public void Run(string commandString)
         {
             // check the arguments and state
-            if (str == null)
+            if (commandString == null)
             {
-                throw new ArgumentNullException("str");
+                throw new ArgumentNullException("commandString");
             }
             CheckDisposed();
 
             // convert the string to utf8 and call run
-            var bytes = Encoding.UTF8.GetBytes(str);
-            var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            Run(Encoding.UTF8.GetBytes(commandString));
+        }
+
+        public void Run(byte[] commandBuffer)
+        {
+            // check the arguments and state
+            if (commandBuffer == null)
+            {
+                throw new ArgumentNullException("commandBuffer");
+            }
+            CheckDisposed();
+
+            // pin the buffer
+            var handle = GCHandle.Alloc(commandBuffer, GCHandleType.Pinned);
             try
             {
-                Run(handle.AddrOfPinnedObject(), bytes.Length);
+                // check if the string is too long for a single call
+                int exitCode;
+                const int maxSize = ushort.MaxValue - 5;
+                if (commandBuffer.Length > maxSize)
+                {
+                    // run the string in parts
+                    CheckResult("gsapi_run_string_begin", Native.gsapi_run_string_begin(_instance, 0, out exitCode));
+                    for (var offset = 0; offset < commandBuffer.Length; offset += maxSize)
+                    {
+                        var result = Native.gsapi_run_string_continue(_instance, handle.AddrOfPinnedObject() + offset, Math.Min(commandBuffer.Length - offset, maxSize), 0, out exitCode);
+                        if (result == Native.gs_error_NeedInput)
+                        {
+                            continue;
+                        }
+                        CheckResult("gsapi_run_string_continue", result);
+                    }
+                    CheckResult("gsapi_run_string_end", Native.gsapi_run_string_end(_instance, 0, out exitCode));
+                }
+                else
+                {
+                    CheckResult("gsapi_run_string_with_length", Native.gsapi_run_string_with_length(_instance, handle.AddrOfPinnedObject(), commandBuffer.Length, 0, out exitCode));
+                }
             }
             finally
             {
                 handle.Free();
-            }
-        }
-
-        public void Run(IntPtr str, int len)
-        {
-            // check the arguments and state
-            if (str == null)
-            {
-                throw new ArgumentNullException("str");
-            }
-            if (len < 0)
-            {
-                throw new ArgumentOutOfRangeException("len");
-            }
-            CheckDisposed();
-
-            // check if the string is too long for a single call
-            int exitCode;
-            if (len > ushort.MaxValue)
-            {
-                // run the string in parts
-                CheckResult("gsapi_run_string_begin", Native.gsapi_run_string_begin(_instance, 0, out exitCode));
-                for (var offset = 0; offset < len; offset += ushort.MaxValue)
-                {
-                    var result = Native.gsapi_run_string_continue(_instance, str + offset, Math.Min(len - offset, ushort.MaxValue), 0, out exitCode);
-                    if (result == Native.gs_error_NeedInput)
-                    {
-                        continue;
-                    }
-                    CheckResult("gsapi_run_string_continue", result);
-                }
-                CheckResult("gsapi_run_string_end", Native.gsapi_run_string_end(_instance, 0, out exitCode));
-            }
-            else
-            {
-                CheckResult("gsapi_run_string_with_length", Native.gsapi_run_string_with_length(_instance, str, len, 0, out exitCode));
             }
         }
 

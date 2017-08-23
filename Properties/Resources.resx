@@ -147,6 +147,9 @@ Do you want to ignore the error and proceed with the next file, retry loading th
     <value>The file format is not supported.
 Only the following formats are allowed: {0}</value>
   </data>
+  <data name="Document_InvalidPageNumber" xml:space="preserve">
+    <value>The page number '{0}' is invalid.</value>
+  </data>
   <data name="Document_PageCountOutOfRange" xml:space="preserve">
     <value>The file reports a page count of {0}.</value>
   </data>

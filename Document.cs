@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -67,11 +68,11 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
                 else if ((supportedType & DocumentType.PostScript) != 0 && PostScriptDocument.Header.IsMatch(header))
                 {
-                    doc = new PostScriptDocument(streamReader);
+                    doc = new PostScriptDocument(header, streamReader);
                 }
-                else if ((supportedType & DocumentType.EncapsulatedPostScript) != 0 && PostScriptDocument.Header.IsMatch(header))
+                else if ((supportedType & DocumentType.EncapsulatedPostScript) != 0 && EncapsulatedPostScriptDocument.Header.IsMatch(header))
                 {
-                    doc = new EncapsulatedPostScriptDocument(streamReader);
+                    doc = new EncapsulatedPostScriptDocument(header, streamReader);
                 }
                 else if ((supportedType & DocumentType.Image) != 0)
                 {
@@ -143,6 +144,12 @@ namespace Aufbauwerk.Tools.PdfKit
                                 // set the page settings and run the page
                                 _renderer.Run(string.Format(CultureInfo.InvariantCulture, "<<\n/HWResolution [{0} {1}]\n/Orientation {2}\n>> setpagedevice\n", dpiX * scaleFactor, dpiY * scaleFactor, (rotate / 90) % 4));
                                 DoRunPage(_renderer, pageNumber);
+
+                                // eps files might need a showpage
+                                if (image == null && Type == DocumentType.EncapsulatedPostScript)
+                                {
+                                    _renderer.Run("showpage");
+                                }
                             }
                             finally
                             {
@@ -204,7 +211,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private class PortableDocumentFormatDocument : GhostscriptDocument
         {
-            public static readonly Regex Header = new Regex(@"^%PDF-\d\.\d$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            public static readonly Regex Header = new Regex(@"^%PDF-\d\.\d(\s|$)", RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture);
 
             private readonly int _pageCount;
 
@@ -263,15 +270,83 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private class PostScriptDocument : GhostscriptDocument
         {
-            public static readonly Regex Header = new Regex(@"^%!PS-Adobe-\d\.\d$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            public static readonly Regex Header = new Regex(@"^%!PS-Adobe-\d\.\d(\s+(?!EPSF-)|$)", RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture);
+            private static readonly char[] Separator = new char[] { ' ', '\t' };
 
-            public PostScriptDocument(StreamReader reader)
+            private readonly SortedList<int, byte[]> _pages = new SortedList<int, byte[]>();
+            private readonly byte[] _prologAndSetup;
+
+            public PostScriptDocument(string header, StreamReader reader)
             {
+                // create a memory writer
+                using (var memory = new MemoryStream())
+                using (var writer = new StreamWriter(memory, new UTF8Encoding(false)))
+                {
+                    writer.NewLine = "\n";
+                    writer.WriteLine(header);
+                    var page = 0;
+
+                    // read all lines
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        // check for comments
+                        if (line.StartsWith("%%", StringComparison.Ordinal))
+                        {
+                            var comment = line.Substring(2).TrimEnd();
+                            if (comment == "Trailer")
+                            {
+                                // if there are no pages, read the rest as well
+                                if (page == 0)
+                                {
+                                    do
+                                    {
+                                        writer.WriteLine(line);
+                                    }
+                                    while ((line = reader.ReadLine()) != null);
+                                }
+
+                                // quit reading
+                                break;
+                            }
+                            else if (comment.StartsWith("Page:", StringComparison.Ordinal))
+                            {
+                                // store the previous page or prolog
+                                writer.Flush();
+                                if (page > 0)
+                                {
+                                    _pages[page] = memory.ToArray();
+                                }
+                                else
+                                {
+                                    _prologAndSetup = memory.ToArray();
+                                }
+                                memory.SetLength(0);
+
+                                // get the next page number
+                                var sepIndex = comment.LastIndexOfAny(Separator);
+                                var pageNumber = comment.Substring(Math.Max(sepIndex + 1, 5));
+                                if (!int.TryParse(pageNumber, NumberStyles.Integer, CultureInfo.InvariantCulture, out page) || page < 1)
+                                {
+                                    throw new InvalidDataException(string.Format(Resources.Document_InvalidPageNumber, pageNumber));
+                                }
+                            }
+                        }
+
+                        // write the line
+                        writer.WriteLine(line);
+                    }
+
+                    // store the last page or the entire document
+                    writer.Flush();
+                    _pages[Math.Max(1, page)] = memory.ToArray();
+                    memory.SetLength(0);
+                }
             }
 
             public override int PageCount
             {
-                get { throw new NotImplementedException(); }
+                get { return _pages.Count; }
             }
 
             public override DocumentType Type
@@ -286,20 +361,25 @@ namespace Aufbauwerk.Tools.PdfKit
 
             protected override void DoRunInitialize(Ghostscript ghostscript)
             {
-                throw new NotImplementedException();
+                // run the prolog if there is any
+                if (_prologAndSetup != null)
+                {
+                    ghostscript.Run(_prologAndSetup);
+                }
             }
 
             protected override void DoRunPage(Ghostscript ghostscript, int pageNumber)
             {
-                throw new NotImplementedException();
+                // run the given page
+                ghostscript.Run(_pages.Values[pageNumber - 1]);
             }
         }
 
         private class EncapsulatedPostScriptDocument : PostScriptDocument
         {
-            public static readonly new Regex Header = new Regex(@"^%!PS-Adobe-\d\.\d\s+EPSF-\d\.\d$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            public static readonly new Regex Header = new Regex(@"^%!PS-Adobe-\d\.\d\s+EPSF-\d\.\d(\s|$)", RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture);
 
-            public EncapsulatedPostScriptDocument(StreamReader reader) : base(reader) { }
+            public EncapsulatedPostScriptDocument(string header, StreamReader reader) : base(header, reader) { }
 
             public override DocumentType Type
             {
