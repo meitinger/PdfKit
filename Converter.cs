@@ -26,13 +26,14 @@ namespace Aufbauwerk.Tools.PdfKit
     public abstract class Converter
     {
         private bool _aborted = false;
-        private readonly List<int> _completedPages = new List<int>();
+        private readonly HashSet<int> _convertedPages = new HashSet<int>();
         private Document _currentFile = null;
         private readonly object _errorLock = new object();
         private readonly Queue<Document> _files = new Queue<Document>();
         private bool _initializationDone = false;
         private int _pagesCompleted = 0;
         private readonly Native.IProgressDialog _progressDialog;
+        private readonly HashSet<int> _skippedPages = new HashSet<int>();
         private int _totalPages = 0;
 
         protected Converter(IEnumerable<string> files)
@@ -67,6 +68,10 @@ namespace Aufbauwerk.Tools.PdfKit
                     // try to load the file
                     Document file;
                 Retry:
+                    if (_aborted)
+                    {
+                        return;
+                    }
                     try
                     {
                         file = Document.FromFile(filePath, AllowedTypes);
@@ -87,17 +92,20 @@ namespace Aufbauwerk.Tools.PdfKit
                                     _aborted = true;
                                     return;
                                 }
-                                case DialogResult.Ignore:
-                                {
-                                    continue;
-                                }
                                 case DialogResult.Retry:
                                 {
                                     goto Retry;
                                 }
+                                case DialogResult.Ignore:
+                                {
+                                    continue;
+                                }
+                                default:
+                                {
+                                    throw;
+                                }
                             }
                         }
-                        throw;
                     }
 
                     // enqueue the file and notify the main thread
@@ -135,7 +143,8 @@ namespace Aufbauwerk.Tools.PdfKit
                 {
                     // reset the dialog
                     _currentFile = null;
-                    _completedPages.Clear();
+                    _convertedPages.Clear();
+                    _skippedPages.Clear();
                     UpdateDialog();
 
                     // dequeue the next file
@@ -168,14 +177,15 @@ namespace Aufbauwerk.Tools.PdfKit
                     catch (Exception e)
                     {
                         // disable the timer while showing the error dialog
-                        if (_initializationDone)
-                        {
-                            _progressDialog.Timer(Native.PDTIMER_PAUSE, IntPtr.Zero);
-                        }
+                        _progressDialog.Timer(Native.PDTIMER_PAUSE, IntPtr.Zero);
                         try
                         {
                             lock (_errorLock)
                             {
+                                if (_aborted)
+                                {
+                                    return;
+                                }
                                 switch (MessageBox.Show(string.Format(Resources.Converter_ConvertFileError, _currentFile.FilePath, e.Message), Title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
                                 {
                                     case DialogResult.Abort:
@@ -183,25 +193,26 @@ namespace Aufbauwerk.Tools.PdfKit
                                         _aborted = true;
                                         return;
                                     }
-                                    case DialogResult.Ignore:
-                                    {
-                                        break;
-                                    }
                                     case DialogResult.Retry:
                                     {
-                                        _completedPages.Clear();
+                                        _convertedPages.Clear();
+                                        _skippedPages.Clear();
                                         goto Retry;
+                                    }
+                                    case DialogResult.Ignore:
+                                    {
+                                        continue;
+                                    }
+                                    default:
+                                    {
+                                        throw;
                                     }
                                 }
                             }
-                            throw;
                         }
                         finally
                         {
-                            if (_initializationDone)
-                            {
-                                _progressDialog.Timer(Native.PDTIMER_RESUME, IntPtr.Zero);
-                            }
+                            _progressDialog.Timer(Native.PDTIMER_RESUME, IntPtr.Zero);
                         }
                     }
                 }
@@ -219,10 +230,19 @@ namespace Aufbauwerk.Tools.PdfKit
             return _aborted || _progressDialog.HasUserCancelled();
         }
 
-        protected void PageCompleted(int pageNumber)
+        protected void PageConverted(int pageNumber)
         {
-            // add the completed page to the list
-            _completedPages.Add(pageNumber);
+            // add the page to the list
+            _convertedPages.Add(pageNumber);
+            _skippedPages.Remove(pageNumber);
+            UpdateDialog();
+        }
+
+        protected void PageSkipped(int pageNumber)
+        {
+            // add the page to the list
+            _skippedPages.Add(pageNumber);
+            _convertedPages.Remove(pageNumber);
             UpdateDialog();
         }
 
@@ -241,10 +261,10 @@ namespace Aufbauwerk.Tools.PdfKit
             else
             {
                 _progressDialog.SetLine(1, _currentFile.FilePath, true, IntPtr.Zero);
-                _progressDialog.SetLine(2, string.Format(Resources.Converter_CompletedPages, string.Join(", ", _completedPages)), false, IntPtr.Zero);
+                _progressDialog.SetLine(2, string.Format(Resources.Converter_CompletedPages, _convertedPages.Count, _skippedPages.Count, _currentFile.PageCount), false, IntPtr.Zero);
                 if (_initializationDone)
                 {
-                    _progressDialog.SetProgress(_pagesCompleted - _currentFile.PageCount + Math.Min(_currentFile.PageCount, _completedPages.Count), _totalPages);
+                    _progressDialog.SetProgress(_pagesCompleted - _currentFile.PageCount + Math.Min(_currentFile.PageCount, _convertedPages.Count + _skippedPages.Count), _totalPages);
                 }
             }
         }
@@ -316,7 +336,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     // ensure the page was requested
                     if (pageNumber % 2 == 0 ? _evenPages : _oddPages)
                     {
-                        // run ghostscript and notify the caller
+                        // run ghostscript
                         try
                         {
                             file.RunPage(gs, pageNumber);
@@ -325,10 +345,15 @@ namespace Aufbauwerk.Tools.PdfKit
                         {
                             return;
                         }
-                    }
 
-                    // increment the progress
-                    PageCompleted(pageNumber);
+                        // notify the caller
+                        PageConverted(pageNumber);
+                    }
+                    else
+                    {
+                        // skip the page
+                        PageSkipped(pageNumber);
+                    }
                 }
             }
         }
@@ -360,7 +385,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         protected override void ConvertFile(Document file)
         {
-            file.ConvertToPdf(Path.ChangeExtension(file.FilePath, "pdf"), PageCompleted, IsCancelled);
+            file.ConvertToPdf(Path.ChangeExtension(file.FilePath, "pdf"), PageConverted, IsCancelled);
         }
     }
 }

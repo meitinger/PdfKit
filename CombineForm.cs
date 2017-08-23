@@ -86,20 +86,23 @@ namespace Aufbauwerk.Tools.PdfKit
                         // show a dialog and follow the user's choice
                         switch (MessageBox.Show(filePath + ":\n" + e.Message, Text, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
                         {
-                            case DialogResult.Ignore:
+                            case DialogResult.Abort:
                             {
-                                continue;
+                                return;
                             }
                             case DialogResult.Retry:
                             {
                                 goto Retry;
                             }
-                            case DialogResult.Abort:
+                            case DialogResult.Ignore:
                             {
-                                return;
+                                continue;
+                            }
+                            default:
+                            {
+                                throw;
                             }
                         }
-                        throw;
                     }
 
                     // create the item

@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -116,27 +117,28 @@ namespace Aufbauwerk.Tools.PdfKit
             #endregion
         }
 
-        private enum CommandLineTask
+        private static readonly SortedDictionary<string, Action<IEnumerable<string>>> _multiFileTasks = new SortedDictionary<string, Action<IEnumerable<string>>>(StringComparer.OrdinalIgnoreCase)
         {
-            Combine = 1,
-            CombineDirectory,
-            Extract,
-            View,
-        }
+            { "Combine", files => Application.Run(new CombineForm(files)) },
+            { "ConvertToPdf", files => PdfConverter.Run(files) },
+            { "ConvertToBmp", files => GhostscriptConverter.Run(files, new BmpFormatDialog()) },
+            { "ConvertToJpeg", files => GhostscriptConverter.Run(files, new JpegFormatDialog()) },
+            { "ConvertToPng", files => GhostscriptConverter.Run(files, new PngFormatDialog()) },
+            { "ConvertToTiff", files => GhostscriptConverter.Run(files, new TiffFormatDialog()) },
+        };
 
-        private enum ComServerTask
+        private static readonly SortedDictionary<string, Action<string>> _singleFileTasks = new SortedDictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase)
         {
-            Combine = 1,
-            ConvertToBmp,
-            ConvertToEps,
-            ConvertToJpeg,
-            ConvertToPdf,
-            ConvertToPng,
-            ConvertToPs,
-            ConvertToTiff,
-        }
+            { "View", file=> Application.Run(new ViewForm(file)) },
+            { "Extract", file => Application.Run(new ExtractForm(file)) },
+            { "CombineDirectory", file => Application.Run(new CombineForm(Directory.EnumerateFiles(file, "*.pdf", SearchOption.AllDirectories))) },
+        };
 
-        private const string ComEmbedding = "-Embedding";
+        private static readonly SortedDictionary<string, Action> _standaloneTasks = new SortedDictionary<string, Action>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "-Embedding", RunComServer },
+            { "Combine", () => Application.Run(new CombineForm()) },
+        };
 
         [STAThread]
         private static void Main(string[] args)
@@ -147,152 +149,100 @@ namespace Aufbauwerk.Tools.PdfKit
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                // check the arguments
-                if (args.Length > 0)
+                // check the number of arguments
+                switch (args.Length)
                 {
-                    if (string.Equals(args[0], ComEmbedding, StringComparison.OrdinalIgnoreCase))
+                    case 0:
                     {
-                        if (args.Length == 1)
+                        // go to usage
+                        break;
+                    }
+                    case 1:
+                    {
+                        // try to find and run the standalone task
+                        Action action;
+                        if (_standaloneTasks.TryGetValue(args[0], out action))
                         {
-                            // create and register the com server
-                            var comServer = new EmbeddedComServer();
-                            uint cookie;
-                            Native.CoRegisterClassObject(comServer.GetType().GUID, comServer, Native.CLSCTX_LOCAL_SERVER, Native.REGCLS_SINGLEUSE, out cookie);
-                            try
-                            {
-                                // wait for it to be ready
-                                if (!comServer.Wait(10000))
-                                {
-                                    MessageBox.Show(Resources.Program_ServerTimeout, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                    return;
-                                }
-                            }
-                            finally
-                            {
-                                // unregister the com server
-                                Native.CoRevokeClassObject(cookie);
-                            }
-
-                            // check the files and parse the command verb
-                            if (comServer.Files == null)
-                            {
-                                MessageBox.Show(Resources.Program_NoFiles, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                return;
-                            }
-                            if (comServer.Command == null)
-                            {
-                                MessageBox.Show(Resources.Program_NoCommand, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                return;
-                            }
-                            ComServerTask task;
-                            if (!Enum.TryParse(comServer.Command, true, out task))
-                            {
-                                MessageBox.Show(string.Format(Resources.Program_UnknownVerb, comServer.Command, string.Join(", ", Enum.GetNames(typeof(ComServerTask)))), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                return;
-                            }
-
-                            // perform the task
-                            switch (task)
-                            {
-                                case ComServerTask.Combine:
-                                {
-                                    Application.Run(new CombineForm(comServer.Files));
-                                    break;
-                                }
-                                case ComServerTask.ConvertToBmp:
-                                {
-                                    GhostscriptConverter.Run(comServer.Files, new BmpFormatDialog());
-                                    break;
-                                }
-                                case ComServerTask.ConvertToJpeg:
-                                {
-                                    GhostscriptConverter.Run(comServer.Files, new JpegFormatDialog());
-                                    break;
-                                }
-                                case ComServerTask.ConvertToPdf:
-                                {
-                                    PdfConverter.Run(comServer.Files);
-                                    break;
-                                }
-                                case ComServerTask.ConvertToPng:
-                                {
-                                    GhostscriptConverter.Run(comServer.Files, new PngFormatDialog());
-                                    break;
-                                }
-                                case ComServerTask.ConvertToTiff:
-                                {
-                                    GhostscriptConverter.Run(comServer.Files, new TiffFormatDialog());
-                                    break;
-                                }
-                                default:
-                                {
-                                    throw new NotImplementedException();
-                                }
-                            }
+                            action();
                             return;
                         }
+                        break;
                     }
-                    else
+                    case 2:
                     {
-                        // try to get the command line task
-                        CommandLineTask task;
-                        if (Enum.TryParse(args[0], true, out task))
+                        // try to run a single file task or a multi file task with only one file
+                        Action<string> action;
+                        if (_singleFileTasks.TryGetValue(args[0], out action))
                         {
-                            switch (task)
-                            {
-                                case CommandLineTask.Combine:
-                                {
-                                    // show the combine form and add all given files
-                                    Application.Run(args.Length > 1 ? new CombineForm(args.Skip(1)) : new CombineForm());
-                                    return;
-                                }
-                                case CommandLineTask.CombineDirectory:
-                                {
-                                    if (args.Length == 2)
-                                    {
-                                        // show the combine form and add all pdfs from the given directory
-                                        Application.Run(new CombineForm(Directory.EnumerateFiles(args[1], "*.pdf", SearchOption.AllDirectories)));
-                                        return;
-                                    }
-                                    break;
-                                }
-                                case CommandLineTask.Extract:
-                                {
-                                    if (args.Length == 2)
-                                    {
-                                        // show the extract form with the given file
-                                        Application.Run(new ExtractForm(args[1]));
-                                        return;
-                                    }
-                                    break;
-                                }
-                                case CommandLineTask.View:
-                                {
-                                    if (args.Length == 2)
-                                    {
-                                        // show the document
-                                        Application.Run(new ViewForm(args[1]));
-                                        return;
-                                    }
-                                    break;
-                                }
-                                default:
-                                {
-                                    throw new NotImplementedException();
-                                }
-                            }
+                            action(args[1]);
+                            return;
                         }
+                        goto default;
+                    }
+                    default:
+                    {
+                        // try to run a multi file task with all remaining arguments
+                        Action<IEnumerable<string>> action;
+                        if (_multiFileTasks.TryGetValue(args[0], out action))
+                        {
+                            action(args.Skip(1));
+                            return;
+                        }
+                        break;
                     }
                 }
 
                 // show the usage dialog
-                MessageBox.Show(string.Format(Resources.Program_Usage, Environment.GetCommandLineArgs()[0], ComEmbedding, CommandLineTask.Combine, CommandLineTask.CombineDirectory, CommandLineTask.Extract, CommandLineTask.View), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(string.Format(Resources.Program_Usage, Environment.GetCommandLineArgs()[0], string.Join("|", _standaloneTasks.Keys), string.Join("|", _singleFileTasks.Keys), string.Join("|", _multiFileTasks.Keys)), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception e)
             {
                 // show the error message
                 MessageBox.Show(e.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private static void RunComServer()
+        {
+            // create and register the com server
+            var comServer = new EmbeddedComServer();
+            uint cookie;
+            Native.CoRegisterClassObject(comServer.GetType().GUID, comServer, Native.CLSCTX_LOCAL_SERVER, Native.REGCLS_SINGLEUSE, out cookie);
+            try
+            {
+                // wait for it to be ready
+                if (!comServer.Wait(10000))
+                {
+                    MessageBox.Show(Resources.Program_ServerTimeout, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+            finally
+            {
+                // unregister the com server
+                Native.CoRevokeClassObject(cookie);
+            }
+
+            // check the files and parse the command verb
+            if (comServer.Files == null)
+            {
+                MessageBox.Show(Resources.Program_NoFiles, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (comServer.Command == null)
+            {
+                MessageBox.Show(Resources.Program_NoCommand, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            Action<IEnumerable<string>> action;
+            if (!_multiFileTasks.TryGetValue(comServer.Command, out action))
+            {
+                MessageBox.Show(string.Format(Resources.Program_UnknownVerb, comServer.Command, string.Join(", ", _multiFileTasks)), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // run the action
+            action(comServer.Files);
         }
     }
 }

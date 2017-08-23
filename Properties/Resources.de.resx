@@ -121,7 +121,7 @@
     <value>Der Vorgang wird abgebrochen...</value>
   </data>
   <data name="Converter_CompletedPages" xml:space="preserve">
-    <value>Konvertierte Seiten: {0}</value>
+    <value>Seiten: {2}, Konvertiert: {0}, Übersprungen: {1}</value>
   </data>
   <data name="Converter_ConvertFileError" xml:space="preserve">
     <value>Folgender Fehler ist beim Konvertieren der Datei {0} aufgetreten:
@@ -180,9 +180,7 @@ Fehlerprotokol:
   <data name="Program_Usage" xml:space="preserve">
     <value>AUFRUF:
   {0} {1}
-  {0} {2} [&lt;Datei&gt; [...]]
-  {0} {3} &lt;Verzeichnis&gt;
-  {0} {4} &lt;Datei&gt;
-  {0} {5} &lt;Datei&gt;</value>
+  {0} {2} &lt;Pfad&gt;
+  {0} {3} &lt;Pfad&gt; [&lt;Pfad&gt; [...]]</value>
   </data>
 </root>

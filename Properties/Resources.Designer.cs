@@ -70,7 +70,7 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Converted pages: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pages: {2}, Converted: {0}, Skipped: {1} ähnelt.
         /// </summary>
         internal static string Converter_CompletedPages {
             get {
@@ -214,10 +214,8 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die USAGE:
         ///  {0} {1}
-        ///  {0} {2} [&lt;file&gt; [...]]
-        ///  {0} {3} &lt;directory&gt;
-        ///  {0} {4} &lt;file&gt;
-        ///  {0} {5} &lt;file&gt; ähnelt.
+        ///  {0} {2} &lt;path&gt;
+        ///  {0} {3} &lt;path&gt; [&lt;path&gt; [...]] ähnelt.
         /// </summary>
         internal static string Program_Usage {
             get {

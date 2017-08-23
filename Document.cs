@@ -356,7 +356,18 @@ namespace Aufbauwerk.Tools.PdfKit
 
             protected override void DoConvertToPdf(string path, Action<int> pageCompletedCallback, Func<bool> cancellationCallback)
             {
-                throw new NotImplementedException();
+                // convert the file using Ghostscript
+                using (var ghostscript = new Ghostscript(new string[] { "PdfKit", "-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=pdfwrite", "-sOutputFile=" + path }))
+                {
+                    ghostscript.Poll += (s, e) => e.Cancel = cancellationCallback();
+                    ghostscript.Run(".setpdfwrite");
+                    DoRunInitialize(ghostscript);
+                    for (var i = 0; i < _pages.Keys.Count; i++)
+                    {
+                        DoRunPage(ghostscript, i + 1);
+                        pageCompletedCallback(_pages.Keys[i]);
+                    }
+                }
             }
 
             protected override void DoRunInitialize(Ghostscript ghostscript)

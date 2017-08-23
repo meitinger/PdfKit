@@ -121,7 +121,7 @@
     <value>The operation is being cancelled...</value>
   </data>
   <data name="Converter_CompletedPages" xml:space="preserve">
-    <value>Converted pages: {0}</value>
+    <value>Pages: {2}, Converted: {0}, Skipped: {1}</value>
   </data>
   <data name="Converter_ConvertFileError" xml:space="preserve">
     <value>The following error occured while loading file {0}:
@@ -181,9 +181,7 @@ The following verbs are supported: {1}.</value>
   <data name="Program_Usage" xml:space="preserve">
     <value>USAGE:
   {0} {1}
-  {0} {2} [&lt;file&gt; [...]]
-  {0} {3} &lt;directory&gt;
-  {0} {4} &lt;file&gt;
-  {0} {5} &lt;file&gt;</value>
+  {0} {2} &lt;path&gt;
+  {0} {3} &lt;path&gt; [&lt;path&gt; [...]]</value>
   </data>
 </root>
