@@ -121,7 +121,7 @@
     <value>The operation is being cancelled...</value>
   </data>
   <data name="Converter_CompletedPages" xml:space="preserve">
-    <value>Pages: {2}, Converted: {0}, Skipped: {1}</value>
+    <value>Converted pages: {0}/{1}</value>
   </data>
   <data name="Converter_ConvertFileError" xml:space="preserve">
     <value>The following error occured while loading file {0}:
@@ -132,6 +132,27 @@ Do you want to ignore the error and proceed with the next file, retry loading th
   </data>
   <data name="Converter_DialogTitle" xml:space="preserve">
     <value>{0} - Convert to {1}...</value>
+  </data>
+  <data name="Converter_FormatBmp" xml:space="preserve">
+    <value>Bitmap</value>
+  </data>
+  <data name="Converter_FormatEps" xml:space="preserve">
+    <value>EPS</value>
+  </data>
+  <data name="Converter_FormatJpeg" xml:space="preserve">
+    <value>JPEG</value>
+  </data>
+  <data name="Converter_FormatPdf" xml:space="preserve">
+    <value>PDF</value>
+  </data>
+  <data name="Converter_FormatPng" xml:space="preserve">
+    <value>PNG</value>
+  </data>
+  <data name="Converter_FormatPs" xml:space="preserve">
+    <value>PostScript</value>
+  </data>
+  <data name="Converter_FormatTiff" xml:space="preserve">
+    <value>TIFF</value>
   </data>
   <data name="Converter_LoadFileError" xml:space="preserve">
     <value>The following error occured while loading file {0}:
@@ -149,9 +170,6 @@ Only the following formats are allowed: {0}</value>
   </data>
   <data name="Document_InvalidPageNumber" xml:space="preserve">
     <value>The page number '{0}' is invalid.</value>
-  </data>
-  <data name="Document_PageCountOutOfRange" xml:space="preserve">
-    <value>The file reports a page count of {0}.</value>
   </data>
   <data name="Document_PageNotRendered" xml:space="preserve">
     <value>Ghostscript has finished rendering page {0} but not returned a result.</value>

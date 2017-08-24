@@ -121,10 +121,10 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             { "Combine", files => Application.Run(new CombineForm(files)) },
             { "ConvertToPdf", files => PdfConverter.Run(files) },
-            { "ConvertToBmp", files => GhostscriptConverter.Run(files, new BmpFormatDialog()) },
-            { "ConvertToJpeg", files => GhostscriptConverter.Run(files, new JpegFormatDialog()) },
-            { "ConvertToPng", files => GhostscriptConverter.Run(files, new PngFormatDialog()) },
-            { "ConvertToTiff", files => GhostscriptConverter.Run(files, new TiffFormatDialog()) },
+            { "ConvertToBmp", files => GhostscriptConverter.Run(files, GhostscriptConverter.Format.Bmp) },
+            { "ConvertToJpeg", files => GhostscriptConverter.Run(files, GhostscriptConverter.Format.Jpeg) },
+            { "ConvertToPng", files => GhostscriptConverter.Run(files, GhostscriptConverter.Format.Png) },
+            { "ConvertToTiff", files => GhostscriptConverter.Run(files, GhostscriptConverter.Format.Tiff) },
         };
 
         private static readonly SortedDictionary<string, Action<string>> _singleFileTasks = new SortedDictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase)

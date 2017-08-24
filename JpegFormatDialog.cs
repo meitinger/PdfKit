@@ -27,6 +27,11 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeComponent();
         }
 
+        public override string FileExtension
+        {
+            get { return "jpg"; }
+        }
+
         protected override void FillArguments(IList<string> args)
         {
             // add the arguments

@@ -20,11 +20,16 @@ using System.Globalization;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public partial class ImageFormatDialog : Aufbauwerk.Tools.PdfKit.FormatDialog
+    public abstract partial class ImageFormatDialog : Aufbauwerk.Tools.PdfKit.FormatDialog
     {
         public ImageFormatDialog()
         {
             InitializeComponent();
+        }
+
+        public override bool SupportsSingleFile
+        {
+            get { return false; }
         }
 
         protected override void FillArguments(IList<string> args)

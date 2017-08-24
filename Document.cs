@@ -83,14 +83,24 @@ namespace Aufbauwerk.Tools.PdfKit
                     throw new InvalidDataException(string.Format(Resources.Document_InvalidFileFormat, supportedType));
                 }
 
-                // check the page count before returning the document
-                if (doc.PageCount < 1)
-                {
-                    throw new InvalidDataException(string.Format(Resources.Document_PageCountOutOfRange, doc.PageCount));
-                }
+                // set the path and return the document
                 doc.FilePath = path;
                 return doc;
             }
+        }
+
+        public static Document FromPdf(PdfDocument pdf)
+        {
+            // check the argument
+            if (pdf == null)
+            {
+                throw new ArgumentNullException("pdf");
+            }
+
+            // quickly create a pdf document
+            var doc = new PortableDocumentFormatDocument(pdf.PageCount);
+            doc.FilePath = pdf.FullPath;
+            return doc;
         }
 
         private abstract class GhostscriptDocument : Document
@@ -215,12 +225,17 @@ namespace Aufbauwerk.Tools.PdfKit
 
             private readonly int _pageCount;
 
-            public PortableDocumentFormatDocument(Stream fileStream)
+            internal PortableDocumentFormatDocument(Stream fileStream)
             {
                 using (var document = PdfReader.Open(fileStream, PdfDocumentOpenMode.InformationOnly))
                 {
                     _pageCount = document.PageCount;
                 }
+            }
+
+            internal PortableDocumentFormatDocument(int pageCount)
+            {
+                _pageCount = pageCount;
             }
 
             public override int PageCount
@@ -233,7 +248,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 get { return DocumentType.PortableDocumentFormat; }
             }
 
-            protected override void DoConvertToPdf(string path, Action<int> pageCompletedCallback, Func<bool> cancellationCallback)
+            protected override void DoConvertToPdf(string path, Action pageCompletedCallback, Func<bool> cancellationCallback)
             {
                 // already a pdf
                 throw new NotSupportedException();
@@ -276,7 +291,7 @@ namespace Aufbauwerk.Tools.PdfKit
             private readonly SortedList<int, byte[]> _pages = new SortedList<int, byte[]>();
             private readonly byte[] _prologAndSetup;
 
-            public PostScriptDocument(string header, StreamReader reader)
+            internal PostScriptDocument(string header, StreamReader reader)
             {
                 // create a memory writer
                 using (var memory = new MemoryStream())
@@ -354,18 +369,24 @@ namespace Aufbauwerk.Tools.PdfKit
                 get { return DocumentType.PostScript; }
             }
 
-            protected override void DoConvertToPdf(string path, Action<int> pageCompletedCallback, Func<bool> cancellationCallback)
+            protected override void DoConvertToPdf(string path, Action pageCompletedCallback, Func<bool> cancellationCallback)
             {
                 // convert the file using Ghostscript
                 using (var ghostscript = new Ghostscript(new string[] { "PdfKit", "-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=pdfwrite", "-sOutputFile=" + path }))
                 {
-                    ghostscript.Poll += (s, e) => e.Cancel = cancellationCallback();
+                    if (cancellationCallback != null)
+                    {
+                        ghostscript.Poll += (s, e) => e.Cancel = cancellationCallback();
+                    }
                     ghostscript.Run(".setpdfwrite");
                     DoRunInitialize(ghostscript);
-                    for (var i = 0; i < _pages.Keys.Count; i++)
+                    for (var i = 0; i < _pages.Count; i++)
                     {
                         DoRunPage(ghostscript, i + 1);
-                        pageCompletedCallback(_pages.Keys[i]);
+                        if (pageCompletedCallback != null)
+                        {
+                            pageCompletedCallback();
+                        }
                     }
                 }
             }
@@ -390,7 +411,7 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             public static readonly new Regex Header = new Regex(@"^%!PS-Adobe-\d\.\d\s+EPSF-\d\.\d(\s|$)", RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture);
 
-            public EncapsulatedPostScriptDocument(string header, StreamReader reader) : base(header, reader) { }
+            internal EncapsulatedPostScriptDocument(string header, StreamReader reader) : base(header, reader) { }
 
             public override DocumentType Type
             {
@@ -484,7 +505,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
             }
 
-            protected override void DoConvertToPdf(string path, Action<int> pageCompletedCallback, Func<bool> cancellationCallback)
+            protected override void DoConvertToPdf(string path, Action pageCompletedCallback, Func<bool> cancellationCallback)
             {
                 lock (_image)
                 {
@@ -498,7 +519,7 @@ namespace Aufbauwerk.Tools.PdfKit
                                 _image.SelectActiveFrame(FrameDimension.Page, i);
                                 if (cancellationCallback != null && cancellationCallback())
                                 {
-                                    return;
+                                    throw new OperationCanceledException();
                                 }
                             }
 
@@ -510,13 +531,15 @@ namespace Aufbauwerk.Tools.PdfKit
                             {
                                 gc.DrawImage(_wrapper, 0, 0, _wrapper.PointWidth, _wrapper.PointHeight);
                             }
+
+                            // check for cancellation and notify the caller
                             if (cancellationCallback != null && cancellationCallback())
                             {
-                                return;
+                                throw new OperationCanceledException();
                             }
                             if (pageCompletedCallback != null)
                             {
-                                pageCompletedCallback(i + 1);
+                                pageCompletedCallback();
                             }
                         }
 
@@ -548,55 +571,59 @@ namespace Aufbauwerk.Tools.PdfKit
                         _image.SelectActiveFrame(FrameDimension.Page, pageNumber - 1);
                         if (cancellationCallback != null && cancellationCallback())
                         {
-                            return null;
+                            throw new OperationCanceledException();
                         }
                     }
 
-                    // calculate the new size
+                    // calculate the new size and create the image
                     var size = _image.Size;
                     var newSize = new Size((int)Math.Round(scaleFactor * (dpiX / _image.HorizontalResolution) * size.Width), (int)Math.Round(scaleFactor * (dpiY / _image.VerticalResolution) * size.Height));
-                    if (cancellationCallback != null && cancellationCallback())
-                    {
-                        return null;
-                    }
-
-                    // create the new image
                     var result = new Bitmap(newSize.Width, newSize.Height);
-                    result.SetResolution(dpiX, dpiX);
-                    if (cancellationCallback != null && cancellationCallback())
+                    try
                     {
-                        result.Dispose();
-                        return null;
-                    }
-
-                    // draw the original
-                    var cancelled = false;
-                    using (var gc = Graphics.FromImage(result))
-                    {
-                        gc.Clear(Color.Transparent);
-                        gc.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        if (cancellationCallback == null)
+                        // set the resolution
+                        result.SetResolution(dpiX, dpiX);
+                        if (cancellationCallback != null && cancellationCallback())
                         {
-                            gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel);
+                            throw new OperationCanceledException();
                         }
-                        else
+
+                        // draw the original
+                        using (var gc = Graphics.FromImage(result))
                         {
-                            gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel, null, _ => cancelled = cancellationCallback());
+                            gc.Clear(Color.Transparent);
+                            gc.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                            if (cancellationCallback == null)
+                            {
+                                gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel);
+                            }
+                            else
+                            {
+                                var cancelled = false;
+                                gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel, null, _ => cancelled || (cancelled = cancellationCallback()));
+                                if (cancelled)
+                                {
+                                    throw new OperationCanceledException();
+                                }
+                            }
                         }
+
+                        // rotate the image
+                        result.RotateFlip((RotateFlipType)((4 - (rotate / 90)) % 4));
+                        if (cancellationCallback != null && cancellationCallback())
+                        {
+                            throw new OperationCanceledException();
+                        }
+
+                        // return the image
+                        return result;
                     }
-
-                    // rotate the image
-                    result.RotateFlip((RotateFlipType)((4 - (rotate / 90)) % 4));
-
-                    // handle cancellation
-                    if (cancelled)
+                    catch
                     {
+                        // dispose the image and rethrow
                         result.Dispose();
-                        return null;
+                        throw;
                     }
-
-                    // return the result
-                    return result;
                 }
             }
 
@@ -628,7 +655,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        public void ConvertToPdf(string path, Action<int> pageCompletedCallback = null, Func<bool> cancellationCallback = null)
+        public void ConvertToPdf(string path, Action pageCompletedCallback = null, Func<bool> cancellationCallback = null)
         {
             // check the arguments and state
             if (path == null)
@@ -657,7 +684,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        protected abstract void DoConvertToPdf(string path, Action<int> pageCompletedCallback, Func<bool> cancellationCallback);
+        protected abstract void DoConvertToPdf(string path, Action pageCompletedCallback, Func<bool> cancellationCallback);
 
         protected abstract void DoRunInitialize(Ghostscript ghostscript);
 

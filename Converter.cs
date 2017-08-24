@@ -26,15 +26,14 @@ namespace Aufbauwerk.Tools.PdfKit
     public abstract class Converter
     {
         private bool _aborted = false;
-        private readonly HashSet<int> _convertedPages = new HashSet<int>();
         private Document _currentFile = null;
+        private int _completedPageCount = 0;
         private readonly object _errorLock = new object();
         private readonly Queue<Document> _files = new Queue<Document>();
         private bool _initializationDone = false;
-        private int _pagesCompleted = 0;
+        private int _dequeuedPageCount = 0;
         private readonly Native.IProgressDialog _progressDialog;
-        private readonly HashSet<int> _skippedPages = new HashSet<int>();
-        private int _totalPages = 0;
+        private int _totalPageCount = 0;
 
         protected Converter(IEnumerable<string> files)
         {
@@ -116,7 +115,7 @@ namespace Aufbauwerk.Tools.PdfKit
                             return;
                         }
                         _files.Enqueue(file);
-                        _totalPages += file.PageCount;
+                        _totalPageCount += file.PageCount;
                         Monitor.Pulse(_files);
                     }
                 }
@@ -143,8 +142,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 {
                     // reset the dialog
                     _currentFile = null;
-                    _convertedPages.Clear();
-                    _skippedPages.Clear();
+                    _completedPageCount = 0;
                     UpdateDialog();
 
                     // dequeue the next file
@@ -160,7 +158,7 @@ namespace Aufbauwerk.Tools.PdfKit
                             Monitor.Wait(_files);
                         }
                         _currentFile = _files.Dequeue();
-                        _pagesCompleted += _currentFile.PageCount;
+                        _dequeuedPageCount += _currentFile.PageCount;
                     }
 
                     // convert the file
@@ -173,6 +171,11 @@ namespace Aufbauwerk.Tools.PdfKit
                     try
                     {
                         ConvertFile(_currentFile);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _aborted = true;
+                        return;
                     }
                     catch (Exception e)
                     {
@@ -195,8 +198,7 @@ namespace Aufbauwerk.Tools.PdfKit
                                     }
                                     case DialogResult.Retry:
                                     {
-                                        _convertedPages.Clear();
-                                        _skippedPages.Clear();
+                                        _completedPageCount = 0;
                                         goto Retry;
                                     }
                                     case DialogResult.Ignore:
@@ -230,19 +232,10 @@ namespace Aufbauwerk.Tools.PdfKit
             return _aborted || _progressDialog.HasUserCancelled();
         }
 
-        protected void PageConverted(int pageNumber)
+        protected void PageCompleted()
         {
-            // add the page to the list
-            _convertedPages.Add(pageNumber);
-            _skippedPages.Remove(pageNumber);
-            UpdateDialog();
-        }
-
-        protected void PageSkipped(int pageNumber)
-        {
-            // add the page to the list
-            _skippedPages.Add(pageNumber);
-            _convertedPages.Remove(pageNumber);
+            // increment the counter and update the dialogs
+            _completedPageCount++;
             UpdateDialog();
         }
 
@@ -255,16 +248,16 @@ namespace Aufbauwerk.Tools.PdfKit
                 _progressDialog.SetLine(2, null, false, IntPtr.Zero);
                 if (_initializationDone)
                 {
-                    _progressDialog.SetProgress(_pagesCompleted, _totalPages);
+                    _progressDialog.SetProgress(_dequeuedPageCount, _totalPageCount);
                 }
             }
             else
             {
                 _progressDialog.SetLine(1, _currentFile.FilePath, true, IntPtr.Zero);
-                _progressDialog.SetLine(2, string.Format(Resources.Converter_CompletedPages, _convertedPages.Count, _skippedPages.Count, _currentFile.PageCount), false, IntPtr.Zero);
+                _progressDialog.SetLine(2, string.Format(Resources.Converter_CompletedPages, _completedPageCount, _currentFile.PageCount), false, IntPtr.Zero);
                 if (_initializationDone)
                 {
-                    _progressDialog.SetProgress(_pagesCompleted - _currentFile.PageCount + Math.Min(_currentFile.PageCount, _convertedPages.Count + _skippedPages.Count), _totalPages);
+                    _progressDialog.SetProgress(_dequeuedPageCount - _currentFile.PageCount + Math.Min(_currentFile.PageCount, _completedPageCount), _totalPageCount);
                 }
             }
         }
@@ -272,88 +265,111 @@ namespace Aufbauwerk.Tools.PdfKit
 
     public class GhostscriptConverter : Converter
     {
-        public static void Run(IEnumerable<string> files, FormatDialog formatDialog)
+        public class Format
+        {
+            private static readonly List<Format> _formats = new List<Format>();
+
+            public static readonly Format Bmp = new Format(6, Resources.Converter_FormatBmp, new BmpFormatDialog());
+            //public static readonly Format Eps = new Format(2, Resources.Converter_FormatEps, new EpsFormatDialog(), DocumentType.PortableDocumentFormat | DocumentType.PostScript);
+            public static readonly Format Jpeg = new Format(4, Resources.Converter_FormatJpeg, new JpegFormatDialog());
+            public static readonly Format Png = new Format(3, Resources.Converter_FormatPdf, new PngFormatDialog());
+            //public static readonly Format Ps = new Format(1, Resources.Converter_FormatPs, new PsFormatDialog(), DocumentType.PortableDocumentFormat | DocumentType.EncapsulatedPostScript);
+            public static readonly Format Tiff = new Format(5, Resources.Converter_FormatTiff, new TiffFormatDialog());
+
+            private readonly FormatDialog _dialog;
+
+            private Format(int priority, string name, FormatDialog dialog, DocumentType allowedTypes = DocumentType.Any & ~DocumentType.Image)
+            {
+                Priority = priority;
+                Name = name;
+                _dialog = dialog;
+                AllowedTypes = allowedTypes;
+                _formats.Add(this);
+            }
+
+            public DocumentType AllowedTypes { get; private set; }
+
+            public string[] Arguments { get; private set; }
+
+            public string FileExtension
+            {
+                get { return _dialog.FileExtension; }
+            }
+
+            public string Name { get; private set; }
+
+            public int Priority { get; private set; }
+
+            public bool SupportsSingleFile
+            {
+                get { return _dialog.SupportsSingleFile; }
+            }
+
+            public bool ShowDialog(string useFileName = null)
+            {
+                // show the format dialog
+                _dialog.UseFileName = useFileName;
+                if (_dialog.ShowDialog() == DialogResult.OK)
+                {
+                    Arguments = _dialog.Arguments;
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        public static void Run(IEnumerable<string> files, Format format)
         {
             // check the argument
             if (files == null)
             {
                 throw new ArgumentNullException("files");
             }
-            if (formatDialog == null)
+            if (format == null)
             {
-                throw new ArgumentNullException("formatDialog");
+                throw new ArgumentNullException("format");
             }
 
             // show the format dialog and run the conversion
-            if (formatDialog.ShowDialog() == DialogResult.OK)
+            if (format.ShowDialog())
             {
-                new GhostscriptConverter(files, formatDialog.FormatName, formatDialog.Arguments, formatDialog.EvenPages, formatDialog.OddPages).Run();
+                new GhostscriptConverter(files, format).Run();
             }
         }
 
-        private readonly string[] _arguments;
-        private readonly string _formatName;
-        private readonly bool _evenPages;
-        private readonly bool _oddPages;
+        private readonly Format _format;
 
-        private GhostscriptConverter(IEnumerable<string> files, string formatName, string[] arguments, bool evenPages, bool oddPages)
+        private GhostscriptConverter(IEnumerable<string> files, Format format)
             : base(files)
         {
-            _formatName = formatName;
-            _arguments = arguments;
-            _evenPages = evenPages;
-            _oddPages = oddPages;
+            _format = format;
         }
 
         protected override DocumentType AllowedTypes
         {
-            get { return DocumentType.Any & ~DocumentType.Image; }
+            get { return _format.AllowedTypes; }
         }
 
         protected override string FormatName
         {
-            get { return _formatName; }
+            get { return _format.Name; }
         }
 
         protected override void ConvertFile(Document file)
         {
             // create a new Ghostscript instance
-            using (var gs = new Ghostscript(_arguments))
+            using (var gs = new Ghostscript(_format.Arguments))
             {
                 // set the cancel handler
-                gs.Poll += (o, e) =>
-                {
-                    if (IsCancelled())
-                    {
-                        e.Cancel = true;
-                    }
-                };
+                gs.Poll += (o, e) => e.Cancel = IsCancelled();
 
                 // initialize the document and go over all pages
                 file.RunInitialize(gs);
                 for (var pageNumber = 1; pageNumber <= file.PageCount; pageNumber++)
                 {
-                    // ensure the page was requested
-                    if (pageNumber % 2 == 0 ? _evenPages : _oddPages)
-                    {
-                        // run ghostscript
-                        try
-                        {
-                            file.RunPage(gs, pageNumber);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            return;
-                        }
-
-                        // notify the caller
-                        PageConverted(pageNumber);
-                    }
-                    else
-                    {
-                        // skip the page
-                        PageSkipped(pageNumber);
-                    }
+                    // run the page and notify the caller
+                    file.RunPage(gs, pageNumber);
+                    PageCompleted();
                 }
             }
         }
@@ -380,12 +396,12 @@ namespace Aufbauwerk.Tools.PdfKit
 
         protected override string FormatName
         {
-            get { return "PDF"; }
+            get { return Resources.Converter_FormatPdf; }
         }
 
         protected override void ConvertFile(Document file)
         {
-            file.ConvertToPdf(Path.ChangeExtension(file.FilePath, "pdf"), PageConverted, IsCancelled);
+            file.ConvertToPdf(Path.ChangeExtension(file.FilePath, "pdf"), PageCompleted, IsCancelled);
         }
     }
 }

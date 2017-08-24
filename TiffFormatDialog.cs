@@ -24,12 +24,22 @@ namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class TiffFormatDialog : Aufbauwerk.Tools.PdfKit.ImageFormatDialog
     {
+        private bool _adjustWidthSet = false;
+
         public TiffFormatDialog()
         {
             InitializeComponent();
         }
 
-        private bool _adjustWidthSet = false;
+        public override string FileExtension
+        {
+            get { return "tif"; }
+        }
+
+        public override bool SupportsSingleFile
+        {
+            get { return true; }
+        }
 
         private void FillScaleArguments(IList<string> args)
         {

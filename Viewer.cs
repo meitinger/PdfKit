@@ -382,23 +382,18 @@ namespace Aufbauwerk.Tools.PdfKit
             // render the page
             var page = (Page)e.Argument;
             var worker = (sender as BackgroundWorker);
-            page.Image = page.Document.RenderPage(page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, page.Rotate, image =>
+            try
             {
-                page.Image = image;
-                worker.ReportProgress(-1);
-            }, () =>
-            {
-                // check if a cancellation was requested
-                if (worker.CancellationPending)
+                page.Image = page.Document.RenderPage(page.PageNumber, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, page.Zoom / 100, page.Rotate, image =>
                 {
-                    // abort rendering
-                    e.Cancel = true;
-                    return true;
-                }
-
-                // keep going
-                return false;
-            });
+                    page.Image = image;
+                    worker.ReportProgress(-1);
+                }, () => worker.CancellationPending);
+            }
+            catch (OperationCanceledException)
+            {
+                e.Cancel = true;
+            }
         }
 
         private void backgroundWorkerRenderPage_ProgressChanged(object sender, ProgressChangedEventArgs e)

@@ -70,7 +70,7 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Pages: {2}, Converted: {0}, Skipped: {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Converted pages: {0}/{1} ähnelt.
         /// </summary>
         internal static string Converter_CompletedPages {
             get {
@@ -97,6 +97,69 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         internal static string Converter_DialogTitle {
             get {
                 return ResourceManager.GetString("Converter_DialogTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitmap ähnelt.
+        /// </summary>
+        internal static string Converter_FormatBmp {
+            get {
+                return ResourceManager.GetString("Converter_FormatBmp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPS ähnelt.
+        /// </summary>
+        internal static string Converter_FormatEps {
+            get {
+                return ResourceManager.GetString("Converter_FormatEps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die JPEG ähnelt.
+        /// </summary>
+        internal static string Converter_FormatJpeg {
+            get {
+                return ResourceManager.GetString("Converter_FormatJpeg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PDF ähnelt.
+        /// </summary>
+        internal static string Converter_FormatPdf {
+            get {
+                return ResourceManager.GetString("Converter_FormatPdf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PNG ähnelt.
+        /// </summary>
+        internal static string Converter_FormatPng {
+            get {
+                return ResourceManager.GetString("Converter_FormatPng", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PostScript ähnelt.
+        /// </summary>
+        internal static string Converter_FormatPs {
+            get {
+                return ResourceManager.GetString("Converter_FormatPs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TIFF ähnelt.
+        /// </summary>
+        internal static string Converter_FormatTiff {
+            get {
+                return ResourceManager.GetString("Converter_FormatTiff", resourceCulture);
             }
         }
         
@@ -138,15 +201,6 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         internal static string Document_InvalidPageNumber {
             get {
                 return ResourceManager.GetString("Document_InvalidPageNumber", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die The file reports a page count of {0}. ähnelt.
-        /// </summary>
-        internal static string Document_PageCountOutOfRange {
-            get {
-                return ResourceManager.GetString("Document_PageCountOutOfRange", resourceCulture);
             }
         }
         

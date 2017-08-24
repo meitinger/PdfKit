@@ -645,7 +645,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private void ImageLoader()
         {
             // get the ducument
-            using (var document = Document.FromFile(_filePath))
+            using (var document = Document.FromPdf(_document))
             {
                 // initialize and repeat until every image is loaded or the form is disposed
                 var lastStartRange = _imageStartRange;
@@ -710,7 +710,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     }
                     catch (OperationCanceledException)
                     {
-                        break;
+                        continue;
                     }
                     catch
                     {

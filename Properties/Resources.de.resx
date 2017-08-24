@@ -121,7 +121,7 @@
     <value>Der Vorgang wird abgebrochen...</value>
   </data>
   <data name="Converter_CompletedPages" xml:space="preserve">
-    <value>Seiten: {2}, Konvertiert: {0}, Übersprungen: {1}</value>
+    <value>Konvertierte Seiten: {0}/{1}</value>
   </data>
   <data name="Converter_ConvertFileError" xml:space="preserve">
     <value>Folgender Fehler ist beim Konvertieren der Datei {0} aufgetreten:
@@ -149,9 +149,6 @@ Nur folgende Formate sind zugelassen: {0}</value>
   </data>
   <data name="Document_InvalidPageNumber" xml:space="preserve">
     <value>Die Seitennummer  '{0}' is ungültig.</value>
-  </data>
-  <data name="Document_PageCountOutOfRange" xml:space="preserve">
-    <value>Die Seitenzahl beträgt laut Metadaten {0}.</value>
   </data>
   <data name="Document_PageNotRendered" xml:space="preserve">
     <value>Ghostscript hat das Rendern der Seite {0} abgeschlossen ohne Ergebnis.</value>

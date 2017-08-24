@@ -9,12 +9,29 @@ using System.Windows.Forms;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public partial class FormatDialog : Form
+    public abstract partial class FormatDialog : Form
     {
         public FormatDialog()
         {
             InitializeComponent();
         }
+
+        public string[] Arguments
+        {
+            get
+            {
+                // build and return the arguments array
+                var list = new List<string>() { "PdfKit", "-dSAFER", "-dBATCH", "-dNOPAUSE" };
+                FillArguments(list);
+                return list.ToArray();
+            }
+        }
+
+        public abstract string FileExtension { get; }
+
+        public abstract bool SupportsSingleFile { get; }
+
+        public string UseFileName { get; set; }
 
         protected virtual void FillArguments(IList<string> args)
         {
@@ -92,13 +109,5 @@ namespace Aufbauwerk.Tools.PdfKit
                 offset += group.Height + group.Margin.Bottom;
             }
         }
-
-        public string[] Arguments { get; private set; }
-
-        public bool EvenPages { get; set; }
-
-        public bool OddPages { get; set; }
-
-        public string FormatName { get; set; }
     }
 }
