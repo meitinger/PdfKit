@@ -20,20 +20,17 @@ using System.Globalization;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public abstract partial class ImageFormatDialog : Aufbauwerk.Tools.PdfKit.FormatDialog
+    public partial class ImageFormatDialog : Aufbauwerk.Tools.PdfKit.FormatDialog
     {
         public ImageFormatDialog()
         {
             InitializeComponent();
         }
 
-        public override bool SupportsSingleFile
+        public override void FillArguments(IList<string> args)
         {
-            get { return false; }
-        }
+            base.FillArguments(args);
 
-        protected override void FillArguments(IList<string> args)
-        {
             // add the arguments
             if (checkBoxLinkedResolution.Checked)
             {
@@ -67,7 +64,6 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 args.Add("-dGraphicsAlphaBits=4");
             }
-            base.FillArguments(args);
         }
 
         protected override void UpdateControls(object sender, EventArgs e)

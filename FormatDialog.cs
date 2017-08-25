@@ -1,47 +1,32 @@
-﻿using System;
+﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public abstract partial class FormatDialog : Form
+    public partial class FormatDialog : Form
     {
         public FormatDialog()
         {
             InitializeComponent();
-        }
-
-        public string[] Arguments
-        {
-            get
-            {
-                // build and return the arguments array
-                var list = new List<string>() { "PdfKit", "-dSAFER", "-dBATCH", "-dNOPAUSE" };
-                FillArguments(list);
-                return list.ToArray();
-            }
-        }
-
-        public abstract string FileExtension { get; }
-
-        public abstract bool SupportsSingleFile { get; }
-
-        public string UseFileName { get; set; }
-
-        protected virtual void FillArguments(IList<string> args)
-        {
-        }
-
-        protected virtual void UpdateControls(object sender, EventArgs e)
-        {
-            var args = new List<string>();
-            FillArguments(args);
-            System.Diagnostics.Debug.WriteLine(string.Join(" ", args));
         }
 
         private IEnumerable<Control> AllChildren
@@ -65,6 +50,17 @@ namespace Aufbauwerk.Tools.PdfKit
                     }
                 }
             }
+        }
+
+        public virtual void FillArguments(IList<string> args)
+        {
+        }
+
+        protected virtual void UpdateControls(object sender, EventArgs e)
+        {
+            var args = new List<string>();
+            FillArguments(args);
+            System.Diagnostics.Debug.WriteLine(string.Join(" ", args));
         }
 
         private void FormatDialog_Load(object sender, EventArgs e)

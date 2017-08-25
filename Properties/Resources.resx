@@ -128,7 +128,7 @@
 
 {1}
 
-Do you want to ignore the error and proceed with the next file, retry loading the current file or abort the entire operation?</value>
+Do you want to ignore the error and proceed with the next file, retry converting the current file or abort the entire operation?</value>
   </data>
   <data name="Converter_DialogTitle" xml:space="preserve">
     <value>{0} - Convert to {1}...</value>
@@ -201,5 +201,8 @@ The following verbs are supported: {1}.</value>
   {0} {1}
   {0} {2} &lt;path&gt;
   {0} {3} &lt;path&gt; [&lt;path&gt; [...]]</value>
+  </data>
+  <data name="Program_UsageSeparator" xml:space="preserve">
+    <value>|</value>
   </data>
 </root>

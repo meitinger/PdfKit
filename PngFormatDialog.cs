@@ -29,13 +29,10 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeComponent();
         }
 
-        public override string FileExtension
+        public override void FillArguments(IList<string> args)
         {
-            get { return "png"; }
-        }
+            base.FillArguments(args);
 
-        protected override void FillArguments(IList<string> args)
-        {
             // add the arguments
             if (radioButtonMonochrome.Checked)
             {
@@ -55,7 +52,6 @@ namespace Aufbauwerk.Tools.PdfKit
                 args.Add("-sDEVICE=pngalpha");
                 args.Add(string.Format(CultureInfo.InvariantCulture, "-dBackgroundColor=16#{0:X6}", buttonBackgroundColor.BackColor.ToArgb() & 0x00FFFFFF));
             }
-            base.FillArguments(args);
         }
 
         protected override void UpdateControls(object sender, EventArgs e)

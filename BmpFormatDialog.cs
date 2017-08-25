@@ -25,12 +25,7 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeComponent();
         }
 
-        public override string FileExtension
-        {
-            get { return "bmp"; }
-        }
-
-        protected override void FillArguments(IList<string> args)
+        public override void FillArguments(IList<string> args)
         {
             if (radioButtonMonochrome.Checked)
             {

@@ -65,6 +65,13 @@ namespace Aufbauwerk.Tools.PdfKit
             void GetSelection([In, MarshalAs(UnmanagedType.LPStruct)] Guid riid, [Out] out IntPtr ppv);
         }
 
+        [ComImport, Guid("00000114-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IOleWindow
+        {
+            IntPtr GetWindow();
+            void Dummy_ContextSensitiveHelp();
+        }
+
         [ComImport, Guid("EBBC7C04-315E-11d2-B62F-006097DF5BD4"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
         public interface IProgressDialog
         {

@@ -27,13 +27,10 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeComponent();
         }
 
-        public override string FileExtension
+        public override void FillArguments(IList<string> args)
         {
-            get { return "jpg"; }
-        }
+            base.FillArguments(args);
 
-        protected override void FillArguments(IList<string> args)
-        {
             // add the arguments
             if (radioButtonGrayscale.Checked)
             {
@@ -51,7 +48,6 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 args.Add(string.Format(CultureInfo.InvariantCulture, "-dQFactor={0}", numericUpDownQFactor.Value));
             }
-            base.FillArguments(args);
         }
 
         protected override void UpdateControls(object sender, EventArgs e)

@@ -128,7 +128,7 @@
 
 {1}
 
-Wollen Sie den Fehler ignorieren und mit der nächsten Datei fortfahren, die aktuelle Datei neu laden oder den gesamten Prozess abbrechen?</value>
+Wollen Sie den Fehler ignorieren und mit der nächsten Datei fortfahren, die aktuelle Datei neu konvertieren oder den gesamten Prozess abbrechen?</value>
   </data>
   <data name="Converter_DialogTitle" xml:space="preserve">
     <value>{0} - Nach {1} konvertieren...</value>

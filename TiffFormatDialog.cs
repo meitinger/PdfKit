@@ -31,16 +31,6 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeComponent();
         }
 
-        public override string FileExtension
-        {
-            get { return "tif"; }
-        }
-
-        public override bool SupportsSingleFile
-        {
-            get { return true; }
-        }
-
         private void FillScaleArguments(IList<string> args)
         {
             // add the scale arguments
@@ -63,8 +53,10 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        protected override void FillArguments(IList<string> args)
+        public override void FillArguments(IList<string> args)
         {
+            base.FillArguments(args);
+
             // add the arguments
             if (radioButtonMonochrome.Checked)
             {
@@ -180,7 +172,6 @@ namespace Aufbauwerk.Tools.PdfKit
             args.Add(checkBoxFillOrder.Checked ? "-dFillOrder=1" : "-dFillOrder=2");
             args.Add(checkBoxUseBigTiff.Checked ? "-dUseBigTIFF=true" : "-dUseBigTIFF=false");
             args.Add(checkBoxTiffDateTime.Checked ? "-dTIFFDateTime=true" : "-dTIFFDateTime=false");
-            base.FillArguments(args);
         }
 
         protected override void UpdateControls(object sender, EventArgs e)

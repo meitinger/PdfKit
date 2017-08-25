@@ -120,11 +120,13 @@ namespace Aufbauwerk.Tools.PdfKit
         private static readonly SortedDictionary<string, Action<IEnumerable<string>>> _multiFileTasks = new SortedDictionary<string, Action<IEnumerable<string>>>(StringComparer.OrdinalIgnoreCase)
         {
             { "Combine", files => Application.Run(new CombineForm(files)) },
-            { "ConvertToPdf", files => PdfConverter.Run(files) },
-            { "ConvertToBmp", files => GhostscriptConverter.Run(files, GhostscriptConverter.Format.Bmp) },
-            { "ConvertToJpeg", files => GhostscriptConverter.Run(files, GhostscriptConverter.Format.Jpeg) },
-            { "ConvertToPng", files => GhostscriptConverter.Run(files, GhostscriptConverter.Format.Png) },
-            { "ConvertToTiff", files => GhostscriptConverter.Run(files, GhostscriptConverter.Format.Tiff) },
+            { "ConvertToBmp", files => Converter.Run(files, ConvertFormat.Bmp) },
+            { "ConvertToEps", files => Converter.Run(files, ConvertFormat.Eps) },
+            { "ConvertToJpeg", files => Converter.Run(files, ConvertFormat.Jpeg) },
+            { "ConvertToPdf", files => Converter.Run(files, ConvertFormat.Pdf) },
+            { "ConvertToPng", files => Converter.Run(files, ConvertFormat.Png) },
+            { "ConvertToTiff", files => Converter.Run(files, ConvertFormat.Tiff) },
+            { "ConvertToPs", files => Converter.Run(files, ConvertFormat.Ps) },
         };
 
         private static readonly SortedDictionary<string, Action<string>> _singleFileTasks = new SortedDictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase)
@@ -193,7 +195,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
 
                 // show the usage dialog
-                MessageBox.Show(string.Format(Resources.Program_Usage, Environment.GetCommandLineArgs()[0], string.Join("|", _standaloneTasks.Keys), string.Join("|", _singleFileTasks.Keys), string.Join("|", _multiFileTasks.Keys)), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(string.Format(Resources.Program_Usage, Path.GetFileNameWithoutExtension(Application.ExecutablePath), string.Join(Resources.Program_UsageSeparator, _standaloneTasks.Keys), string.Join(Resources.Program_UsageSeparator, _singleFileTasks.Keys), string.Join(Resources.Program_UsageSeparator, _multiFileTasks.Keys)), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception e)
             {

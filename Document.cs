@@ -113,15 +113,44 @@ namespace Aufbauwerk.Tools.PdfKit
                 EnsureNoOpenRenderer();
             }
 
+            protected override void DoConvert(ConvertFormat format, Action pageCompletedCallback, Func<bool> cancellationCallback)
+            {
+                // convert the file using Ghostscript
+                System.Diagnostics.Debug.WriteLine(string.Join(",", format.GetArguments(FilePath)));
+                using (var ghostscript = new Ghostscript(format.GetArguments(FilePath)))
+                {
+                    if (cancellationCallback != null)
+                    {
+                        ghostscript.Poll += (s, e) => e.Cancel = cancellationCallback();
+                    }
+                    if (format == ConvertFormat.Pdf)
+                    {
+                        ghostscript.Run(".setpdfwrite");
+                    }
+                    DoRunInitialize(ghostscript);
+                    for (var i = 0; i < PageCount; i++)
+                    {
+                        DoRunPage(ghostscript, i + 1);
+                        if (pageCompletedCallback != null)
+                        {
+                            pageCompletedCallback();
+                        }
+                    }
+                }
+            }
+
             protected override Image DoRenderPage(int pageNumber, float dpiX, float dpiY, double scaleFactor, int rotate, Action<Image> progressiveUpdate, Func<bool> cancellationCallback)
             {
                 // try to render the page
                 var image = (Bitmap)null;
+                var newRenderer = false;
+            Retry:
                 try
                 {
                     // ensure there is a renderer
                     if (_renderer == null)
                     {
+                        newRenderer = true;
                         _renderer = new GhostscriptRenderer();
                         DoRunInitialize(_renderer);
                     }
@@ -187,13 +216,21 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
                 catch (Exception)
                 {
-                    // dispose the renderer and image and rethrow
+                    // dispose the renderer and image
                     EnsureNoOpenRenderer();
                     if (image != null)
                     {
                         image.Dispose();
                         image = null;
                     }
+
+                    // try again if we used an old renderer (sometimes it fails)
+                    if (!newRenderer)
+                    {
+                        goto Retry;
+                    }
+
+                    // rethrow the error
                     throw;
                 }
 
@@ -246,12 +283,6 @@ namespace Aufbauwerk.Tools.PdfKit
             public override DocumentType Type
             {
                 get { return DocumentType.PortableDocumentFormat; }
-            }
-
-            protected override void DoConvertToPdf(string path, Action pageCompletedCallback, Func<bool> cancellationCallback)
-            {
-                // already a pdf
-                throw new NotSupportedException();
             }
 
             protected override void DoRunInitialize(Ghostscript ghostscript)
@@ -369,28 +400,6 @@ namespace Aufbauwerk.Tools.PdfKit
                 get { return DocumentType.PostScript; }
             }
 
-            protected override void DoConvertToPdf(string path, Action pageCompletedCallback, Func<bool> cancellationCallback)
-            {
-                // convert the file using Ghostscript
-                using (var ghostscript = new Ghostscript(new string[] { "PdfKit", "-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=pdfwrite", "-sOutputFile=" + path }))
-                {
-                    if (cancellationCallback != null)
-                    {
-                        ghostscript.Poll += (s, e) => e.Cancel = cancellationCallback();
-                    }
-                    ghostscript.Run(".setpdfwrite");
-                    DoRunInitialize(ghostscript);
-                    for (var i = 0; i < _pages.Count; i++)
-                    {
-                        DoRunPage(ghostscript, i + 1);
-                        if (pageCompletedCallback != null)
-                        {
-                            pageCompletedCallback();
-                        }
-                    }
-                }
-            }
-
             protected override void DoRunInitialize(Ghostscript ghostscript)
             {
                 // run the prolog if there is any
@@ -457,11 +466,17 @@ namespace Aufbauwerk.Tools.PdfKit
                         throw e;
                     }
                 }
+
+                protected override void Dispose(bool disposing)
+                {
+                    // clear the image before disposing
+                    _gdiImage.SetValue(this, null);
+                    base.Dispose(disposing);
+                }
             }
 
             private readonly Image _image;
             private readonly int _pageCount;
-            private readonly XImageWrapper _wrapper;
 
             public ImageDocument(string path)
             {
@@ -477,9 +492,6 @@ namespace Aufbauwerk.Tools.PdfKit
                 {
                     _pageCount = 1;
                 }
-
-                // create the wrapper
-                _wrapper = new XImageWrapper(_image);
             }
 
             public override int PageCount
@@ -495,18 +507,24 @@ namespace Aufbauwerk.Tools.PdfKit
             protected override void Dispose(bool disposing)
             {
                 base.Dispose(disposing);
-                if (_wrapper != null)
-                {
-                    _wrapper.Dispose();
-                }
                 if (_image != null)
                 {
-                    _image.Dispose();
+                    lock (_image)
+                    {
+                        _image.Dispose();
+                    }
                 }
             }
 
-            protected override void DoConvertToPdf(string path, Action pageCompletedCallback, Func<bool> cancellationCallback)
+            protected override void DoConvert(ConvertFormat format, Action pageCompletedCallback, Func<bool> cancellationCallback)
             {
+                // only support pdf conversion
+                if (format != ConvertFormat.Pdf || !format.UseSingleFile)
+                {
+                    throw new NotSupportedException();
+                }
+
+                // convert all pages into a pdf
                 lock (_image)
                 {
                     using (var pdfDocument = new PdfDocument())
@@ -523,13 +541,16 @@ namespace Aufbauwerk.Tools.PdfKit
                                 }
                             }
 
-                            // draw the page in the document
+                            // draw the page into the document
                             var page = pdfDocument.AddPage();
-                            page.Width = _wrapper.PointWidth;
-                            page.Height = _wrapper.PointHeight;
-                            using (var gc = XGraphics.FromPdfPage(page))
+                            using (var imageWrapper = new XImageWrapper(_image))
                             {
-                                gc.DrawImage(_wrapper, 0, 0, _wrapper.PointWidth, _wrapper.PointHeight);
+                                page.Width = imageWrapper.PointWidth;
+                                page.Height = imageWrapper.PointHeight;
+                                using (var gc = XGraphics.FromPdfPage(page))
+                                {
+                                    gc.DrawImage(imageWrapper, 0, 0, imageWrapper.PointWidth, imageWrapper.PointHeight);
+                                }
                             }
 
                             // check for cancellation and notify the caller
@@ -544,7 +565,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         }
 
                         // save the document
-                        pdfDocument.Save(path);
+                        pdfDocument.Save(Path.ChangeExtension(FilePath, format.FileExtension));
                     }
                 }
             }
@@ -655,19 +676,17 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        public void ConvertToPdf(string path, Action pageCompletedCallback = null, Func<bool> cancellationCallback = null)
+        public void Convert(ConvertFormat format, Action pageCompletedCallback = null, Func<bool> cancellationCallback = null)
         {
             // check the arguments and state
-            if (path == null)
+            if (format == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException("format");
             }
             CheckDisposed();
 
-            // ensure the directory exists and convert the document
-            path = Path.GetFullPath(path);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            DoConvertToPdf(path, pageCompletedCallback, cancellationCallback);
+            // convert the document
+            DoConvert(format, pageCompletedCallback, cancellationCallback);
         }
 
         public void Dispose()
@@ -684,7 +703,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        protected abstract void DoConvertToPdf(string path, Action pageCompletedCallback, Func<bool> cancellationCallback);
+        protected abstract void DoConvert(ConvertFormat format, Action pageCompletedCallback, Func<bool> cancellationCallback);
 
         protected abstract void DoRunInitialize(Ghostscript ghostscript);
 

@@ -83,7 +83,7 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         ///
         ///{1}
         ///
-        ///Do you want to ignore the error and proceed with the next file, retry loading the current file or abort the entire operation? ähnelt.
+        ///Do you want to ignore the error and proceed with the next file, retry converting the current file or abort the entire operation? ähnelt.
         /// </summary>
         internal static string Converter_ConvertFileError {
             get {
@@ -274,6 +274,15 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         internal static string Program_Usage {
             get {
                 return ResourceManager.GetString("Program_Usage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die | ähnelt.
+        /// </summary>
+        internal static string Program_UsageSeparator {
+            get {
+                return ResourceManager.GetString("Program_UsageSeparator", resourceCulture);
             }
         }
     }

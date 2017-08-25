@@ -17,51 +17,159 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Aufbauwerk.Tools.PdfKit.Properties;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public abstract class Converter
+    public class ConvertFormat
     {
+        private static readonly List<ConvertFormat> _formats = new List<ConvertFormat>();
+
+        public static readonly ConvertFormat Bmp;
+        public static readonly ConvertFormat Eps;
+        public static readonly ConvertFormat Jpeg;
+        public static readonly ConvertFormat Pdf;
+        public static readonly ConvertFormat Png;
+        public static readonly ConvertFormat Ps;
+        public static readonly ConvertFormat Tiff;
+
+        static ConvertFormat()
+        {
+            _formats.Add(Pdf = new ConvertFormat(Resources.Converter_FormatPdf, "pdf", true, DocumentType.Any & ~DocumentType.PortableDocumentFormat, "-sDEVICE=pdfwrite"));
+            _formats.Add(Ps = new ConvertFormat(Resources.Converter_FormatPs, "ps", true, DocumentType.PortableDocumentFormat | DocumentType.EncapsulatedPostScript, "-sDEVICE=ps2write"));
+            _formats.Add(Eps = new ConvertFormat(Resources.Converter_FormatEps, "eps", false, DocumentType.PortableDocumentFormat | DocumentType.PostScript, "-sDEVICE=eps2write"));
+            _formats.Add(Png = new ConvertFormat(Resources.Converter_FormatPng, "png", false, new PngFormatDialog()));
+            _formats.Add(Jpeg = new ConvertFormat(Resources.Converter_FormatJpeg, "jpg", false, new JpegFormatDialog()));
+            _formats.Add(Tiff = new ConvertFormat(Resources.Converter_FormatTiff, "tif", true, new TiffFormatDialog()));
+            _formats.Add(Bmp = new ConvertFormat(Resources.Converter_FormatBmp, "bmp", false, new BmpFormatDialog()));
+        }
+
+        public IEnumerable<ConvertFormat> GetApplicable(DocumentType type)
+        {
+            return _formats.Where(f => (f.AllowedTypes & type) != 0);
+        }
+
+        private readonly string[] _args;
+        private readonly FormatDialog _dialog;
+
+        private ConvertFormat(string name, string fileExtension, bool supportsSingleFile, ImageFormatDialog dialog)
+        {
+            _args = null;
+            _dialog = dialog;
+            Name = name;
+            FileExtension = fileExtension;
+            SupportsSingleFile = supportsSingleFile;
+            AllowedTypes = DocumentType.Any & ~DocumentType.Image;
+            UseSingleFile = supportsSingleFile;
+        }
+
+        private ConvertFormat(string name, string fileExtension, bool supportsSingleFile, DocumentType allowedTypes, params string[] args)
+        {
+            _args = args;
+            _dialog = null;
+            Name = name;
+            FileExtension = fileExtension;
+            SupportsSingleFile = supportsSingleFile;
+            AllowedTypes = allowedTypes;
+            UseSingleFile = supportsSingleFile;
+        }
+
+        public DocumentType AllowedTypes { get; private set; }
+
+        public string FileExtension { get; private set; }
+
+        public string Name { get; private set; }
+
+        public bool SupportsSingleFile { get; private set; }
+
+        public bool UseSingleFile { get; private set; }
+
+        public string[] GetArguments(string inputFile)
+        {
+            // build the Ghostscript command line
+            var list = new List<string>() { "PdfKit", "-dBATCH", "-dNOPAUSE" };
+            if (_args != null)
+            {
+                list.AddRange(_args);
+            }
+            if (_dialog != null)
+            {
+                _dialog.FillArguments(list);
+            }
+            list.Add("-sOutputFile=" + Path.Combine(Path.GetDirectoryName(inputFile), string.Format("{0}{1}.{2}", Path.GetFileNameWithoutExtension(inputFile), UseSingleFile ? string.Empty : "_%d", FileExtension)));
+            return list.ToArray();
+        }
+
+        public bool ShowDialog(IWin32Window parent = null)
+        {
+            // show dialog
+            return _dialog == null ? true : _dialog.ShowDialog(parent) == DialogResult.OK;
+        }
+    }
+
+    public class Converter
+    {
+        private class OleWindow : IWin32Window
+        {
+            private readonly Native.IOleWindow window;
+
+            public OleWindow(object oleWindow)
+            {
+                window = oleWindow as Native.IOleWindow;
+            }
+
+            public IntPtr Handle
+            {
+                get { return window == null ? IntPtr.Zero : window.GetWindow(); }
+            }
+        }
+
+        public static void Run(IEnumerable<string> files, ConvertFormat format)
+        {
+            // show the dialog and run the converter
+            if (format.ShowDialog())
+            {
+                new Converter(format, files).Run();
+            }
+        }
+
         private bool _aborted = false;
-        private Document _currentFile = null;
         private int _completedPageCount = 0;
+        private Document _currentFile = null;
+        private int _dequeuedPageCount = 0;
         private readonly object _errorLock = new object();
         private readonly Queue<Document> _files = new Queue<Document>();
+        private readonly ConvertFormat _format;
         private bool _initializationDone = false;
-        private int _dequeuedPageCount = 0;
         private readonly Native.IProgressDialog _progressDialog;
+        private readonly string _title;
         private int _totalPageCount = 0;
 
-        protected Converter(IEnumerable<string> files)
+        private Converter(ConvertFormat format, IEnumerable<string> files)
         {
+            // store the format and title
+            _format = format;
+            _title = string.Format(Resources.Converter_DialogTitle, Application.ProductName, _format.Name);
+
             // create the process dialog
             _progressDialog = (Native.IProgressDialog)Activator.CreateInstance(Type.GetTypeFromCLSID(Native.CLSID_ProgressDialog, true));
-            _progressDialog.SetTitle(Title);
+            _progressDialog.SetTitle(_title);
             _progressDialog.SetCancelMsg(Resources.Converter_CancelMessage, IntPtr.Zero);
 
             // start looking for files
-            ThreadPool.QueueUserWorkItem(Initialize, files);
+            ThreadPool.QueueUserWorkItem(AsyncInitialize, files);
         }
 
-        protected abstract DocumentType AllowedTypes { get; }
-
-        protected abstract string FormatName { get; }
-
-        protected string Title
-        {
-            get { return string.Format(Resources.Converter_DialogTitle, Application.ProductName, FormatName); }
-        }
-
-        protected abstract void ConvertFile(Document file);
-
-        private void Initialize(object files)
+        private void AsyncInitialize(object files)
         {
             // enqueue all selected files
             try
             {
+                // wait a bit for progress dialog
+                Thread.Sleep(1000);
                 foreach (var filePath in (IEnumerable<string>)files)
                 {
                     // try to load the file
@@ -73,7 +181,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     }
                     try
                     {
-                        file = Document.FromFile(filePath, AllowedTypes);
+                        file = Document.FromFile(filePath, _format.AllowedTypes);
                     }
                     catch (Exception e)
                     {
@@ -84,7 +192,7 @@ namespace Aufbauwerk.Tools.PdfKit
                             {
                                 return;
                             }
-                            switch (MessageBox.Show(string.Format(Resources.Converter_LoadFileError, filePath, e.Message), Title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
+                            switch (ShowMessage(string.Format(Resources.Converter_LoadFileError, filePath, e.Message), MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
                             {
                                 case DialogResult.Abort:
                                 {
@@ -131,7 +239,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        protected void Run()
+        private void Run()
         {
             // show the process dialog
             _progressDialog.StartProgressDialog(IntPtr.Zero, IntPtr.Zero, Native.PROGDLG_AUTOTIME, IntPtr.Zero);
@@ -170,7 +278,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     UpdateDialog();
                     try
                     {
-                        ConvertFile(_currentFile);
+                        _currentFile.Convert(_format, () => { _completedPageCount++; UpdateDialog(); }, () => _aborted || _progressDialog.HasUserCancelled());
                     }
                     catch (OperationCanceledException)
                     {
@@ -189,7 +297,7 @@ namespace Aufbauwerk.Tools.PdfKit
                                 {
                                     return;
                                 }
-                                switch (MessageBox.Show(string.Format(Resources.Converter_ConvertFileError, _currentFile.FilePath, e.Message), Title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
+                                switch (ShowMessage(string.Format(Resources.Converter_ConvertFileError, _currentFile.FilePath, e.Message), MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
                                 {
                                     case DialogResult.Abort:
                                     {
@@ -226,17 +334,12 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        protected bool IsCancelled()
-        {
-            // check if the operation has been aborted
-            return _aborted || _progressDialog.HasUserCancelled();
-        }
 
-        protected void PageCompleted()
+
+        private DialogResult ShowMessage(string text, MessageBoxButtons buttons, MessageBoxIcon icon)
         {
-            // increment the counter and update the dialogs
-            _completedPageCount++;
-            UpdateDialog();
+            // show the message
+            return MessageBox.Show(new OleWindow(_progressDialog), text, _title, buttons, icon);
         }
 
         private void UpdateDialog()
@@ -260,148 +363,6 @@ namespace Aufbauwerk.Tools.PdfKit
                     _progressDialog.SetProgress(_dequeuedPageCount - _currentFile.PageCount + Math.Min(_currentFile.PageCount, _completedPageCount), _totalPageCount);
                 }
             }
-        }
-    }
-
-    public class GhostscriptConverter : Converter
-    {
-        public class Format
-        {
-            private static readonly List<Format> _formats = new List<Format>();
-
-            public static readonly Format Bmp = new Format(6, Resources.Converter_FormatBmp, new BmpFormatDialog());
-            //public static readonly Format Eps = new Format(2, Resources.Converter_FormatEps, new EpsFormatDialog(), DocumentType.PortableDocumentFormat | DocumentType.PostScript);
-            public static readonly Format Jpeg = new Format(4, Resources.Converter_FormatJpeg, new JpegFormatDialog());
-            public static readonly Format Png = new Format(3, Resources.Converter_FormatPdf, new PngFormatDialog());
-            //public static readonly Format Ps = new Format(1, Resources.Converter_FormatPs, new PsFormatDialog(), DocumentType.PortableDocumentFormat | DocumentType.EncapsulatedPostScript);
-            public static readonly Format Tiff = new Format(5, Resources.Converter_FormatTiff, new TiffFormatDialog());
-
-            private readonly FormatDialog _dialog;
-
-            private Format(int priority, string name, FormatDialog dialog, DocumentType allowedTypes = DocumentType.Any & ~DocumentType.Image)
-            {
-                Priority = priority;
-                Name = name;
-                _dialog = dialog;
-                AllowedTypes = allowedTypes;
-                _formats.Add(this);
-            }
-
-            public DocumentType AllowedTypes { get; private set; }
-
-            public string[] Arguments { get; private set; }
-
-            public string FileExtension
-            {
-                get { return _dialog.FileExtension; }
-            }
-
-            public string Name { get; private set; }
-
-            public int Priority { get; private set; }
-
-            public bool SupportsSingleFile
-            {
-                get { return _dialog.SupportsSingleFile; }
-            }
-
-            public bool ShowDialog(string useFileName = null)
-            {
-                // show the format dialog
-                _dialog.UseFileName = useFileName;
-                if (_dialog.ShowDialog() == DialogResult.OK)
-                {
-                    Arguments = _dialog.Arguments;
-                    return true;
-                }
-                return false;
-            }
-        }
-
-        public static void Run(IEnumerable<string> files, Format format)
-        {
-            // check the argument
-            if (files == null)
-            {
-                throw new ArgumentNullException("files");
-            }
-            if (format == null)
-            {
-                throw new ArgumentNullException("format");
-            }
-
-            // show the format dialog and run the conversion
-            if (format.ShowDialog())
-            {
-                new GhostscriptConverter(files, format).Run();
-            }
-        }
-
-        private readonly Format _format;
-
-        private GhostscriptConverter(IEnumerable<string> files, Format format)
-            : base(files)
-        {
-            _format = format;
-        }
-
-        protected override DocumentType AllowedTypes
-        {
-            get { return _format.AllowedTypes; }
-        }
-
-        protected override string FormatName
-        {
-            get { return _format.Name; }
-        }
-
-        protected override void ConvertFile(Document file)
-        {
-            // create a new Ghostscript instance
-            using (var gs = new Ghostscript(_format.Arguments))
-            {
-                // set the cancel handler
-                gs.Poll += (o, e) => e.Cancel = IsCancelled();
-
-                // initialize the document and go over all pages
-                file.RunInitialize(gs);
-                for (var pageNumber = 1; pageNumber <= file.PageCount; pageNumber++)
-                {
-                    // run the page and notify the caller
-                    file.RunPage(gs, pageNumber);
-                    PageCompleted();
-                }
-            }
-        }
-    }
-
-    public class PdfConverter : Converter
-    {
-        public static void Run(IEnumerable<string> files)
-        {
-            // check the input and convert the files
-            if (files == null)
-            {
-                throw new ArgumentNullException("files");
-            }
-            new PdfConverter(files).Run();
-        }
-
-        private PdfConverter(IEnumerable<string> files) : base(files) { }
-
-        protected override DocumentType AllowedTypes
-        {
-            get { return DocumentType.Any & ~DocumentType.PortableDocumentFormat; }
-        }
-
-        protected override string FormatName
-        {
-            get { return Resources.Converter_FormatPdf; }
-        }
-
-        protected override void ConvertFile(Document file)
-        {
-            file.ConvertToPdf(Path.ChangeExtension(file.FilePath, "pdf"), PageCompleted, IsCancelled);
         }
     }
 }
