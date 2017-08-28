@@ -116,7 +116,6 @@ namespace Aufbauwerk.Tools.PdfKit
             protected override void DoConvert(ConvertFormat format, Action pageCompletedCallback, Func<bool> cancellationCallback)
             {
                 // convert the file using Ghostscript
-                System.Diagnostics.Debug.WriteLine(string.Join(",", format.GetArguments(FilePath)));
                 using (var ghostscript = new Ghostscript(format.GetArguments(FilePath)))
                 {
                     if (cancellationCallback != null)
