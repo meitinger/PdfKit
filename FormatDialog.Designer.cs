@@ -28,71 +28,88 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.GroupBox groupBoxPages;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormatDialog));
-            this.tableLayoutPanelGeneral = new System.Windows.Forms.TableLayoutPanel();
-            this.radioButtonAllPages = new System.Windows.Forms.RadioButton();
-            this.radioButtonSelectedPages = new System.Windows.Forms.RadioButton();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            groupBoxPages = new System.Windows.Forms.GroupBox();
-            groupBoxPages.SuspendLayout();
-            this.tableLayoutPanelGeneral.SuspendLayout();
+            System.Windows.Forms.TableLayoutPanel tableLayoutPanelPages;
+            System.Windows.Forms.Button buttonOK;
+            System.Windows.Forms.Button buttonCancel;
+            this.groupBoxPages = new System.Windows.Forms.GroupBox();
+            this.radioButtonSingleFile = new System.Windows.Forms.RadioButton();
+            this.radioButtonMultipleFiles = new System.Windows.Forms.RadioButton();
+            this.flowLayoutPanelButtons = new System.Windows.Forms.FlowLayoutPanel();
+            tableLayoutPanelPages = new System.Windows.Forms.TableLayoutPanel();
+            buttonOK = new System.Windows.Forms.Button();
+            buttonCancel = new System.Windows.Forms.Button();
+            this.groupBoxPages.SuspendLayout();
+            tableLayoutPanelPages.SuspendLayout();
+            this.flowLayoutPanelButtons.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBoxPages
             // 
-            resources.ApplyResources(groupBoxPages, "groupBoxPages");
-            groupBoxPages.Controls.Add(this.tableLayoutPanelGeneral);
-            groupBoxPages.Name = "groupBoxPages";
-            groupBoxPages.TabStop = false;
+            resources.ApplyResources(this.groupBoxPages, "groupBoxPages");
+            this.groupBoxPages.Controls.Add(tableLayoutPanelPages);
+            this.groupBoxPages.Name = "groupBoxPages";
+            this.groupBoxPages.TabStop = false;
             // 
-            // tableLayoutPanelGeneral
+            // tableLayoutPanelPages
             // 
-            resources.ApplyResources(this.tableLayoutPanelGeneral, "tableLayoutPanelGeneral");
-            this.tableLayoutPanelGeneral.Controls.Add(this.radioButtonAllPages, 0, 0);
-            this.tableLayoutPanelGeneral.Controls.Add(this.radioButtonSelectedPages, 0, 1);
-            this.tableLayoutPanelGeneral.Controls.Add(this.textBox1, 1, 1);
-            this.tableLayoutPanelGeneral.Controls.Add(this.label1, 0, 2);
-            this.tableLayoutPanelGeneral.Name = "tableLayoutPanelGeneral";
+            resources.ApplyResources(tableLayoutPanelPages, "tableLayoutPanelPages");
+            tableLayoutPanelPages.Controls.Add(this.radioButtonSingleFile, 0, 0);
+            tableLayoutPanelPages.Controls.Add(this.radioButtonMultipleFiles, 0, 1);
+            tableLayoutPanelPages.Name = "tableLayoutPanelPages";
             // 
-            // radioButtonAllPages
+            // radioButtonSingleFile
             // 
-            resources.ApplyResources(this.radioButtonAllPages, "radioButtonAllPages");
-            this.radioButtonAllPages.Checked = true;
-            this.tableLayoutPanelGeneral.SetColumnSpan(this.radioButtonAllPages, 2);
-            this.radioButtonAllPages.Name = "radioButtonAllPages";
-            this.radioButtonAllPages.TabStop = true;
-            this.radioButtonAllPages.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.radioButtonSingleFile, "radioButtonSingleFile");
+            this.radioButtonSingleFile.Checked = true;
+            this.radioButtonSingleFile.Name = "radioButtonSingleFile";
+            this.radioButtonSingleFile.TabStop = true;
+            this.radioButtonSingleFile.UseVisualStyleBackColor = true;
             // 
-            // radioButtonSelectedPages
+            // radioButtonMultipleFiles
             // 
-            resources.ApplyResources(this.radioButtonSelectedPages, "radioButtonSelectedPages");
-            this.radioButtonSelectedPages.Name = "radioButtonSelectedPages";
-            this.radioButtonSelectedPages.UseVisualStyleBackColor = true;
+            resources.ApplyResources(this.radioButtonMultipleFiles, "radioButtonMultipleFiles");
+            this.radioButtonMultipleFiles.Name = "radioButtonMultipleFiles";
+            this.radioButtonMultipleFiles.UseVisualStyleBackColor = true;
             // 
-            // textBox1
+            // buttonOK
             // 
-            resources.ApplyResources(this.textBox1, "textBox1");
-            this.textBox1.Name = "textBox1";
+            resources.ApplyResources(buttonOK, "buttonOK");
+            buttonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
+            buttonOK.Name = "buttonOK";
+            buttonOK.UseVisualStyleBackColor = true;
             // 
-            // label1
+            // buttonCancel
             // 
-            resources.ApplyResources(this.label1, "label1");
-            this.label1.Name = "label1";
+            resources.ApplyResources(buttonCancel, "buttonCancel");
+            buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            buttonCancel.Name = "buttonCancel";
+            buttonCancel.UseVisualStyleBackColor = true;
+            // 
+            // flowLayoutPanelButtons
+            // 
+            resources.ApplyResources(this.flowLayoutPanelButtons, "flowLayoutPanelButtons");
+            this.flowLayoutPanelButtons.Controls.Add(buttonCancel);
+            this.flowLayoutPanelButtons.Controls.Add(buttonOK);
+            this.flowLayoutPanelButtons.Name = "flowLayoutPanelButtons";
             // 
             // FormatDialog
             // 
             resources.ApplyResources(this, "$this");
+            this.AcceptButton = buttonOK;
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.Controls.Add(groupBoxPages);
+            this.CancelButton = buttonCancel;
+            this.Controls.Add(this.flowLayoutPanelButtons);
+            this.Controls.Add(this.groupBoxPages);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "FormatDialog";
             this.Load += new System.EventHandler(this.FormatDialog_Load);
-            groupBoxPages.ResumeLayout(false);
-            groupBoxPages.PerformLayout();
-            this.tableLayoutPanelGeneral.ResumeLayout(false);
-            this.tableLayoutPanelGeneral.PerformLayout();
+            this.groupBoxPages.ResumeLayout(false);
+            this.groupBoxPages.PerformLayout();
+            tableLayoutPanelPages.ResumeLayout(false);
+            tableLayoutPanelPages.PerformLayout();
+            this.flowLayoutPanelButtons.ResumeLayout(false);
+            this.flowLayoutPanelButtons.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -100,10 +117,9 @@
 
         #endregion
 
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanelGeneral;
-        private System.Windows.Forms.RadioButton radioButtonAllPages;
-        private System.Windows.Forms.RadioButton radioButtonSelectedPages;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.RadioButton radioButtonSingleFile;
+        private System.Windows.Forms.RadioButton radioButtonMultipleFiles;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelButtons;
+        private System.Windows.Forms.GroupBox groupBoxPages;
     }
 }

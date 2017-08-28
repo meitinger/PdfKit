@@ -34,7 +34,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private void FillScaleArguments(IList<string> args)
         {
             // add the scale arguments
-            args.Add(string.Format(CultureInfo.InvariantCulture, "-dDownScaleFactor={0}", numericUpDownDownscaleFactor.Value));
+            args.Add(string.Format(CultureInfo.InvariantCulture, "-dDownScaleFactor={0}", Math.Round(numericUpDownDownscaleFactor.Value)));
             if (radioButtonCompressionNone.Checked)
             {
                 args.Add("-sCompression=none");
@@ -95,7 +95,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 {
                     args.Add("-sDEVICE=tiffg4");
                 }
-                args.Add(string.Format(CultureInfo.InvariantCulture, "-dMinFeatureSize={0}", numericUpDownMinFeatureSize.Value));
+                args.Add(string.Format(CultureInfo.InvariantCulture, "-dMinFeatureSize={0}", Math.Round(numericUpDownMinFeatureSize.Value)));
                 if (radioButtonAdjustWidthOff.Checked)
                 {
                     args.Add("-dAdjustWidth=0");
@@ -106,7 +106,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
                 if (radioButtonAdjustWidthValue.Checked)
                 {
-                    args.Add(string.Format(CultureInfo.InvariantCulture, "-dAdjustWidth={0}", numericUpDownAdjustWidthValue.Value));
+                    args.Add(string.Format(CultureInfo.InvariantCulture, "-dAdjustWidth={0}", Math.Round(numericUpDownAdjustWidthValue.Value)));
                 }
             }
             if (radioButtonGrayscale.Checked)
@@ -168,7 +168,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     args.Add("-sDEVICE=tiff64nc");
                 }
             }
-            args.Add(string.Format(CultureInfo.InvariantCulture, "-dMaxStripSize={0}", numericUpDownMaxStripSize.Value));
+            args.Add(string.Format(CultureInfo.InvariantCulture, "-dMaxStripSize={0}", Math.Round(numericUpDownMaxStripSize.Value)));
             args.Add(checkBoxFillOrder.Checked ? "-dFillOrder=1" : "-dFillOrder=2");
             args.Add(checkBoxUseBigTiff.Checked ? "-dUseBigTIFF=true" : "-dUseBigTIFF=false");
             args.Add(checkBoxTiffDateTime.Checked ? "-dTIFFDateTime=true" : "-dTIFFDateTime=false");

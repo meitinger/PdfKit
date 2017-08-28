@@ -54,27 +54,27 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private readonly string[] _args;
         private readonly FormatDialog _dialog;
+        private readonly bool _supportsSingleFile;
 
         private ConvertFormat(string name, string fileExtension, bool supportsSingleFile, ImageFormatDialog dialog)
         {
             _args = null;
             _dialog = dialog;
+            _supportsSingleFile = supportsSingleFile;
             Name = name;
             FileExtension = fileExtension;
-            SupportsSingleFile = supportsSingleFile;
             AllowedTypes = DocumentType.Any & ~DocumentType.Image;
-            UseSingleFile = supportsSingleFile;
+            _dialog.SupportsSingleFile = supportsSingleFile;
         }
 
         private ConvertFormat(string name, string fileExtension, bool supportsSingleFile, DocumentType allowedTypes, params string[] args)
         {
             _args = args;
             _dialog = null;
+            _supportsSingleFile = supportsSingleFile;
             Name = name;
             FileExtension = fileExtension;
-            SupportsSingleFile = supportsSingleFile;
             AllowedTypes = allowedTypes;
-            UseSingleFile = supportsSingleFile;
         }
 
         public DocumentType AllowedTypes { get; private set; }
@@ -83,9 +83,10 @@ namespace Aufbauwerk.Tools.PdfKit
 
         public string Name { get; private set; }
 
-        public bool SupportsSingleFile { get; private set; }
-
-        public bool UseSingleFile { get; private set; }
+        public bool UseSingleFile
+        {
+            get { return _supportsSingleFile && (_dialog == null || _dialog.UseSingleFile); }
+        }
 
         public string[] GetArguments(string inputFile)
         {
@@ -99,36 +100,46 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 _dialog.FillArguments(list);
             }
-            list.Add("-sOutputFile=" + Path.Combine(Path.GetDirectoryName(inputFile), string.Format("{0}{1}.{2}", Path.GetFileNameWithoutExtension(inputFile), UseSingleFile ? string.Empty : "_%d", FileExtension)));
+            list.Add("-sOutputFile=" + (UseSingleFile ? Path.ChangeExtension(inputFile, FileExtension) : Path.Combine(Path.GetDirectoryName(inputFile), string.Format("{0}_%d.{1}", Path.GetFileNameWithoutExtension(inputFile), FileExtension))));
             return list.ToArray();
         }
 
         public bool ShowDialog(IWin32Window parent = null)
         {
-            // show dialog
-            return _dialog == null ? true : _dialog.ShowDialog(parent) == DialogResult.OK;
+            // show the dialog (if any)
+            return _dialog == null || _dialog.ShowDialog(parent) == DialogResult.OK;
         }
     }
 
     public class Converter
     {
-        private class OleWindow : IWin32Window
+        private class Win32Window : IWin32Window
         {
-            private readonly Native.IOleWindow window;
+            private readonly IntPtr _handle;
 
-            public OleWindow(object oleWindow)
+            public Win32Window(IntPtr handle)
             {
-                window = oleWindow as Native.IOleWindow;
+                _handle = handle;
             }
 
             public IntPtr Handle
             {
-                get { return window == null ? IntPtr.Zero : window.GetWindow(); }
+                get { return _handle; }
             }
         }
 
         public static void Run(IEnumerable<string> files, ConvertFormat format)
         {
+            // check the arguments
+            if (files == null)
+            {
+                throw new ArgumentNullException("files");
+            }
+            if (format == null)
+            {
+                throw new ArgumentNullException("format");
+            }
+
             // show the dialog and run the converter
             if (format.ShowDialog())
             {
@@ -144,6 +155,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private readonly Queue<Document> _files = new Queue<Document>();
         private readonly ConvertFormat _format;
         private bool _initializationDone = false;
+        private Win32Window _parent = null;
         private readonly Native.IProgressDialog _progressDialog;
         private readonly string _title;
         private int _totalPageCount = 0;
@@ -245,6 +257,9 @@ namespace Aufbauwerk.Tools.PdfKit
             _progressDialog.StartProgressDialog(IntPtr.Zero, IntPtr.Zero, Native.PROGDLG_AUTOTIME, IntPtr.Zero);
             try
             {
+                // set the parent
+                _parent = new Win32Window(((Native.IOleWindow)_progressDialog).GetWindow());
+
                 // convert each file
                 while (true)
                 {
@@ -331,15 +346,16 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // hide the dialog
                 _progressDialog.StopProgressDialog();
+
+                // clear the parent
+                _parent = null;
             }
         }
-
-
 
         private DialogResult ShowMessage(string text, MessageBoxButtons buttons, MessageBoxIcon icon)
         {
             // show the message
-            return MessageBox.Show(new OleWindow(_progressDialog), text, _title, buttons, icon);
+            return MessageBox.Show(_parent, text, _title, buttons, icon);
         }
 
         private void UpdateDialog()

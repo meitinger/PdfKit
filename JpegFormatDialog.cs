@@ -42,7 +42,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             if (radioButtonJpegQuality.Checked)
             {
-                args.Add(string.Format(CultureInfo.InvariantCulture, "-dJPEGQ={0}", numericUpDownJpegQuality.Value));
+                args.Add(string.Format(CultureInfo.InvariantCulture, "-dJPEGQ={0}", Math.Round(numericUpDownJpegQuality.Value)));
             }
             if (radioButtonQFactor.Checked)
             {

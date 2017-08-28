@@ -117,83 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="radioButtonMonochrome.Text" xml:space="preserve">
-    <value>Schwarz/Weiß</value>
+  <data name="groupBoxPages.Text" xml:space="preserve">
+    <value>Seiten</value>
   </data>
-  <data name="radioButtonGrayscale.Text" xml:space="preserve">
-    <value>Graustufen</value>
+  <data name="radioButtonSingleFile.Text" xml:space="preserve">
+    <value>Alle Seiten in eine gemeinsame Datei exportieren.</value>
   </data>
-  <data name="checkBoxScaled.Text" xml:space="preserve">
-    <value>skaliert</value>
+  <data name="radioButtonMultipleFiles.Text" xml:space="preserve">
+    <value>Für jede Seite eine eigene Datei erstellen.</value>
   </data>
-  <data name="labelDownscaleFactor.Text" xml:space="preserve">
-    <value>Herunterskalierung</value>
+  <data name="buttonCancel.Text" xml:space="preserve">
+    <value>Abbrechen</value>
   </data>
-  <data name="labelCompression.Text" xml:space="preserve">
-    <value>Kompression</value>
-  </data>
-  <data name="radioButtonCompressionNone.Text" xml:space="preserve">
-    <value>Keine</value>
-  </data>
-  <data name="radioButtonCompressionPack.Text" xml:space="preserve">
-    <value>Gepackt</value>
-  </data>
-  <data name="labelPostRenderProfile.Text" xml:space="preserve">
-    <value>ICC Profil</value>
-  </data>
-  <data name="radioButtonMonochromeUnscaled.Text" xml:space="preserve">
-    <value>unskaliert</value>
-  </data>
-  <data name="radioButtonMonochromeScaled.Text" xml:space="preserve">
-    <value>skaliert</value>
-  </data>
-  <data name="radioButtonMonochromeG3.Text" xml:space="preserve">
-    <value>G3-Fax</value>
-  </data>
-  <data name="radioButtonMonochromeG4.Text" xml:space="preserve">
-    <value>G4-Fax</value>
-  </data>
-  <data name="radioButtonMonochromePack.Text" xml:space="preserve">
-    <value>Gepackt</value>
-  </data>
-  <data name="radioButtonG3.Text" xml:space="preserve">
-    <value>Normal</value>
-  </data>
-  <data name="labelMinFeatureSize.Text" xml:space="preserve">
-    <value>min. Feature-Größe</value>
-  </data>
-  <data name="labelAdjustWidth.Text" xml:space="preserve">
-    <value>Größe anpassen</value>
-  </data>
-  <data name="radioButtonAdjustWidthOff.Text" xml:space="preserve">
-    <value>aus</value>
-  </data>
-  <data name="radioButtonAdjustWidthValue.Text" xml:space="preserve">
-    <value>Wert</value>
-  </data>
-  <data name="radioButtonAdjustWidthCommon.Text" xml:space="preserve">
-    <value>Fax-Größen</value>
-  </data>
-  <data name="labelAdditional.Text" xml:space="preserve">
-    <value>zusätzliche
-Einstellungen</value>
-  </data>
-  <data name="labelMaxStripSize.Text" xml:space="preserve">
-    <value>max. Streifengröße</value>
-  </data>
-  <data name="checkBoxFillOrder.Text" xml:space="preserve">
-    <value>niedrigste Spalte im obersten Bit</value>
-  </data>
-  <data name="checkBoxUseBigTiff.Text" xml:space="preserve">
-    <value>verwende BigTIFF (größer als 4GB)</value>
-  </data>
-  <data name="checkBoxTiffDateTime.Text" xml:space="preserve">
-    <value>schreibe DateTime-Tag</value>
-  </data>
-  <data name="groupBoxTiff.Text" xml:space="preserve">
-    <value>TIFF (Tagged Image File Format) Einstellungen</value>
-  </data>
-  <data name="openFileDialog.Filter" xml:space="preserve">
-    <value>ICC Farbprofil-Datei|*.icc</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Exporteinstellungen</value>
   </data>
 </root>

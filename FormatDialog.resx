@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="groupBoxPages.GenerateMember" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>False</value>
-  </metadata>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="groupBoxPages.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -128,159 +125,99 @@
   <data name="groupBoxPages.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
     <value>GrowAndShrink</value>
   </data>
-  <data name="tableLayoutPanelGeneral.AutoSize" type="System.Boolean, mscorlib">
+  <data name="tableLayoutPanelPages.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="tableLayoutPanelPages.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="tableLayoutPanelGeneral.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+  <data name="tableLayoutPanelPages.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
     <value>GrowAndShrink</value>
   </data>
-  <data name="tableLayoutPanelGeneral.ColumnCount" type="System.Int32, mscorlib">
-    <value>2</value>
+  <data name="tableLayoutPanelPages.ColumnCount" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
-  <data name="radioButtonAllPages.AutoSize" type="System.Boolean, mscorlib">
+  <data name="radioButtonSingleFile.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
+  </data>
+  <data name="radioButtonSingleFile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonSingleFile.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="radioButtonSingleFile.Text" xml:space="preserve">
+    <value>export all pages into a single file</value>
+  </data>
+  <data name="&gt;&gt;radioButtonSingleFile.Name" xml:space="preserve">
+    <value>radioButtonSingleFile</value>
+  </data>
+  <data name="&gt;&gt;radioButtonSingleFile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonSingleFile.Parent" xml:space="preserve">
+    <value>tableLayoutPanelPages</value>
+  </data>
+  <data name="&gt;&gt;radioButtonSingleFile.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="radioButtonMultipleFiles.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="radioButtonMultipleFiles.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 0</value>
+  </data>
+  <data name="radioButtonMultipleFiles.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="radioButtonMultipleFiles.Text" xml:space="preserve">
+    <value>create a seperate file for each page</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMultipleFiles.Name" xml:space="preserve">
+    <value>radioButtonMultipleFiles</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMultipleFiles.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMultipleFiles.Parent" xml:space="preserve">
+    <value>tableLayoutPanelPages</value>
+  </data>
+  <data name="&gt;&gt;radioButtonMultipleFiles.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="radioButtonAllPages.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 3</value>
-  </data>
-  <data name="radioButtonAllPages.Size" type="System.Drawing.Size, System.Drawing">
-    <value>67, 17</value>
-  </data>
-  <data name="radioButtonAllPages.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="radioButtonAllPages.Text" xml:space="preserve">
-    <value>all pages</value>
-  </data>
-  <data name="&gt;&gt;radioButtonAllPages.Name" xml:space="preserve">
-    <value>radioButtonAllPages</value>
-  </data>
-  <data name="&gt;&gt;radioButtonAllPages.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButtonAllPages.Parent" xml:space="preserve">
-    <value>tableLayoutPanelGeneral</value>
-  </data>
-  <data name="&gt;&gt;radioButtonAllPages.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="radioButtonSelectedPages.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="radioButtonSelectedPages.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 26</value>
-  </data>
-  <data name="radioButtonSelectedPages.Size" type="System.Drawing.Size, System.Drawing">
-    <value>97, 17</value>
-  </data>
-  <data name="radioButtonSelectedPages.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="radioButtonSelectedPages.Text" xml:space="preserve">
-    <value>selected pages</value>
-  </data>
-  <data name="&gt;&gt;radioButtonSelectedPages.Name" xml:space="preserve">
-    <value>radioButtonSelectedPages</value>
-  </data>
-  <data name="&gt;&gt;radioButtonSelectedPages.Type" xml:space="preserve">
-    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;radioButtonSelectedPages.Parent" xml:space="preserve">
-    <value>tableLayoutPanelGeneral</value>
-  </data>
-  <data name="&gt;&gt;radioButtonSelectedPages.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="textBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>106, 26</value>
-  </data>
-  <data name="textBox1.Multiline" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="textBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>100, 20</value>
-  </data>
-  <data name="textBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;textBox1.Name" xml:space="preserve">
-    <value>textBox1</value>
-  </data>
-  <data name="&gt;&gt;textBox1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;textBox1.Parent" xml:space="preserve">
-    <value>tableLayoutPanelGeneral</value>
-  </data>
-  <data name="&gt;&gt;textBox1.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="label1.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 49</value>
-  </data>
-  <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>35, 13</value>
-  </data>
-  <data name="label1.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="label1.Text" xml:space="preserve">
-    <value>label1</value>
-  </data>
-  <data name="&gt;&gt;label1.Name" xml:space="preserve">
-    <value>label1</value>
-  </data>
-  <data name="&gt;&gt;label1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;label1.Parent" xml:space="preserve">
-    <value>tableLayoutPanelGeneral</value>
-  </data>
-  <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="tableLayoutPanelGeneral.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="tableLayoutPanelPages.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 19</value>
   </data>
-  <data name="tableLayoutPanelGeneral.RowCount" type="System.Int32, mscorlib">
-    <value>3</value>
+  <data name="tableLayoutPanelPages.RowCount" type="System.Int32, mscorlib">
+    <value>2</value>
   </data>
-  <data name="tableLayoutPanelGeneral.Size" type="System.Drawing.Size, System.Drawing">
-    <value>209, 62</value>
-  </data>
-  <data name="tableLayoutPanelGeneral.TabIndex" type="System.Int32, mscorlib">
+  <data name="tableLayoutPanelPages.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <data name="&gt;&gt;tableLayoutPanelGeneral.Name" xml:space="preserve">
-    <value>tableLayoutPanelGeneral</value>
+  <data name="&gt;&gt;tableLayoutPanelPages.Name" xml:space="preserve">
+    <value>tableLayoutPanelPages</value>
   </data>
-  <data name="&gt;&gt;tableLayoutPanelGeneral.Type" xml:space="preserve">
+  <data name="&gt;&gt;tableLayoutPanelPages.Type" xml:space="preserve">
     <value>System.Windows.Forms.TableLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;tableLayoutPanelGeneral.Parent" xml:space="preserve">
+  <data name="&gt;&gt;tableLayoutPanelPages.Parent" xml:space="preserve">
     <value>groupBoxPages</value>
   </data>
-  <data name="&gt;&gt;tableLayoutPanelGeneral.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;tableLayoutPanelPages.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="tableLayoutPanelGeneral.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonAllPages" Row="0" RowSpan="1" Column="0" ColumnSpan="2" /&gt;&lt;Control Name="radioButtonSelectedPages" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="textBox1" Row="1" RowSpan="1" Column="1" ColumnSpan="1" /&gt;&lt;Control Name="label1" Row="2" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,AutoSize,0" /&gt;&lt;/TableLayoutSettings&gt;</value>
+  <data name="tableLayoutPanelPages.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="radioButtonSingleFile" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="radioButtonMultipleFiles" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="AutoSize,0,Absolute,20" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,Absolute,20" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="groupBoxPages.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Top</value>
   </data>
-  <data name="groupBoxPages.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 9</value>
-  </data>
-  <data name="groupBoxPages.Size" type="System.Drawing.Size, System.Drawing">
-    <value>276, 100</value>
+  <data name="groupBoxPages.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 0, 3, 3</value>
   </data>
   <data name="groupBoxPages.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="groupBoxPages.Text" xml:space="preserve">
     <value>pages</value>
@@ -295,25 +232,97 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;groupBoxPages.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
-  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>96, 96</value>
+  <data name="buttonOK.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
-  <data name="$this.AutoSize" type="System.Boolean, mscorlib">
+  <data name="buttonOK.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="$this.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+  <data name="buttonOK.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
     <value>GrowAndShrink</value>
   </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>294, 278</value>
+  <data name="buttonOK.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
   </data>
-  <data name="$this.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>300, 22</value>
+  <data name="buttonOK.Text" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="&gt;&gt;buttonOK.Name" xml:space="preserve">
+    <value>buttonOK</value>
+  </data>
+  <data name="&gt;&gt;buttonOK.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonOK.Parent" xml:space="preserve">
+    <value>flowLayoutPanelButtons</value>
+  </data>
+  <data name="&gt;&gt;buttonOK.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="buttonCancel.GenerateMember" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="buttonCancel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="buttonCancel.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="buttonCancel.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="buttonCancel.Text" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="&gt;&gt;buttonCancel.Name" xml:space="preserve">
+    <value>buttonCancel</value>
+  </data>
+  <data name="&gt;&gt;buttonCancel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonCancel.Parent" xml:space="preserve">
+    <value>flowLayoutPanelButtons</value>
+  </data>
+  <data name="&gt;&gt;buttonCancel.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="flowLayoutPanelButtons.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="flowLayoutPanelButtons.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="flowLayoutPanelButtons.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Bottom</value>
+  </data>
+  <data name="flowLayoutPanelButtons.FlowDirection" type="System.Windows.Forms.FlowDirection, System.Windows.Forms">
+    <value>RightToLeft</value>
+  </data>
+  <data name="flowLayoutPanelButtons.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 0</value>
+  </data>
+  <data name="flowLayoutPanelButtons.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;flowLayoutPanelButtons.Name" xml:space="preserve">
+    <value>flowLayoutPanelButtons</value>
+  </data>
+  <data name="&gt;&gt;flowLayoutPanelButtons.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;flowLayoutPanelButtons.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;flowLayoutPanelButtons.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="$this.Localizable" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>96, 96</value>
   </data>
   <data name="$this.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>9, 9, 9, 9</value>

@@ -207,6 +207,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private static void RunComServer()
         {
             // create and register the com server
+            Application.OleRequired();
             var comServer = new EmbeddedComServer();
             uint cookie;
             Native.CoRegisterClassObject(comServer.GetType().GUID, comServer, Native.CLSCTX_LOCAL_SERVER, Native.REGCLS_SINGLEUSE, out cookie);

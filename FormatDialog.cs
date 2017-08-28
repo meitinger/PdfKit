@@ -52,15 +52,28 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
+        public bool SupportsSingleFile
+        {
+            set
+            {
+                // set the support
+                groupBoxPages.Visible = value;
+                radioButtonSingleFile.Checked = value;
+                radioButtonMultipleFiles.Checked = !value;
+            }
+        }
+
+        public bool UseSingleFile
+        {
+            get { return radioButtonSingleFile.Checked; }
+        }
+
         public virtual void FillArguments(IList<string> args)
         {
         }
 
         protected virtual void UpdateControls(object sender, EventArgs e)
         {
-            var args = new List<string>();
-            FillArguments(args);
-            System.Diagnostics.Debug.WriteLine(string.Join(" ", args));
         }
 
         private void FormatDialog_Load(object sender, EventArgs e)
@@ -85,13 +98,12 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
             }
 
-            // get the maximum table size, add the padding and set the minimum client size
-            var groups = Controls.OfType<GroupBox>();
+            // get the maximum table size and add the padding
+            var groups = Controls.OfType<GroupBox>().Where(g => g.Visible);
             var maxGroupWidth = groups.Select(g => g.Controls.OfType<TableLayoutPanel>().Single()).Select(t => t.Left * 2 + t.Width).Max();
-            this.MinimumSize = SizeFromClientSize(new Size(maxGroupWidth + Padding.Horizontal, 0));
 
             // order and size the groups
-            var offset = 0;
+            var offset = Padding.Top;
             foreach (var group in groups)
             {
                 group.Dock = DockStyle.None;
@@ -104,6 +116,11 @@ namespace Aufbauwerk.Tools.PdfKit
                 group.Height = table.Top + table.Height + table.Margin.Bottom + group.Padding.Top;
                 offset += group.Height + group.Margin.Bottom;
             }
+
+            // include the buttons and set the client size
+            offset += flowLayoutPanelButtons.Height + flowLayoutPanelButtons.Margin.Horizontal;
+            offset += Padding.Bottom;
+            ClientSize = new Size(maxGroupWidth + Padding.Horizontal, offset);
         }
     }
 }

@@ -34,10 +34,11 @@ namespace Aufbauwerk.Tools.PdfKit
             base.FillArguments(args);
 
             // add the arguments
+            args.Add(string.Format(CultureInfo.InvariantCulture, "-dDownScaleFactor={0}", Math.Round(numericUpDownDownScaleFactor.Value)));
             if (radioButtonMonochrome.Checked)
             {
                 args.Add("-sDEVICE=pngmonod");
-                args.Add(string.Format(CultureInfo.InvariantCulture, "-dMinFeatureSize={0}", numericUpDownMinFeatureSize.Value));
+                args.Add(string.Format(CultureInfo.InvariantCulture, "-dMinFeatureSize={0}", Math.Round(numericUpDownMinFeatureSize.Value)));
             }
             if (radioButtonGrayscale.Checked)
             {
