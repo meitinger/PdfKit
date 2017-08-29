@@ -1266,7 +1266,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void toolStripMenuItemSelectEven_Click(object sender, EventArgs e)
         {
-            SetSelection(i => i % 2 == 0);
+            SetSelection(i => (i + 1) % 2 == 0);
         }
 
         private void toolStripMenuItemSelectInvert_Click(object sender, EventArgs e)
@@ -1276,7 +1276,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void toolStripMenuItemSelectOdd_Click(object sender, EventArgs e)
         {
-            SetSelection(i => i % 2 != 0);
+            SetSelection(i => (i + 1) % 2 != 0);
         }
 
         private void trackBarZoom_ValueChanged(object sender, EventArgs e)
