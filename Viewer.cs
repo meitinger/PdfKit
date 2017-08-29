@@ -224,16 +224,16 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
 
                 // clear everything first and redraw the control
+                if (backgroundWorker.IsBusy)
+                {
+                    backgroundWorker.CancelAsync();
+                }
                 if (_document != null)
                 {
                     _document.Dispose();
                     _document = null;
                 }
                 _error = null;
-                if (backgroundWorker.IsBusy)
-                {
-                    backgroundWorker.CancelAsync();
-                }
                 SyncStates();
                 Update();
 
