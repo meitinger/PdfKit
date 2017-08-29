@@ -509,10 +509,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 base.Dispose(disposing);
                 if (_image != null)
                 {
-                    lock (_image)
-                    {
-                        _image.Dispose();
-                    }
+                    _image.Dispose();
                 }
             }
 
@@ -525,48 +522,45 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
 
                 // convert all pages into a pdf
-                lock (_image)
+                using (var pdfDocument = new PdfDocument())
                 {
-                    using (var pdfDocument = new PdfDocument())
+                    for (var i = 0; i < PageCount; i++)
                     {
-                        for (var i = 0; i < PageCount; i++)
+                        // select the page from the image
+                        if (PageCount > 1)
                         {
-                            // select the page from the image
-                            if (PageCount > 1)
-                            {
-                                _image.SelectActiveFrame(FrameDimension.Page, i);
-                                if (cancellationCallback != null && cancellationCallback())
-                                {
-                                    throw new OperationCanceledException();
-                                }
-                            }
-
-                            // draw the page into the document
-                            var page = pdfDocument.AddPage();
-                            using (var imageWrapper = new XImageWrapper(_image))
-                            {
-                                page.Width = imageWrapper.PointWidth;
-                                page.Height = imageWrapper.PointHeight;
-                                using (var gc = XGraphics.FromPdfPage(page))
-                                {
-                                    gc.DrawImage(imageWrapper, 0, 0, imageWrapper.PointWidth, imageWrapper.PointHeight);
-                                }
-                            }
-
-                            // check for cancellation and notify the caller
+                            _image.SelectActiveFrame(FrameDimension.Page, i);
                             if (cancellationCallback != null && cancellationCallback())
                             {
                                 throw new OperationCanceledException();
                             }
-                            if (pageCompletedCallback != null)
+                        }
+
+                        // draw the page into the document
+                        var page = pdfDocument.AddPage();
+                        using (var imageWrapper = new XImageWrapper(_image))
+                        {
+                            page.Width = imageWrapper.PointWidth;
+                            page.Height = imageWrapper.PointHeight;
+                            using (var gc = XGraphics.FromPdfPage(page))
                             {
-                                pageCompletedCallback();
+                                gc.DrawImage(imageWrapper, 0, 0, imageWrapper.PointWidth, imageWrapper.PointHeight);
                             }
                         }
 
-                        // save the document
-                        pdfDocument.Save(Path.ChangeExtension(FilePath, format.FileExtension));
+                        // check for cancellation and notify the caller
+                        if (cancellationCallback != null && cancellationCallback())
+                        {
+                            throw new OperationCanceledException();
+                        }
+                        if (pageCompletedCallback != null)
+                        {
+                            pageCompletedCallback();
+                        }
                     }
+
+                    // save the document
+                    pdfDocument.Save(Path.ChangeExtension(FilePath, format.FileExtension));
                 }
             }
 
@@ -584,67 +578,64 @@ namespace Aufbauwerk.Tools.PdfKit
 
             protected override Image DoRenderPage(int pageNumber, float dpiX, float dpiY, double scaleFactor, int rotate, Action<Image> progressiveUpdate, Func<bool> cancellationCallback)
             {
-                lock (_image)
+                // select the page
+                if (PageCount > 1)
                 {
-                    // select the page
-                    if (PageCount > 1)
+                    _image.SelectActiveFrame(FrameDimension.Page, pageNumber - 1);
+                    if (cancellationCallback != null && cancellationCallback())
                     {
-                        _image.SelectActiveFrame(FrameDimension.Page, pageNumber - 1);
-                        if (cancellationCallback != null && cancellationCallback())
-                        {
-                            throw new OperationCanceledException();
-                        }
+                        throw new OperationCanceledException();
+                    }
+                }
+
+                // calculate the new size and create the image
+                var size = _image.Size;
+                var newSize = new Size((int)Math.Round(scaleFactor * (dpiX / _image.HorizontalResolution) * size.Width), (int)Math.Round(scaleFactor * (dpiY / _image.VerticalResolution) * size.Height));
+                var result = new Bitmap(newSize.Width, newSize.Height);
+                try
+                {
+                    // set the resolution
+                    result.SetResolution(dpiX, dpiX);
+                    if (cancellationCallback != null && cancellationCallback())
+                    {
+                        throw new OperationCanceledException();
                     }
 
-                    // calculate the new size and create the image
-                    var size = _image.Size;
-                    var newSize = new Size((int)Math.Round(scaleFactor * (dpiX / _image.HorizontalResolution) * size.Width), (int)Math.Round(scaleFactor * (dpiY / _image.VerticalResolution) * size.Height));
-                    var result = new Bitmap(newSize.Width, newSize.Height);
-                    try
+                    // draw the original
+                    using (var gc = Graphics.FromImage(result))
                     {
-                        // set the resolution
-                        result.SetResolution(dpiX, dpiX);
-                        if (cancellationCallback != null && cancellationCallback())
+                        gc.Clear(Color.Transparent);
+                        gc.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        if (cancellationCallback == null)
                         {
-                            throw new OperationCanceledException();
+                            gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel);
                         }
-
-                        // draw the original
-                        using (var gc = Graphics.FromImage(result))
+                        else
                         {
-                            gc.Clear(Color.Transparent);
-                            gc.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                            if (cancellationCallback == null)
+                            var cancelled = false;
+                            gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel, null, _ => cancelled || (cancelled = cancellationCallback()));
+                            if (cancelled)
                             {
-                                gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel);
-                            }
-                            else
-                            {
-                                var cancelled = false;
-                                gc.DrawImage(_image, new Rectangle(Point.Empty, newSize), 0, 0, size.Width, size.Height, GraphicsUnit.Pixel, null, _ => cancelled || (cancelled = cancellationCallback()));
-                                if (cancelled)
-                                {
-                                    throw new OperationCanceledException();
-                                }
+                                throw new OperationCanceledException();
                             }
                         }
-
-                        // rotate the image
-                        result.RotateFlip((RotateFlipType)((4 - (rotate / 90)) % 4));
-                        if (cancellationCallback != null && cancellationCallback())
-                        {
-                            throw new OperationCanceledException();
-                        }
-
-                        // return the image
-                        return result;
                     }
-                    catch
+
+                    // rotate the image
+                    result.RotateFlip((RotateFlipType)((4 - (rotate / 90)) % 4));
+                    if (cancellationCallback != null && cancellationCallback())
                     {
-                        // dispose the image and rethrow
-                        result.Dispose();
-                        throw;
+                        throw new OperationCanceledException();
                     }
+
+                    // return the image
+                    return result;
+                }
+                catch
+                {
+                    // dispose the image and rethrow
+                    result.Dispose();
+                    throw;
                 }
             }
 
@@ -658,7 +649,10 @@ namespace Aufbauwerk.Tools.PdfKit
 
         ~Document()
         {
-            Dispose(false);
+            lock (this)
+            {
+                Dispose(false);
+            }
         }
 
         public string FilePath { get; private set; }
@@ -683,15 +677,21 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 throw new ArgumentNullException("format");
             }
-            CheckDisposed();
 
             // convert the document
-            DoConvert(format, pageCompletedCallback, cancellationCallback);
+            lock (this)
+            {
+                CheckDisposed();
+                DoConvert(format, pageCompletedCallback, cancellationCallback);
+            }
         }
 
         public void Dispose()
         {
-            Dispose(true);
+            lock (this)
+            {
+                Dispose(true);
+            }
             GC.SuppressFinalize(this);
         }
 
@@ -720,10 +720,13 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 throw new ArgumentNullException("ghostscript");
             }
-            CheckDisposed();
 
             // perform the action
-            DoRunInitialize(ghostscript);
+            lock (this)
+            {
+                CheckDisposed();
+                DoRunInitialize(ghostscript);
+            }
         }
 
         public void RunPage(Ghostscript ghostscript, int pageNumber, string setPageDevice = null)
@@ -737,10 +740,13 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 throw new ArgumentOutOfRangeException("pageNumber");
             }
-            CheckDisposed();
 
             // perform the action
-            DoRunPage(ghostscript, pageNumber);
+            lock (this)
+            {
+                CheckDisposed();
+                DoRunPage(ghostscript, pageNumber);
+            }
         }
 
         public Image RenderPage(int pageNumber, float dpiX = 96, float dpiY = 96, double scaleFactor = 1, int rotate = 0, Action<Image> progressiveUpdate = null, Func<bool> cancellationCallback = null)
@@ -771,10 +777,13 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 rotate += 360;
             }
-            CheckDisposed();
 
             // perform the action
-            return DoRenderPage(pageNumber, dpiX, dpiY, scaleFactor, rotate, progressiveUpdate, cancellationCallback);
+            lock (this)
+            {
+                CheckDisposed();
+                return DoRenderPage(pageNumber, dpiX, dpiY, scaleFactor, rotate, progressiveUpdate, cancellationCallback);
+            }
         }
     }
 }
