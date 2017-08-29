@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -47,33 +46,31 @@ namespace Aufbauwerk.Tools.PdfKit
             _formats.Add(Bmp = new ConvertFormat(Resources.Converter_FormatBmp, "bmp", false, new BmpFormatDialog()));
         }
 
-        public IEnumerable<ConvertFormat> GetApplicable(DocumentType type)
+        public static IEnumerable<ConvertFormat> GetApplicable(DocumentType type)
         {
             return _formats.Where(f => (f.AllowedTypes & type) != 0);
         }
 
         private readonly string[] _args;
         private readonly FormatDialog _dialog;
-        private readonly bool _supportsSingleFile;
 
         private ConvertFormat(string name, string fileExtension, bool supportsSingleFile, ImageFormatDialog dialog)
         {
             _args = null;
             _dialog = dialog;
-            _supportsSingleFile = supportsSingleFile;
             Name = name;
             FileExtension = fileExtension;
+            SupportsSingleFile = supportsSingleFile;
             AllowedTypes = DocumentType.Any & ~DocumentType.Image;
-            _dialog.SupportsSingleFile = supportsSingleFile;
         }
 
         private ConvertFormat(string name, string fileExtension, bool supportsSingleFile, DocumentType allowedTypes, params string[] args)
         {
             _args = args;
             _dialog = null;
-            _supportsSingleFile = supportsSingleFile;
             Name = name;
             FileExtension = fileExtension;
+            SupportsSingleFile = supportsSingleFile;
             AllowedTypes = allowedTypes;
         }
 
@@ -83,13 +80,16 @@ namespace Aufbauwerk.Tools.PdfKit
 
         public string Name { get; private set; }
 
-        public bool UseSingleFile
-        {
-            get { return _supportsSingleFile && (_dialog == null || _dialog.UseSingleFile); }
-        }
+        public bool SupportsSingleFile { get; private set; }
 
-        public string[] GetArguments(string inputFile)
+        public string[] GetArguments(string outputFile)
         {
+            // check the arguments
+            if (outputFile == null)
+            {
+                throw new ArgumentNullException("outputFile");
+            }
+
             // build the Ghostscript command line
             var list = new List<string>() { "PdfKit", "-dBATCH", "-dNOPAUSE" };
             if (_args != null)
@@ -100,7 +100,7 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 _dialog.FillArguments(list);
             }
-            list.Add("-sOutputFile=" + (UseSingleFile ? Path.ChangeExtension(inputFile, FileExtension) : Path.Combine(Path.GetDirectoryName(inputFile), string.Format("{0}_%d.{1}", Path.GetFileNameWithoutExtension(inputFile), FileExtension))));
+            list.Add("-sOutputFile=" + outputFile);
             return list.ToArray();
         }
 

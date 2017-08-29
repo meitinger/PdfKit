@@ -29,77 +29,126 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeComponent();
         }
 
-        private IEnumerable<Control> AllChildren
+        protected IDictionary<Control, object> States;
+
+        public virtual void FillArguments(IList<string> args)
         {
-            get
+        }
+
+        protected virtual void RestoreState()
+        {
+            // restore the control values
+            foreach (var entry in States)
             {
-                // enumerate over all controls
-                var controls = new Queue<Control>();
-                controls.Enqueue(this);
-                while (controls.Count > 0)
+                if (entry.Key is RadioButton)
                 {
-                    var controlCollection = controls.Dequeue().Controls;
-                    for (var i = 0; i < controlCollection.Count; i++)
-                    {
-                        var control = controlCollection[i];
-                        yield return control;
-                        if (control.HasChildren)
-                        {
-                            controls.Enqueue(control);
-                        }
-                    }
+                    ((RadioButton)entry.Key).Checked = (bool)entry.Value;
+                }
+                else if (entry.Key is CheckBox)
+                {
+                    ((CheckBox)entry.Key).Checked = (bool)entry.Value;
+                }
+                else if (entry.Key is NumericUpDown)
+                {
+                    ((NumericUpDown)entry.Key).Value = (decimal)entry.Value;
                 }
             }
         }
 
-        public bool SupportsSingleFile
+        protected virtual void SaveState()
         {
-            set
+            // save the control values
+            var controls = new Control[States.Count];
+            States.Keys.CopyTo(controls, 0);
+            foreach (var control in controls)
             {
-                // set the support
-                groupBoxPages.Visible = value;
-                radioButtonSingleFile.Checked = value;
-                radioButtonMultipleFiles.Checked = !value;
+                if (control is RadioButton)
+                {
+                    States[control] = ((RadioButton)control).Checked;
+                }
+                else if (control is CheckBox)
+                {
+                    States[control] = ((CheckBox)control).Checked;
+                }
+                else if (control is NumericUpDown)
+                {
+                    States[control] = ((NumericUpDown)control).Value;
+                }
             }
-        }
-
-        public bool UseSingleFile
-        {
-            get { return radioButtonSingleFile.Checked; }
-        }
-
-        public virtual void FillArguments(IList<string> args)
-        {
         }
 
         protected virtual void UpdateControls(object sender, EventArgs e)
         {
         }
 
+        private void FormatDialog_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // save or restore the state
+            if (DialogResult == DialogResult.OK)
+            {
+                SaveState();
+            }
+            else
+            {
+                RestoreState();
+            }
+        }
+
         private void FormatDialog_Load(object sender, EventArgs e)
         {
+            // only initialize once
+            if (States != null)
+            {
+                return;
+            }
+            States = new Dictionary<Control, object>();
+
             // update all controls
             UpdateControls(sender, e);
 
-            // hookup check and value changes
-            foreach (var child in AllChildren)
+            // enumerate over all controls
+            var controls = new Queue<Control>();
+            controls.Enqueue(this);
+            while (controls.Count > 0)
             {
-                if (child is RadioButton)
+                var controlCollection = controls.Dequeue().Controls;
+                for (var i = 0; i < controlCollection.Count; i++)
                 {
-                    ((RadioButton)child).CheckedChanged += UpdateControls;
-                }
-                else if (child is CheckBox)
-                {
-                    ((CheckBox)child).CheckedChanged += UpdateControls;
-                }
-                else if (child is NumericUpDown)
-                {
-                    ((NumericUpDown)child).ValueChanged += UpdateControls;
+                    // enqueue the child control if it has children of its own
+                    var control = controlCollection[i];
+                    if (control.HasChildren)
+                    {
+                        controls.Enqueue(control);
+                    }
+
+                    // hookup check and value changes
+                    if (control is RadioButton)
+                    {
+                        ((RadioButton)control).CheckedChanged += UpdateControls;
+                    }
+                    else if (control is CheckBox)
+                    {
+                        ((CheckBox)control).CheckedChanged += UpdateControls;
+                    }
+                    else if (control is NumericUpDown)
+                    {
+                        ((NumericUpDown)control).ValueChanged += UpdateControls;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    // add the control to the states
+                    States.Add(control, null);
                 }
             }
 
+            // save the initial state
+            SaveState();
+
             // get the maximum table size and add the padding
-            var groups = Controls.OfType<GroupBox>().Where(g => g.Visible);
+            var groups = Controls.OfType<GroupBox>();
             var maxGroupWidth = groups.Select(g => g.Controls.OfType<TableLayoutPanel>().Single()).Select(t => t.Left * 2 + t.Width).Max();
 
             // order and size the groups

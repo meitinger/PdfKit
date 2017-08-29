@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="groupBoxPages.Text" xml:space="preserve">
-    <value>Seiten</value>
-  </data>
-  <data name="radioButtonSingleFile.Text" xml:space="preserve">
-    <value>Alle Seiten in eine gemeinsame Datei exportieren.</value>
-  </data>
-  <data name="radioButtonMultipleFiles.Text" xml:space="preserve">
-    <value>Für jede Seite eine eigene Datei erstellen.</value>
-  </data>
   <data name="buttonCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>

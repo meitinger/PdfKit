@@ -31,28 +31,6 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeComponent();
         }
 
-        private void FillScaleArguments(IList<string> args)
-        {
-            // add the scale arguments
-            args.Add(string.Format(CultureInfo.InvariantCulture, "-dDownScaleFactor={0}", Math.Round(numericUpDownDownscaleFactor.Value)));
-            if (radioButtonCompressionNone.Checked)
-            {
-                args.Add("-sCompression=none");
-            }
-            if (radioButtonCompressionLzw.Checked)
-            {
-                args.Add("-sCompression=lzw");
-            }
-            if (radioButtonCompressionPack.Checked)
-            {
-                args.Add("-sCompression=pack");
-            }
-            if (buttonPostRenderProfile.Tag != null)
-            {
-                args.Add(string.Format(CultureInfo.InvariantCulture, "-sPostRenderProfile=\"{0}\"", buttonPostRenderProfile.Tag));
-            }
-        }
-
         public override void FillArguments(IList<string> args)
         {
             base.FillArguments(args);
@@ -174,6 +152,40 @@ namespace Aufbauwerk.Tools.PdfKit
             args.Add(checkBoxTiffDateTime.Checked ? "-dTIFFDateTime=true" : "-dTIFFDateTime=false");
         }
 
+        private void FillScaleArguments(IList<string> args)
+        {
+            // add the scale arguments
+            args.Add(string.Format(CultureInfo.InvariantCulture, "-dDownScaleFactor={0}", Math.Round(numericUpDownDownscaleFactor.Value)));
+            if (radioButtonCompressionNone.Checked)
+            {
+                args.Add("-sCompression=none");
+            }
+            if (radioButtonCompressionLzw.Checked)
+            {
+                args.Add("-sCompression=lzw");
+            }
+            if (radioButtonCompressionPack.Checked)
+            {
+                args.Add("-sCompression=pack");
+            }
+            if (buttonPostRenderProfile.Tag != null)
+            {
+                args.Add(string.Format(CultureInfo.InvariantCulture, "-sPostRenderProfile=\"{0}\"", buttonPostRenderProfile.Tag));
+            }
+        }
+
+        protected override void RestoreState()
+        {
+            base.RestoreState();
+            buttonPostRenderProfile.Tag = States[buttonPostRenderProfile];
+        }
+
+        protected override void SaveState()
+        {
+            base.SaveState();
+            States[buttonPostRenderProfile] = buttonPostRenderProfile.Tag;
+        }
+
         protected override void UpdateControls(object sender, EventArgs e)
         {
             base.UpdateControls(sender, e);
@@ -247,11 +259,8 @@ namespace Aufbauwerk.Tools.PdfKit
             // query the file name
             var button = (sender as Button);
             openFileDialog.FileName = (string)button.Tag;
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                button.Tag = openFileDialog.FileName;
-                UpdateControls(sender, e);
-            }
+            button.Tag = openFileDialog.ShowDialog(this) == DialogResult.OK ? openFileDialog.FileName : null;
+            UpdateControls(sender, e);
         }
     }
 }

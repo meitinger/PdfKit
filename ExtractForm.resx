@@ -117,7 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="toolStripMenuItemSelectOdd.Text" xml:space="preserve">
+    <value>Select odd pages</value>
+  </data>
+  <data name="toolStripMenuItemSelectEven.Text" xml:space="preserve">
+    <value>Select even pages</value>
+  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="toolStripMenuItemSelectAll.ShortcutKeys" type="System.Windows.Forms.Keys, System.Windows.Forms">
+    <value>Strg+A</value>
+  </data>
+  <data name="toolStripMenuItemSelectAll.Text" xml:space="preserve">
+    <value>Select all pages</value>
+  </data>
+  <data name="toolStripMenuItemSelectInvert.Text" xml:space="preserve">
+    <value>Invert selection</value>
+  </data>
+  <data name="&gt;&gt;contextMenuStrip.Name" xml:space="preserve">
+    <value>contextMenuStrip</value>
+  </data>
+  <data name="&gt;&gt;contextMenuStrip.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="listViewPages.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
@@ -135,10 +156,25 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;listViewPages.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="saveFileDialog.Filter" xml:space="preserve">
-    <value>PDF documents (*.pdf)|*.pdf</value>
+    <value>{0} files (*.{1})|*.{1}</value>
+  </data>
+  <data name="statusStrip.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;statusStrip.Name" xml:space="preserve">
+    <value>statusStrip</value>
+  </data>
+  <data name="&gt;&gt;statusStrip.Type" xml:space="preserve">
+    <value>System.Windows.Forms.StatusStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;statusStrip.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;statusStrip.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="toolStripDropDownButtonZoomIn.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
@@ -196,29 +232,14 @@
   <data name="toolStripDropDownButtonSave.ToolTipText" xml:space="preserve">
     <value>Save pages...</value>
   </data>
-  <data name="toolStripStatusLabelSingleFiles.Text" xml:space="preserve">
-    <value>Document per page</value>
+  <data name="toolStripDropDownButtonFormat.Text" xml:space="preserve">
+    <value>Output file format: {0}</value>
   </data>
-  <data name="toolStripStatusLabelSingleFiles.ToolTipText" xml:space="preserve">
-    <value>Generate a single document per page</value>
+  <data name="toolStripStatusLabelMultipleFiles.Text" xml:space="preserve">
+    <value>Seperate file for each page</value>
   </data>
   <data name="toolStripDropDownButtonCancel.Text" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="statusStrip.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;statusStrip.Name" xml:space="preserve">
-    <value>statusStrip</value>
-  </data>
-  <data name="&gt;&gt;statusStrip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.StatusStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;statusStrip.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;statusStrip.ZOrder" xml:space="preserve">
-    <value>1</value>
   </data>
   <data name="$this.Localizable" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -989,6 +1010,48 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Extract pages from {0}</value>
   </data>
+  <data name="&gt;&gt;toolStripMenuItemSelectOdd.Name" xml:space="preserve">
+    <value>toolStripMenuItemSelectOdd</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemSelectOdd.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemSelectEven.Name" xml:space="preserve">
+    <value>toolStripMenuItemSelectEven</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemSelectEven.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator1.Name" xml:space="preserve">
+    <value>toolStripSeparator1</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemSelectAll.Name" xml:space="preserve">
+    <value>toolStripMenuItemSelectAll</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemSelectAll.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator2.Name" xml:space="preserve">
+    <value>toolStripSeparator2</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemSelectInvert.Name" xml:space="preserve">
+    <value>toolStripMenuItemSelectInvert</value>
+  </data>
+  <data name="&gt;&gt;toolStripMenuItemSelectInvert.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;imageList.Name" xml:space="preserve">
+    <value>imageList</value>
+  </data>
+  <data name="&gt;&gt;imageList.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;folderBrowserDialog.Name" xml:space="preserve">
     <value>folderBrowserDialog</value>
   </data>
@@ -1019,10 +1082,16 @@
   <data name="&gt;&gt;toolStripDropDownButtonSave.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripDropDownButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;toolStripStatusLabelSingleFiles.Name" xml:space="preserve">
-    <value>toolStripStatusLabelSingleFiles</value>
+  <data name="&gt;&gt;toolStripDropDownButtonFormat.Name" xml:space="preserve">
+    <value>toolStripDropDownButtonFormat</value>
   </data>
-  <data name="&gt;&gt;toolStripStatusLabelSingleFiles.Type" xml:space="preserve">
+  <data name="&gt;&gt;toolStripDropDownButtonFormat.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripDropDownButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelMultipleFiles.Name" xml:space="preserve">
+    <value>toolStripStatusLabelMultipleFiles</value>
+  </data>
+  <data name="&gt;&gt;toolStripStatusLabelMultipleFiles.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolStripProgressBarExtract.Name" xml:space="preserve">
@@ -1048,12 +1117,6 @@
   </data>
   <data name="&gt;&gt;backgroundWorkerExtract.Type" xml:space="preserve">
     <value>System.ComponentModel.BackgroundWorker, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;imageList.Name" xml:space="preserve">
-    <value>imageList</value>
-  </data>
-  <data name="&gt;&gt;imageList.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>ExtractForm</value>

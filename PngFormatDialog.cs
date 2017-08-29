@@ -55,6 +55,18 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
+        protected override void RestoreState()
+        {
+            base.RestoreState();
+            buttonBackgroundColor.BackColor = (Color)States[buttonBackgroundColor];
+        }
+
+        protected override void SaveState()
+        {
+            base.SaveState();
+            States[buttonBackgroundColor] = buttonBackgroundColor.BackColor;
+        }
+
         protected override void UpdateControls(object sender, EventArgs e)
         {
             base.UpdateControls(sender, e);

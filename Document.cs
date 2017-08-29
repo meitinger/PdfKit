@@ -116,7 +116,8 @@ namespace Aufbauwerk.Tools.PdfKit
             protected override void DoConvert(ConvertFormat format, Action pageCompletedCallback, Func<bool> cancellationCallback)
             {
                 // convert the file using Ghostscript
-                using (var ghostscript = new Ghostscript(format.GetArguments(FilePath)))
+                var outputFile = format.SupportsSingleFile ? Path.ChangeExtension(FilePath, format.FileExtension) : Path.Combine(Path.GetDirectoryName(FilePath), new StringBuilder(Path.GetFileNameWithoutExtension(FilePath)).Append("_%d.").Append(format.FileExtension).ToString());
+                using (var ghostscript = new Ghostscript(format.GetArguments(outputFile)))
                 {
                     if (cancellationCallback != null)
                     {
@@ -518,7 +519,7 @@ namespace Aufbauwerk.Tools.PdfKit
             protected override void DoConvert(ConvertFormat format, Action pageCompletedCallback, Func<bool> cancellationCallback)
             {
                 // only support pdf conversion
-                if (format != ConvertFormat.Pdf || !format.UseSingleFile)
+                if (format != ConvertFormat.Pdf || !format.SupportsSingleFile)
                 {
                     throw new NotSupportedException();
                 }

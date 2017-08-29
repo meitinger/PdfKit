@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="saveFileDialog.Filter" xml:space="preserve">
-    <value>PDF-Dokumente (*.pdf)|*.pdf</value>
+    <value>{0}-Dateien (*.{1})|*.{1}</value>
   </data>
   <data name="toolStripDropDownButtonZoomIn.ToolTipText" xml:space="preserve">
     <value>Vergrößern</value>
@@ -129,16 +129,28 @@
   <data name="toolStripDropDownButtonSave.ToolTipText" xml:space="preserve">
     <value>Seiten speichern...</value>
   </data>
-  <data name="toolStripStatusLabelSingleFiles.Text" xml:space="preserve">
-    <value>Dokument pro Seite</value>
-  </data>
-  <data name="toolStripStatusLabelSingleFiles.ToolTipText" xml:space="preserve">
-    <value>Ein Dokument pro Seite generieren</value>
+  <data name="toolStripStatusLabelMultipleFiles.Text" xml:space="preserve">
+    <value>Separate Datei pro Seite</value>
   </data>
   <data name="toolStripDropDownButtonCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Seiten extrahieren von {0}</value>
+  </data>
+  <data name="toolStripDropDownButtonFormat.Text" xml:space="preserve">
+    <value>Ausgabeformat: {0}</value>
+  </data>
+  <data name="toolStripMenuItemSelectAll.Text" xml:space="preserve">
+    <value>Alle Seiten markieren</value>
+  </data>
+  <data name="toolStripMenuItemSelectEven.Text" xml:space="preserve">
+    <value>Gerade Seiten markieren</value>
+  </data>
+  <data name="toolStripMenuItemSelectInvert.Text" xml:space="preserve">
+    <value>Markierung umkehren</value>
+  </data>
+  <data name="toolStripMenuItemSelectOdd.Text" xml:space="preserve">
+    <value>Ungerade Seiten markieren</value>
   </data>
 </root>

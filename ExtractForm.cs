@@ -23,6 +23,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -35,25 +36,24 @@ namespace Aufbauwerk.Tools.PdfKit
 {
     public partial class ExtractForm : Form
     {
-        private const string LoadingImageName = "loading";
         private const string ErrorImageName = "error";
+        private const string ImageNameFormat = "image{0}";
+        private const string LoadingImageName = "loading";
 
         private class FilesDataObject : IDataObject, IDisposable
         {
             private bool _disposed = false;
-            private readonly Func<int[], bool, string[]> _extractDelegate;
+            private readonly Func<Work, string[]> _extractDelegate;
             private string[] _filePaths = null;
             private readonly object _filePathsLock = new object();
-            private readonly int[] _indices;
-            private readonly bool _multipleFiles;
             private DragDropEffects _result = DragDropEffects.None;
+            private readonly Work _work;
 
-            public FilesDataObject(Func<int[], bool, string[]> extractDelegate, int[] indices, bool multipleFiles)
+            public FilesDataObject(Func<Work, string[]> extractDelegate, Work work)
             {
                 // store the parameters
-                _indices = indices;
-                _multipleFiles = multipleFiles;
                 _extractDelegate = extractDelegate;
+                _work = work;
             }
 
             ~FilesDataObject()
@@ -114,7 +114,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 {
                     if (_filePaths == null)
                     {
-                        _filePaths = _extractDelegate(_indices, _multipleFiles);
+                        _filePaths = _extractDelegate(_work);
                     }
                     return _filePaths;
                 }
@@ -216,6 +216,13 @@ namespace Aufbauwerk.Tools.PdfKit
                 Dispose(false);
             }
 
+            public bool IsPrestine
+            {
+                get { return !_disposed && _image == null; }
+            }
+
+            public int ItemIndex { get; private set; }
+
             public void Dispose()
             {
                 Dispose(true);
@@ -242,13 +249,6 @@ namespace Aufbauwerk.Tools.PdfKit
                     }
                 }
             }
-
-            public bool IsPrestine
-            {
-                get { return !_disposed && _image == null; }
-            }
-
-            public int ItemIndex { get; private set; }
 
             private void Draw(object sender, DrawToolTipEventArgs e)
             {
@@ -355,19 +355,65 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private struct Work
+        private class Work
         {
-            public bool MultipleFiles;
-            public string Path;
-            public int[] Indices;
+            private string _path = null;
+
+            public Work(ExtractForm form)
+            {
+                // create a new work object
+                MultipleFiles = form.checkBoxMultipleFiles.Checked;
+                Format = (ConvertFormat)form.toolStripDropDownButtonFormat.Tag;
+                var indices = new int[form.listViewPages.SelectedIndices.Count];
+                form.listViewPages.SelectedIndices.CopyTo(indices, 0);
+                Array.Sort(indices);
+                Indices = indices;
+            }
+
+            public ConvertFormat Format { get; private set; }
+
+            public int[] Indices { get; private set; }
+
+            public bool MultipleFiles { get; private set; }
+
+            public string Path
+            {
+                get
+                {
+                    // query the path if it is set
+                    if (_path == null)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                    return _path;
+                }
+            }
+
+            public void SetPath(string path)
+            {
+                // ensure the argument and state are valid before setting the path
+                if (path == null)
+                {
+                    throw new ArgumentNullException("path");
+                }
+                if (_path != null)
+                {
+                    throw new InvalidOperationException();
+                }
+                _path = path;
+            }
         }
 
         private PdfDocument _document;
         private readonly string _filePath;
+        private readonly string _filterFormatString;
+        private readonly string _formatTextFormatString;
         private readonly Dictionary<int, Image> _imageCache = new Dictionary<int, Image>();
         private volatile int _imageStartRange;
+        private bool? _lastMultipleFilesUserChoice;
         private int _pageCount;
         private volatile Preview _preview;
+        private Document _renderDocument;
 
         public ExtractForm(string path)
         {
@@ -375,12 +421,21 @@ namespace Aufbauwerk.Tools.PdfKit
             InitializeComponent();
             InitializeAdditionalStatusStripComponents();
 
-            // store the path and set the default locations
+            // store the path and filter text and set the default locations
             _filePath = Path.GetFullPath(path);
+            _filterFormatString = saveFileDialog.Filter;
             Text = string.Format(Text, Path.GetFileName(_filePath));
             var directory = Path.GetDirectoryName(path);
             saveFileDialog.InitialDirectory = directory;
             folderBrowserDialog.SelectedPath = directory;
+
+            // initialize the various formats
+            _formatTextFormatString = toolStripDropDownButtonFormat.Text;
+            foreach (var format in Enumerable.Repeat(ConvertFormat.Pdf, 1).Concat(ConvertFormat.GetApplicable(DocumentType.PortableDocumentFormat)))
+            {
+                toolStripDropDownButtonFormat.DropDownItems.Add(format.Name).Tag = format;
+            }
+            SetFormat(ConvertFormat.Pdf);
 
             // simulate a selection and trackbar change
             listViewPages_SelectedIndexChanged(this, EventArgs.Empty);
@@ -400,11 +455,11 @@ namespace Aufbauwerk.Tools.PdfKit
             // create the single file checkbox
             checkBoxMultipleFiles = new CheckBox();
             var checkboxHost = new ToolStripControlHost(checkBoxMultipleFiles);
-            checkboxHost.ToolTipText = toolStripStatusLabelSingleFiles.ToolTipText;
-            toolStripStatusLabelSingleFiles.ToolTipText = null;
+            checkboxHost.ToolTipText = toolStripStatusLabelMultipleFiles.ToolTipText;
+            toolStripStatusLabelMultipleFiles.ToolTipText = null;
             checkboxHost.Margin = checkboxHost.Margin + new Padding(8, 4, 0, 0);
-            statusStrip.Items.Insert(statusStrip.Items.IndexOf(toolStripStatusLabelSingleFiles), checkboxHost);
-            toolStripStatusLabelSingleFiles.Click += (s, e) => { checkBoxMultipleFiles.Checked = !checkBoxMultipleFiles.Checked; };
+            statusStrip.Items.Insert(statusStrip.Items.IndexOf(toolStripStatusLabelMultipleFiles), checkboxHost);
+            toolStripStatusLabelMultipleFiles.Click += (s, e) => { checkBoxMultipleFiles.Checked = !checkBoxMultipleFiles.Checked; };
 
             // create the zoom trackbar
             trackBarZoom = new TrackBar();
@@ -431,26 +486,26 @@ namespace Aufbauwerk.Tools.PdfKit
 
         #region Methods
 
-        private string[] ExtractForDragAndDrop(int[] indices, bool multipleFiles)
+        private string[] ExtractForDragAndDrop(Work work)
         {
             // determine how to extract the pages
-            if (!multipleFiles)
+            if (work.MultipleFiles)
             {
-                // extract the pages into one document and store its path
-                var path = Path.Combine(Path.GetTempPath(), GetDocumentFileName(indices));
-                if (PerformSync(ExtractToSingleDocument, path, indices))
+                // extract each page to a file and store all paths
+                work.SetPath(Path.GetTempPath());
+                var fileNames = PerformSync(ExtractToMultipleFiles, work);
+                if (fileNames != null)
                 {
-                    return new string[] { path };
+                    return Array.ConvertAll(fileNames, f => Path.Combine(work.Path, f));
                 }
             }
             else
             {
-                // extract each page to a document and store all paths
-                var root = Path.GetTempPath();
-                var fileNames = PerformSync(ExtractToMultipleDocuments, root, indices);
-                if (fileNames != null)
+                // extract the pages into one document and store its path
+                work.SetPath(Path.Combine(Path.GetTempPath(), GetDocumentFileName(work.Indices, work.Format.FileExtension)));
+                if (PerformSync(ExtractToSingleFile, work))
                 {
-                    return Array.ConvertAll(fileNames, f => Path.Combine(root, f));
+                    return new string[] { work.Path };
                 }
             }
 
@@ -458,12 +513,12 @@ namespace Aufbauwerk.Tools.PdfKit
             return null;
         }
 
-        private string[] ExtractToMultipleDocuments(string path, int[] indices, Func<bool> isCanelled, Action<int, object> reportStatus)
+        private string[] ExtractToMultipleFiles(Work work, Func<bool> isCanelled, Action<int, object> reportStatus)
         {
             // extract all selected pages
-            var fileNames = new string[indices.Length];
+            var fileNames = new string[work.Indices.Length];
             var progress = 0;
-            for (var i = 0; i < indices.Length; i++)
+            for (var i = 0; i < work.Indices.Length; i++)
             {
                 // return if cancelled
                 if (isCanelled())
@@ -480,63 +535,126 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
 
                 // get the current index and file name
-                var index = indices[i];
-                var fileName = GetDocumentFileName(index);
+                var index = work.Indices[i];
+                var fileName = GetDocumentFileName(index, work.Format.FileExtension);
+                var filePath = Path.Combine(work.Path, fileName);
                 reportStatus(progress, fileName);
 
                 // extract and save the page
-                using (var onePageDocument = new PdfDocument())
+                if (work.Format == ConvertFormat.Pdf)
                 {
-                    onePageDocument.AddPage(_document.Pages[index]);
-                    onePageDocument.Save(Path.Combine(path, fileName));
+                    using (var onePageDocument = new PdfDocument())
+                    {
+                        onePageDocument.AddPage(_document.Pages[index]);
+                        onePageDocument.Save(filePath);
+                    }
+                }
+                else
+                {
+                    lock (_renderDocument)
+                    {
+                        _renderDocument.EnsureNoOpenRenderer();
+                        using (var ghostscript = new Ghostscript(work.Format.GetArguments(filePath)))
+                        {
+                            _renderDocument.RunInitialize(ghostscript);
+                            _renderDocument.RunPage(ghostscript, index + 1);
+                        }
+                    }
                 }
 
                 // store the file name and continue
                 fileNames[i] = fileName;
-                progress = (int)Math.Round((100.0 * (i + 1)) / indices.Length);
+                progress = (int)Math.Round((100.0 * (i + 1)) / work.Indices.Length);
                 reportStatus(progress, string.Empty);
             }
             return fileNames;
         }
 
-        private bool ExtractToSingleDocument(string path, int[] indices, Func<bool> isCanelled, Action<int, object> reportStatus)
+        private bool ExtractToSingleFile(Work work, Func<bool> isCanelled, Action<int, object> reportStatus)
         {
-            // create the resulting pdf
-            var fileName = Path.GetFileName(path);
+            // extract the pages to a single file
+            var fileName = Path.GetFileName(work.Path);
             reportStatus(0, fileName);
-            using (var combinedDocument = new PdfDocument())
+            if (work.Format == ConvertFormat.Pdf)
             {
-                var prevProgress = 0;
-                for (var i = 0; i < indices.Length; i++)
+                // create the resulting pdf
+                using (var combinedDocument = new PdfDocument())
                 {
-                    // return if cancelled
-                    if (isCanelled())
+                    var prevProgress = 0;
+                    for (var i = 0; i < work.Indices.Length; i++)
                     {
+                        // return if cancelled
+                        if (isCanelled())
+                        {
+                            return false;
+                        }
+
+                        // add the page and increment the progress
+                        combinedDocument.AddPage(_document.Pages[work.Indices[i]]);
+                        var progress = (int)Math.Round((90.0 * (i + 1)) / work.Indices.Length);
+                        if (progress != prevProgress)
+                        {
+                            reportStatus(progress, fileName);
+                            prevProgress = progress;
+                        }
+                    }
+                    combinedDocument.Save(work.Path);
+                }
+            }
+            else
+            {
+                // ensure there is no open renderer and create Ghostscript
+                lock (_renderDocument)
+                {
+                    _renderDocument.EnsureNoOpenRenderer();
+                    try
+                    {
+                        using (var ghostscript = new Ghostscript(work.Format.GetArguments(work.Path)))
+                        {
+                            // hook up the listener and initialize the document
+                            ghostscript.Poll += (s, e) => e.Cancel = isCanelled();
+                            _renderDocument.RunInitialize(ghostscript);
+                            var prevProgress = 5;
+                            reportStatus(prevProgress, fileName);
+
+                            // extract each page
+                            for (var i = 0; i < work.Indices.Length; i++)
+                            {
+                                _renderDocument.RunPage(ghostscript, work.Indices[i] + 1);
+                                var progress = 5 + (int)Math.Round((90.0 * (i + 1)) / work.Indices.Length);
+                                if (progress != prevProgress)
+                                {
+                                    reportStatus(progress, fileName);
+                                    prevProgress = progress;
+                                }
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // delete the file and exit
+                        try
+                        {
+                            File.Delete(work.Path);
+                        }
+                        catch { }
                         return false;
                     }
-
-                    // add the page and increment the progress
-                    combinedDocument.AddPage(_document.Pages[indices[i]]);
-                    var progress = (int)Math.Round((99.0 * (i + 1)) / indices.Length);
-                    if (progress != prevProgress)
-                    {
-                        reportStatus(progress, fileName);
-                        prevProgress = progress;
-                    }
                 }
-                combinedDocument.Save(path);
             }
+
+            // finish the operation
             reportStatus(100, string.Empty);
             return true;
         }
 
-        private string GetDocumentFileName(int index)
+        private string GetDocumentFileName(int index, string fileExtension)
         {
             // return the file name plus extension for a single page
-            return new StringBuilder(Path.GetFileNameWithoutExtension(_filePath)).Append("_").Append(index + 1).Append(".pdf").ToString();
+            return new StringBuilder(Path.GetFileNameWithoutExtension(_filePath)).Append("_").Append(index + 1).Append(".").Append(fileExtension).ToString();
         }
 
-        private string GetDocumentFileName(int[] indices)
+        private string GetDocumentFileName(int[] indices, string fileExtension)
         {
             // return the combined file name plus extension for multiple pages
             var buffer = new StringBuilder(Path.GetFileNameWithoutExtension(_filePath));
@@ -574,12 +692,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 // search for the next index or range
                 firstIndex = lastIndex + 1;
             }
-            return buffer.Append(".pdf").ToString();
-        }
-
-        private string GetImageName(int itemIndex)
-        {
-            return "image" + itemIndex.ToString(CultureInfo.InvariantCulture);
+            return buffer.Append(".").Append(fileExtension).ToString();
         }
 
         private int GetItemIndexWithImageAt(Point position)
@@ -596,15 +709,6 @@ namespace Aufbauwerk.Tools.PdfKit
             var imageBounds = listViewPages.GetItemRect(item.Index, ItemBoundsPortion.Icon);
             imageBounds.Inflate(-(imageBounds.Width - imageList.ImageSize.Width) / 2, -(imageBounds.Height - imageList.ImageSize.Height) / 2);
             return imageBounds.Contains(position) ? item.Index : -1;
-        }
-
-        private int[] GetSelectedIndices()
-        {
-            // get the selected indices   
-            var selected = new int[listViewPages.SelectedIndices.Count];
-            listViewPages.SelectedIndices.CopyTo(selected, 0);
-            Array.Sort(selected);
-            return selected;
         }
 
         private Image GetThumbFromImage(Image image)
@@ -644,86 +748,85 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void ImageLoader()
         {
-            // get the ducument
-            using (var document = Document.FromPdf(_document))
+            // initialize and repeat until every image is loaded or the form is disposed
+            var lastStartRange = _imageStartRange;
+            var lastIndex = lastStartRange;
+            while (!IsDisposed)
             {
-                // initialize and repeat until every image is loaded or the form is disposed
-                var lastStartRange = _imageStartRange;
-                var lastIndex = lastStartRange;
-                while (!IsDisposed)
+                // get the next index to load
+                int index;
+                lock (_imageCache)
                 {
-                    // get the next index to load
-                    int index;
-                    lock (_imageCache)
+                    // check if we should load the preview
+                    var preview = _preview;
+                    if (preview != null && !_imageCache.ContainsKey(preview.ItemIndex))
                     {
-                        // check if we should load the preview
-                        var preview = _preview;
-                        if (preview != null && !_imageCache.ContainsKey(preview.ItemIndex))
+                        // set the preview index
+                        index = preview.ItemIndex;
+                    }
+                    else
+                    {
+                        // update the start index if it has changed
+                        var newStartRange = _imageStartRange;
+                        if (lastStartRange != newStartRange)
                         {
-                            // set the preview index
-                            index = preview.ItemIndex;
+                            lastStartRange = newStartRange;
+                            lastIndex = lastStartRange;
                         }
-                        else
+
+                        // skip all loaded indices until the end
+                        while (lastIndex < _pageCount && _imageCache.ContainsKey(lastIndex))
                         {
-                            // update the start index if it has changed
-                            var newStartRange = _imageStartRange;
-                            if (lastStartRange != newStartRange)
-                            {
-                                lastStartRange = newStartRange;
-                                lastIndex = lastStartRange;
-                            }
-
-                            // skip all loaded indices until the end
-                            while (lastIndex < _pageCount && _imageCache.ContainsKey(lastIndex))
-                            {
-                                lastIndex++;
-                            }
-
-                            // check if we reached the end
-                            if (lastIndex >= _pageCount)
-                            {
-                                // skip all loaded indices until the start
-                                lastIndex = lastStartRange - 1;
-                                while (lastIndex >= 0 && _imageCache.ContainsKey(lastIndex))
-                                {
-                                    lastIndex--;
-                                }
-
-                                // check if we reached the start
-                                if (lastIndex < 0)
-                                {
-                                    // all done, exit thread
-                                    break;
-                                }
-                            }
-
-                            // set the index
-                            index = lastIndex;
+                            lastIndex++;
                         }
-                    }
 
-                    // try to load the image
-                    Image image;
-                    try
-                    {
-                        image = document.RenderPage(index + 1, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, 1, 0, null, () => IsDisposed);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        continue;
-                    }
-                    catch
-                    {
-                        image = null;
-                    }
+                        // check if we reached the end
+                        if (lastIndex >= _pageCount)
+                        {
+                            // skip all loaded indices until the start
+                            lastIndex = lastStartRange - 1;
+                            while (lastIndex >= 0 && _imageCache.ContainsKey(lastIndex))
+                            {
+                                lastIndex--;
+                            }
 
-                    // report the result
-                    lock (_imageCache)
-                    {
-                        _imageCache.Add(index, image);
+                            // check if we reached the start
+                            if (lastIndex < 0)
+                            {
+                                // all done, exit thread
+                                break;
+                            }
+                        }
+
+                        // set the index
+                        index = lastIndex;
                     }
-                    BeginInvoke(new Action<Image, int>(SetImage), image, index);
                 }
+
+                // try to load the image
+                Image image;
+                try
+                {
+                    lock (_renderDocument)
+                    {
+                        image = _renderDocument.RenderPage(index + 1, CurrentAutoScaleDimensions.Width, CurrentAutoScaleDimensions.Height, 1, 0, null, () => IsDisposed);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    continue;
+                }
+                catch
+                {
+                    image = null;
+                }
+
+                // report the result
+                lock (_imageCache)
+                {
+                    _imageCache.Add(index, image);
+                }
+                BeginInvoke(new Action<Image, int>(SetImage), image, index);
             }
         }
 
@@ -776,12 +879,12 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private T PerformSync<T>(Func<string, int[], Func<bool>, Action<int, object>, T> action, string path, int[] indizes)
+        private T PerformSync<T>(Func<Work, Func<bool>, Action<int, object>, T> action, Work work)
         {
             try
             {
                 // perform the action
-                return action(path, indizes, () => false, (progress, status) =>
+                return action(work, () => false, (progress, status) =>
                 {
                     // update the status
                     try
@@ -804,6 +907,30 @@ namespace Aufbauwerk.Tools.PdfKit
                     return default(T);
                 }
                 throw;
+            }
+        }
+
+        private void SetFormat(ConvertFormat format)
+        {
+            // set the new format
+            toolStripDropDownButtonFormat.Tag = format;
+            toolStripDropDownButtonFormat.Text = string.Format(_formatTextFormatString, format.Name);
+            checkBoxMultipleFiles.Enabled = format.SupportsSingleFile;
+            toolStripStatusLabelMultipleFiles.Enabled = format.SupportsSingleFile;
+
+            // check or restore the multiple files box
+            if (!format.SupportsSingleFile)
+            {
+                if (_lastMultipleFilesUserChoice == null)
+                {
+                    _lastMultipleFilesUserChoice = checkBoxMultipleFiles.Checked;
+                }
+                checkBoxMultipleFiles.Checked = true;
+            }
+            else if (_lastMultipleFilesUserChoice != null)
+            {
+                checkBoxMultipleFiles.Checked = _lastMultipleFilesUserChoice.Value;
+                _lastMultipleFilesUserChoice = null;
             }
         }
 
@@ -860,6 +987,22 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
+        private void SetSelection(Converter<int, bool> selectIndex)
+        {
+            // go over all pages and select the requested ones
+            for (var i = 0; i < _pageCount; i++)
+            {
+                if (selectIndex(i))
+                {
+                    listViewPages.SelectedIndices.Add(i);
+                }
+                else
+                {
+                    listViewPages.SelectedIndices.Remove(i);
+                }
+            }
+        }
+
         private void ShowStatus(bool visible, bool cancelable)
         {
             // set the visibilty and enabled states
@@ -868,8 +1011,9 @@ namespace Aufbauwerk.Tools.PdfKit
             toolStripDropDownButtonCancel.Visible = visible;
             toolStripDropDownButtonCancel.Enabled = cancelable;
             toolStripDropDownButtonSave.Visible = !visible;
+            toolStripDropDownButtonFormat.Visible = !visible;
             checkBoxMultipleFiles.Visible = !visible;
-            toolStripStatusLabelSingleFiles.Visible = !visible;
+            toolStripStatusLabelMultipleFiles.Visible = !visible;
             toolStripDropDownButtonZoomOut.Visible = !visible;
             trackBarZoom.Visible = !visible;
             toolStripDropDownButtonZoomIn.Visible = !visible;
@@ -898,8 +1042,8 @@ namespace Aufbauwerk.Tools.PdfKit
             var work = (Work)e.Argument;
             if (work.MultipleFiles)
             {
-                // extract each page as one document and show them in the explorer
-                var files = ExtractToMultipleDocuments(work.Path, work.Indices, () => (sender as BackgroundWorker).CancellationPending, (sender as BackgroundWorker).ReportProgress);
+                // extract each page as one file and show them in the explorer
+                var files = ExtractToMultipleFiles(work, () => (sender as BackgroundWorker).CancellationPending, (sender as BackgroundWorker).ReportProgress);
                 if (files == null)
                 {
                     e.Cancel = true;
@@ -912,8 +1056,8 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             else
             {
-                // extract all pages into one document and show it
-                if (ExtractToSingleDocument(work.Path, work.Indices, () => (sender as BackgroundWorker).CancellationPending, (sender as BackgroundWorker).ReportProgress))
+                // extract all pages into one file and show it
+                if (ExtractToSingleFile(work, () => (sender as BackgroundWorker).CancellationPending, (sender as BackgroundWorker).ReportProgress))
                 {
                     e.Result = true;
                     Process.Start(work.Path);
@@ -956,15 +1100,22 @@ namespace Aufbauwerk.Tools.PdfKit
             Update();
 
             // open the document and set the page count
+            var prevCursor = Cursor;
+            Cursor = Cursors.WaitCursor;
             try
             {
                 _document = PdfReader.Open(_filePath, PdfDocumentOpenMode.Import);
+                _renderDocument = Document.FromPdf(_document);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Close();
                 return;
+            }
+            finally
+            {
+                Cursor = prevCursor;
             }
             _pageCount = _document.PageCount;
             listViewPages.VirtualMode = true;
@@ -988,7 +1139,7 @@ namespace Aufbauwerk.Tools.PdfKit
             SetPreview(-1);
 
             // perform the operation
-            using (var data = new FilesDataObject(ExtractForDragAndDrop, GetSelectedIndices(), checkBoxMultipleFiles.Checked))
+            using (var data = new FilesDataObject(ExtractForDragAndDrop, new Work(this)))
             {
                 ShowStatus(true, false);
                 Update();
@@ -1012,7 +1163,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private void listViewPages_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
             // check if the thumb needs to be added
-            var imageName = GetImageName(e.ItemIndex);
+            var imageName = string.Format(CultureInfo.InvariantCulture, ImageNameFormat, e.ItemIndex);
             if (!imageList.Images.ContainsKey(imageName))
             {
                 // try to get a loaded image
@@ -1057,14 +1208,20 @@ namespace Aufbauwerk.Tools.PdfKit
             backgroundWorkerExtract.CancelAsync();
         }
 
+        private void toolStripDropDownButtonFormat_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            // change the format
+            var format = (ConvertFormat)e.ClickedItem.Tag;
+            if (format.ShowDialog(this))
+            {
+                SetFormat(format);
+            }
+        }
+
         private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
         {
             // get the selection and check what to do
-            var work = new Work()
-            {
-                Indices = GetSelectedIndices(),
-                MultipleFiles = checkBoxMultipleFiles.Checked,
-            };
+            var work = new Work(this);
             if (work.MultipleFiles)
             {
                 // make sure the user picks a directory
@@ -1072,17 +1229,19 @@ namespace Aufbauwerk.Tools.PdfKit
                 {
                     return;
                 }
-                work.Path = folderBrowserDialog.SelectedPath;
+                work.SetPath(folderBrowserDialog.SelectedPath);
             }
             else
             {
                 // get a proper default name and make sure the user finishes the save dialog
-                saveFileDialog.FileName = GetDocumentFileName(work.Indices);
+                saveFileDialog.DefaultExt = work.Format.FileExtension;
+                saveFileDialog.Filter = string.Format(_filterFormatString, work.Format.Name, work.Format.FileExtension);
+                saveFileDialog.FileName = GetDocumentFileName(work.Indices, work.Format.FileExtension);
                 if (saveFileDialog.ShowDialog(this) != DialogResult.OK)
                 {
                     return;
                 }
-                work.Path = saveFileDialog.FileName;
+                work.SetPath(saveFileDialog.FileName);
             }
 
             // show the status elements and start the work
@@ -1098,6 +1257,26 @@ namespace Aufbauwerk.Tools.PdfKit
         private void toolStripDropDownButtonZoomOut_Click(object sender, EventArgs e)
         {
             trackBarZoom.Value--;
+        }
+
+        private void toolStripMenuItemSelectAll_Click(object sender, EventArgs e)
+        {
+            SetSelection(i => true);
+        }
+
+        private void toolStripMenuItemSelectEven_Click(object sender, EventArgs e)
+        {
+            SetSelection(i => i % 2 == 0);
+        }
+
+        private void toolStripMenuItemSelectInvert_Click(object sender, EventArgs e)
+        {
+            SetSelection(i => !listViewPages.SelectedIndices.Contains(i));
+        }
+
+        private void toolStripMenuItemSelectOdd_Click(object sender, EventArgs e)
+        {
+            SetSelection(i => i % 2 != 0);
         }
 
         private void trackBarZoom_ValueChanged(object sender, EventArgs e)
