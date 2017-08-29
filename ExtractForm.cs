@@ -424,7 +424,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // store the path and filter text and set the default locations
             _filePath = Path.GetFullPath(path);
             _filterFormatString = saveFileDialog.Filter;
-            Text = string.Format(Text, Path.GetFileName(_filePath));
+            Text = string.Format(Text, Application.ProductName, Path.GetFileName(_filePath));
             var directory = Path.GetDirectoryName(path);
             saveFileDialog.InitialDirectory = directory;
             folderBrowserDialog.SelectedPath = directory;

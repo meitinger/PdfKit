@@ -145,7 +145,7 @@
     <value>PDF-Dokumente (*.pdf)|*.pdf</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Dokumente zusammenführen</value>
+    <value>{0} - Dokumente zusammenführen</value>
   </data>
   <data name="toolStripDropDownButtonCancel.Text" xml:space="preserve">
     <value>Abbrechen</value>

@@ -781,7 +781,7 @@
     <value>WindowsDefaultBounds</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Combine documents</value>
+    <value>{0} - Combine documents</value>
   </data>
   <data name="&gt;&gt;columnHeaderName.Name" xml:space="preserve">
     <value>columnHeaderName</value>

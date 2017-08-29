@@ -136,7 +136,7 @@
     <value>Abbrechen</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Seiten extrahieren von {0}</value>
+    <value>{0} - Seiten extrahieren von {1}</value>
   </data>
   <data name="toolStripDropDownButtonFormat.Text" xml:space="preserve">
     <value>Ausgabeformat: {0}</value>

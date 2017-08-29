@@ -36,7 +36,8 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // initialize the components, hook the wheel event and set the controls
             InitializeComponent();
-            SetEnabledState(true);
+            Text = string.Format(Text, Application.ProductName);
+            ShowStatus(true);
         }
 
         public CombineForm(IEnumerable<string> files)
@@ -194,21 +195,22 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void SetEnabledState(bool enabled)
+        private void ShowStatus(bool visible)
         {
             // set the enabled state of all controls
-            splitContainer.Enabled = enabled;
-            toolStripDropDownButtonSave.Enabled = enabled;
-            toolStripProgressBar.Visible = !enabled;
+            splitContainer.Enabled = visible;
+            toolStripDropDownButtonSave.Visible = visible;
+            toolStripProgressBar.Visible = !visible;
             toolStripProgressBar.Value = 0;
-            toolStripDropDownButtonCancel.Visible = !enabled;
-            listViewFiles.Enabled = enabled;
+            toolStripDropDownButtonCancel.Visible = !visible;
+            listViewFiles.Enabled = visible;
             SyncToolStrip();
         }
 
         private void SyncToolStrip()
         {
             // update the file controls
+            toolStripDropDownButtonSave.Enabled = listViewFiles.Enabled && listViewFiles.Items.Count > 0;
             toolStripButtonInsert.Enabled = listViewFiles.Enabled;
             toolStripButtonRemove.Enabled = listViewFiles.Enabled && listViewFiles.SelectedItems.Count > 0;
             toolStripButtonUp.Enabled = listViewFiles.Enabled && listViewFiles.SelectedItems.Count > 0 && !listViewFiles.SelectedItems.Contains(listViewFiles.Items[0]);
@@ -287,7 +289,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             // restore the state
-            SetEnabledState(true);
+            ShowStatus(true);
 
             // handle any potential error
             if (!e.Cancelled && e.Error != null)
@@ -506,7 +508,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 allFiles[0] = new Tuple<string, int>(saveFileDialog.FileName, totalPages);
 
                 // clear the selection and disable all elements
-                SetEnabledState(false);
+                ShowStatus(false);
 
                 // combine the documents
                 backgroundWorker.RunWorkerAsync(allFiles);
