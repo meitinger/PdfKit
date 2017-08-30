@@ -15,11 +15,13 @@
  */
 
 using System.Reflection;
+using System.Resources;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("PdfKit")]
 [assembly: AssemblyDescription("Combines, converts, extracts and views PDFs.")]
 [assembly: AssemblyCompany("AufBauWerk - Unternehmen für junge Menschen")]
 [assembly: AssemblyCopyright("Copyright © 2016-2017 by Manuel Meitinger")]
+[assembly: AssemblyVersion("1.3.0.8")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion("1.3.0.7")]
+[assembly: NeutralResourcesLanguageAttribute("en")]

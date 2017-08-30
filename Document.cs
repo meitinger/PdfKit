@@ -304,7 +304,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
 
                 // load the pdf
-                ghostscript.Run(string.Format(CultureInfo.InvariantCulture, "({0}) (r) file runpdfbegin", escapedFileName));
+                ghostscript.Run(string.Format(CultureInfo.InvariantCulture, "({0}) (r) file runpdfbegin process_trailer_attrs", escapedFileName));
             }
 
             protected override void DoRunPage(Ghostscript ghostscript, int pageNumber)
