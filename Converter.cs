@@ -58,6 +58,7 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             _args = null;
             _dialog = dialog;
+            Program.PrepareForm(dialog);
             Name = name;
             FileExtension = fileExtension;
             SupportsSingleFile = supportsSingleFile;
@@ -115,9 +116,14 @@ namespace Aufbauwerk.Tools.PdfKit
     {
         private class Win32Window : IWin32Window
         {
+            public static Win32Window FromHandle(IntPtr handle)
+            {
+                return handle == IntPtr.Zero ? null : new Win32Window(handle);
+            }
+
             private readonly IntPtr _handle;
 
-            public Win32Window(IntPtr handle)
+            private Win32Window(IntPtr handle)
             {
                 _handle = handle;
             }
@@ -147,15 +153,15 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private bool _aborted = false;
+        private volatile bool _aborted = false;
         private int _completedPageCount = 0;
         private Document _currentFile = null;
         private int _dequeuedPageCount = 0;
-        private readonly object _errorLock = new object();
         private readonly Queue<Document> _files = new Queue<Document>();
         private readonly ConvertFormat _format;
         private bool _initializationDone = false;
         private Win32Window _parent = null;
+        private readonly object _parentLock = new object();
         private readonly Native.IProgressDialog _progressDialog;
         private readonly string _title;
         private int _totalPageCount = 0;
@@ -180,8 +186,6 @@ namespace Aufbauwerk.Tools.PdfKit
             // enqueue all selected files
             try
             {
-                // wait a bit for progress dialog
-                Thread.Sleep(1000);
                 foreach (var filePath in (IEnumerable<string>)files)
                 {
                     // try to load the file
@@ -198,31 +202,23 @@ namespace Aufbauwerk.Tools.PdfKit
                     catch (Exception e)
                     {
                         // show the error dialog and let the user pick
-                        lock (_errorLock)
+                        switch (QueryUser(string.Format(Resources.Converter_LoadFileError, filePath, e.Message)))
                         {
-                            if (_aborted)
+                            case DialogResult.Abort:
                             {
                                 return;
                             }
-                            switch (ShowMessage(string.Format(Resources.Converter_LoadFileError, filePath, e.Message), MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
+                            case DialogResult.Retry:
                             {
-                                case DialogResult.Abort:
-                                {
-                                    _aborted = true;
-                                    return;
-                                }
-                                case DialogResult.Retry:
-                                {
-                                    goto Retry;
-                                }
-                                case DialogResult.Ignore:
-                                {
-                                    continue;
-                                }
-                                default:
-                                {
-                                    throw;
-                                }
+                                goto Retry;
+                            }
+                            case DialogResult.Ignore:
+                            {
+                                continue;
+                            }
+                            default:
+                            {
+                                throw;
                             }
                         }
                     }
@@ -230,10 +226,6 @@ namespace Aufbauwerk.Tools.PdfKit
                     // enqueue the file and notify the main thread
                     lock (_files)
                     {
-                        if (_aborted)
-                        {
-                            return;
-                        }
                         _files.Enqueue(file);
                         _totalPageCount += file.PageCount;
                         Monitor.Pulse(_files);
@@ -251,6 +243,34 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
+        private DialogResult QueryUser(string text)
+        {
+            lock (_parentLock)
+            {
+                // wait for the progress dialog to show
+                while (true)
+                {
+                    if (_aborted)
+                    {
+                        return DialogResult.Abort;
+                    }
+                    if (_parent != null)
+                    {
+                        break;
+                    }
+                    Monitor.Wait(_parentLock);
+                }
+
+                // show the message
+                var result = MessageBox.Show(_parent, text, _title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning);
+                if (result == DialogResult.Abort)
+                {
+                    _aborted = true;
+                }
+                return result;
+            }
+        }
+
         private void Run()
         {
             // show the process dialog
@@ -258,7 +278,16 @@ namespace Aufbauwerk.Tools.PdfKit
             try
             {
                 // set the parent
-                _parent = new Win32Window(((Native.IOleWindow)_progressDialog).GetWindow());
+                lock (_parentLock)
+                {
+                    _parent = Win32Window.FromHandle(((Native.IOleWindow)_progressDialog).GetWindow());
+                    while (!Native.IsWindowVisible(_parent.Handle))
+                    {
+                        Thread.Sleep(0);
+                    }
+                    Native.SetForegroundWindow(_parent.Handle);
+                    Monitor.Pulse(_parentLock);
+                }
 
                 // convert each file
                 while (true)
@@ -306,32 +335,24 @@ namespace Aufbauwerk.Tools.PdfKit
                         _progressDialog.Timer(Native.PDTIMER_PAUSE, IntPtr.Zero);
                         try
                         {
-                            lock (_errorLock)
+                            switch (QueryUser(string.Format(Resources.Converter_ConvertFileError, _currentFile.FilePath, e.Message)))
                             {
-                                if (_aborted)
+                                case DialogResult.Abort:
                                 {
                                     return;
                                 }
-                                switch (ShowMessage(string.Format(Resources.Converter_ConvertFileError, _currentFile.FilePath, e.Message), MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Warning))
+                                case DialogResult.Retry:
                                 {
-                                    case DialogResult.Abort:
-                                    {
-                                        _aborted = true;
-                                        return;
-                                    }
-                                    case DialogResult.Retry:
-                                    {
-                                        _completedPageCount = 0;
-                                        goto Retry;
-                                    }
-                                    case DialogResult.Ignore:
-                                    {
-                                        continue;
-                                    }
-                                    default:
-                                    {
-                                        throw;
-                                    }
+                                    _completedPageCount = 0;
+                                    goto Retry;
+                                }
+                                case DialogResult.Ignore:
+                                {
+                                    continue;
+                                }
+                                default:
+                                {
+                                    throw;
                                 }
                             }
                         }
@@ -344,18 +365,16 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             finally
             {
+                // clear the parent
+                lock (_parentLock)
+                {
+                    _parent = null;
+                    Monitor.Pulse(_parentLock);
+                }
+
                 // hide the dialog
                 _progressDialog.StopProgressDialog();
-
-                // clear the parent
-                _parent = null;
             }
-        }
-
-        private DialogResult ShowMessage(string text, MessageBoxButtons buttons, MessageBoxIcon icon)
-        {
-            // show the message
-            return MessageBox.Show(_parent, text, _title, buttons, icon);
         }
 
         private void UpdateDialog()

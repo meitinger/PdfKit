@@ -272,6 +272,12 @@ namespace Aufbauwerk.Tools.PdfKit
         [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern int gsapi_set_stdio(IntPtr instance, stdin_fn stdin_fn, stdout_fn stdout_fn, stderr_fn stderr_fn);
 
+        [DllImport(Dll.User32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport(Dll.User32, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern bool SetForegroundWindow(IntPtr hWnd);
+
         [DllImport(Dll.Shell32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
         [return: MarshalAs(UnmanagedType.Interface)]
         internal static extern IShellFolder SHGetDesktopFolder();

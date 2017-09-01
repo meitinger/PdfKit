@@ -119,7 +119,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private static readonly SortedDictionary<string, Action<IEnumerable<string>>> _multiFileTasks = new SortedDictionary<string, Action<IEnumerable<string>>>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Combine", files => Application.Run(new CombineForm(files)) },
+            { "Combine", files => Run(new CombineForm(files)) },
             { "ConvertToBmp", files => Converter.Run(files, ConvertFormat.Bmp) },
             { "ConvertToEps", files => Converter.Run(files, ConvertFormat.Eps) },
             { "ConvertToJpeg", files => Converter.Run(files, ConvertFormat.Jpeg) },
@@ -131,15 +131,15 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private static readonly SortedDictionary<string, Action<string>> _singleFileTasks = new SortedDictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase)
         {
-            { "View", file=> Application.Run(new ViewForm(file)) },
-            { "Extract", file => Application.Run(new ExtractForm(file)) },
-            { "CombineDirectory", file => Application.Run(new CombineForm(Directory.EnumerateFiles(file, "*.pdf", SearchOption.AllDirectories))) },
+            { "View", file=> Run(new ViewForm(file)) },
+            { "Extract", file => Run(new ExtractForm(file)) },
+            { "CombineDirectory", file => Run(new CombineForm(Directory.EnumerateFiles(file, "*.pdf", SearchOption.AllDirectories))) },
         };
 
         private static readonly SortedDictionary<string, Action> _standaloneTasks = new SortedDictionary<string, Action>(StringComparer.OrdinalIgnoreCase)
         {
             { "-Embedding", RunComServer },
-            { "Combine", () => Application.Run(new CombineForm()) },
+            { "Combine", () => Run(new CombineForm()) },
         };
 
         [STAThread]
@@ -202,6 +202,25 @@ namespace Aufbauwerk.Tools.PdfKit
                 // show the error message
                 MessageBox.Show(e.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        internal static Form PrepareForm(Form form)
+        {
+            // activate visible forms
+            form.VisibleChanged += (s, e) =>
+            {
+                if (((Form)s).Visible)
+                {
+                    ((Form)s).Activate();
+                }
+            };
+            return form;
+        }
+
+        private static void Run(Form form)
+        {
+            // prepare and run the form
+            Application.Run(PrepareForm(form));
         }
 
         private static void RunComServer()

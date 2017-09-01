@@ -186,6 +186,15 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die The file is empty and cannot be loaded. ähnelt.
+        /// </summary>
+        internal static string Document_FileIsEmpty {
+            get {
+                return ResourceManager.GetString("Document_FileIsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die The file format is not supported.
         ///Only the following formats are allowed: {0} ähnelt.
         /// </summary>

@@ -57,8 +57,14 @@ namespace Aufbauwerk.Tools.PdfKit
             using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, false))
             {
-                // get the suitable document
+                // read the file header
                 var header = streamReader.ReadLine();
+                if (header == null)
+                {
+                    throw new InvalidDataException(Resources.Document_FileIsEmpty);
+                }
+
+                // get the suitable document
                 Document doc;
                 if ((supportedType & DocumentType.PortableDocumentFormat) != 0 && PortableDocumentFormatDocument.Header.IsMatch(header))
                 {

@@ -164,6 +164,9 @@ Do you want to ignore the error and proceed with the next file, retry loading th
   <data name="Converter_LoadingFiles" xml:space="preserve">
     <value>Loading files...</value>
   </data>
+  <data name="Document_FileIsEmpty" xml:space="preserve">
+    <value>The file is empty and cannot be loaded.</value>
+  </data>
   <data name="Document_InvalidFileFormat" xml:space="preserve">
     <value>The file format is not supported.
 Only the following formats are allowed: {0}</value>

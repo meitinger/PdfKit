@@ -143,6 +143,9 @@ Wollen Sie den Fehler ignorieren und mit der nächsten Datei fortfahren, die akt
   <data name="Converter_LoadingFiles" xml:space="preserve">
     <value>Lade Dateien für die Konvertierung...</value>
   </data>
+  <data name="Document_FileIsEmpty" xml:space="preserve">
+    <value>Die Datei ist leer und kann nicht geladen werden.</value>
+  </data>
   <data name="Document_InvalidFileFormat" xml:space="preserve">
     <value>Der Dateityp wird nicht unterstützt.
 Nur folgende Formate sind zugelassen: {0}</value>
