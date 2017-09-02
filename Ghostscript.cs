@@ -471,6 +471,12 @@ namespace Aufbauwerk.Tools.PdfKit
                     Bitmap image;
                     lock (_temporaryImage)
                     {
+                        var rect = new Rectangle(Point.Empty, _temporaryImage.Size);
+                        image = new Bitmap(rect.Width, rect.Height, PixelFormat.Format24bppRgb);
+                        using (var gc = Graphics.FromImage(image))
+                        {
+                            gc.DrawImage(_temporaryImage, rect, rect, GraphicsUnit.Pixel);
+                        }
                         image = new Bitmap(_temporaryImage);
                     }
                     page(this, new GhostscriptRendererEventArgs(image));

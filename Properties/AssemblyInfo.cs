@@ -22,6 +22,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("Combines, converts, extracts and views PDFs.")]
 [assembly: AssemblyCompany("AufBauWerk - Unternehmen für junge Menschen")]
 [assembly: AssemblyCopyright("Copyright © 2016-2017 by Manuel Meitinger")]
-[assembly: AssemblyVersion("1.3.0.9")]
+[assembly: AssemblyVersion("1.3.0.10")]
 [assembly: ComVisible(false)]
 [assembly: NeutralResourcesLanguageAttribute("en")]

@@ -283,8 +283,8 @@ namespace Aufbauwerk.Tools.PdfKit
                     throw new InvalidOperationException();
                 }
 
-                // make a copy of the image (might be used in the abort callback) and restore the cursor
-                _image = (Image)image.Clone();
+                // set the image and restore the cursor
+                _image = image;
                 _form.Cursor = _prevCursor;
 
                 // get the best fit next to the window
@@ -336,7 +336,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     toolTipRect.Right == windowRect.Left ? new Point(toolTipRect.Right - _calculatedSize.Width, toolTipRect.Top + (toolTipRect.Height - _calculatedSize.Height) / 2) :
                     toolTipRect.Top == windowRect.Bottom ? new Point(toolTipRect.Left + (toolTipRect.Width - _calculatedSize.Width) / 2, toolTipRect.Top) :
                     toolTipRect.Bottom == windowRect.Top ? new Point(toolTipRect.Left + (toolTipRect.Width - _calculatedSize.Width) / 2, toolTipRect.Bottom - _calculatedSize.Height) :
-                    new Point(Cursor.Position.X * 2 <= toolTipRect.Right - toolTipRect.Left ? toolTipRect.Right - _calculatedSize.Width : toolTipRect.Left, Cursor.Position.Y * 2 <= toolTipRect.Bottom - toolTipRect.Top ? toolTipRect.Bottom - _calculatedSize.Height : toolTipRect.Top);
+                    new Point(Cursor.Position.X <= (toolTipRect.Left + toolTipRect.Width / 2) ? (toolTipRect.Right - _calculatedSize.Width) : toolTipRect.Left, Cursor.Position.Y <= (toolTipRect.Top + toolTipRect.Height / 2) ? (toolTipRect.Bottom - _calculatedSize.Height) : toolTipRect.Top);
 
                 // add the border
                 point.X -= _borderSize.Width;
@@ -409,7 +409,8 @@ namespace Aufbauwerk.Tools.PdfKit
         private readonly string _filterFormatString;
         private readonly string _formatTextFormatString;
         private readonly Dictionary<int, Image> _imageCache = new Dictionary<int, Image>();
-        private volatile int _imageStartRange;
+        private readonly Dictionary<int, ListViewItem> _itemCache = new Dictionary<int, ListViewItem>();
+        private Tuple<int, int> _imageCacheRange;
         private bool? _lastMultipleFilesUserChoice;
         private int _pageCount;
         private volatile Preview _preview;
@@ -748,9 +749,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void ImageLoader()
         {
-            // initialize and repeat until every image is loaded or the form is disposed
-            var lastStartRange = _imageStartRange;
-            var lastIndex = lastStartRange;
+            // repeat until the form is disposed
             while (!IsDisposed)
             {
                 // get the next index to load
@@ -764,42 +763,27 @@ namespace Aufbauwerk.Tools.PdfKit
                         // set the preview index
                         index = preview.ItemIndex;
                     }
+                    else if (_imageCacheRange == null)
+                    {
+                        // wait for the list view
+                        Monitor.Wait(_imageCache);
+                        continue;
+                    }
                     else
                     {
-                        // update the start index if it has changed
-                        var newStartRange = _imageStartRange;
-                        if (lastStartRange != newStartRange)
+                        // find a missing image within the range
+                        index = _imageCacheRange.Item1;
+                        while (index <= _imageCacheRange.Item2 && _imageCache.ContainsKey(index))
                         {
-                            lastStartRange = newStartRange;
-                            lastIndex = lastStartRange;
+                            index++;
                         }
 
-                        // skip all loaded indices until the end
-                        while (lastIndex < _pageCount && _imageCache.ContainsKey(lastIndex))
+                        // wait if everything is loaded
+                        if (index > _imageCacheRange.Item2)
                         {
-                            lastIndex++;
+                            Monitor.Wait(_imageCache);
+                            continue;
                         }
-
-                        // check if we reached the end
-                        if (lastIndex >= _pageCount)
-                        {
-                            // skip all loaded indices until the start
-                            lastIndex = lastStartRange - 1;
-                            while (lastIndex >= 0 && _imageCache.ContainsKey(lastIndex))
-                            {
-                                lastIndex--;
-                            }
-
-                            // check if we reached the start
-                            if (lastIndex < 0)
-                            {
-                                // all done, exit thread
-                                break;
-                            }
-                        }
-
-                        // set the index
-                        index = lastIndex;
                     }
                 }
 
@@ -936,6 +920,17 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void SetImage(Image image, int itemIndex)
         {
+            // add the thumbnail
+            var imageName = string.Format(CultureInfo.InvariantCulture, ImageNameFormat, itemIndex);
+            if (!imageList.Images.ContainsKey(imageName))
+            {
+                if (image != null)
+                {
+                    imageList.Images.Add(imageName, GetThumbFromImage(image));
+                }
+                listViewPages.RedrawItems(itemIndex, itemIndex, true);
+            }
+
             // check if there is a preview pending for the image
             if (_preview != null && _preview.ItemIndex == itemIndex && _preview.IsPrestine)
             {
@@ -949,9 +944,6 @@ namespace Aufbauwerk.Tools.PdfKit
                     _preview.Dispose();
                 }
             }
-
-            // invalidate the given item
-            listViewPages.RedrawItems(itemIndex, itemIndex, true);
         }
 
         private void SetPreview(int itemIndex)
@@ -970,19 +962,27 @@ namespace Aufbauwerk.Tools.PdfKit
             // check if a tooltip should be shown
             if (itemIndex > -1)
             {
-                // create and show the new preview if possible
+                // create the preview and check if the image needs to be loaded
                 _preview = new Preview(this, itemIndex, GetItemIndexWithImageAt);
                 Image image;
-                if (TryGetImage(itemIndex, out image))
+                lock (_imageCache)
                 {
-                    if (image != null)
+                    if (!_imageCache.TryGetValue(itemIndex, out image))
                     {
-                        _preview.Initialize(image);
+                        // notify the loader
+                        Monitor.Pulse(_imageCache);
+                        return;
                     }
-                    else
-                    {
-                        _preview.Dispose();
-                    }
+                }
+
+                // show the preview or dispose it if the image could not be loaded
+                if (image != null)
+                {
+                    _preview.Initialize(image);
+                }
+                else
+                {
+                    _preview.Dispose();
                 }
             }
         }
@@ -1022,15 +1022,6 @@ namespace Aufbauwerk.Tools.PdfKit
             // reset the progress bar and status label
             toolStripProgressBarExtract.Value = 0;
             toolStripStatusLabelExtract.Text = string.Empty;
-        }
-
-        private bool TryGetImage(int itemIndex, out Image image)
-        {
-            // query the item cache within a lock
-            lock (_imageCache)
-            {
-                return _imageCache.TryGetValue(itemIndex, out image);
-            }
         }
 
         #endregion
@@ -1129,8 +1120,34 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void listViewPages_CacheVirtualItems(object sender, CacheVirtualItemsEventArgs e)
         {
-            // set the range
-            _imageStartRange = e.StartIndex;
+            // do nothing if the new range is smaller than the old one
+            if (_imageCacheRange != null && _imageCacheRange.Item1 <= e.StartIndex && e.EndIndex <= _imageCacheRange.Item2)
+            {
+                return;
+            }
+
+            // update the cache and range
+            lock (_imageCache)
+            {
+                // remove all cached images that are no longer required
+                var keys = new int[_imageCache.Keys.Count];
+                _imageCache.Keys.CopyTo(keys, 0);
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    var itemIndex = keys[i];
+                    if (itemIndex < e.StartIndex || e.EndIndex < itemIndex)
+                    {
+                        _imageCache.Remove(itemIndex);
+                    }
+                }
+
+                // set the new cache range and notify the loader
+                _imageCacheRange = Tuple.Create(e.StartIndex, e.EndIndex);
+                Monitor.Pulse(_imageCache);
+            }
+
+            // dispose unused images
+            GC.Collect();
         }
 
         private void listViewPages_ItemDrag(object sender, ItemDragEventArgs e)
@@ -1168,7 +1185,12 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 // try to get a loaded image
                 Image image;
-                if (TryGetImage(e.ItemIndex, out image))
+                bool foundImage;
+                lock (_imageCache)
+                {
+                    foundImage = _imageCache.TryGetValue(e.ItemIndex, out image);
+                }
+                if (foundImage)
                 {
                     // store the thumb if it's valid or use the error image
                     if (image != null)
@@ -1285,8 +1307,10 @@ namespace Aufbauwerk.Tools.PdfKit
             toolStripDropDownButtonZoomOut.Enabled = trackBarZoom.Value > trackBarZoom.Minimum;
             toolStripDropDownButtonZoomIn.Enabled = trackBarZoom.Value < trackBarZoom.Maximum;
 
-            // reset the image list
+            // reset the item and image list
+            _itemCache.Clear();
             imageList.Images.Clear();
+            GC.Collect();
             var maxSize = (double)(trackBarZoom.Value * 32);
             imageList.ImageSize = new Size((int)Math.Round(maxSize * ((double)CurrentAutoScaleDimensions.Width / 96.0)), (int)Math.Round(maxSize * ((double)CurrentAutoScaleDimensions.Height / 96.0)));
 

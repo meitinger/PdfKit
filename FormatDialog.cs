@@ -97,79 +97,81 @@ namespace Aufbauwerk.Tools.PdfKit
         private void FormatDialog_Load(object sender, EventArgs e)
         {
             // only initialize once
-            if (States != null)
+            if (States == null)
             {
-                return;
-            }
-            States = new Dictionary<Control, object>();
+                States = new Dictionary<Control, object>();
 
-            // update all controls
-            UpdateControls(sender, e);
+                // update all controls
+                UpdateControls(sender, e);
 
-            // enumerate over all controls
-            var controls = new Queue<Control>();
-            controls.Enqueue(this);
-            while (controls.Count > 0)
-            {
-                var controlCollection = controls.Dequeue().Controls;
-                for (var i = 0; i < controlCollection.Count; i++)
+                // enumerate over all controls
+                var controls = new Queue<Control>();
+                controls.Enqueue(this);
+                while (controls.Count > 0)
                 {
-                    // enqueue the child control if it has children of its own
-                    var control = controlCollection[i];
-                    if (control.HasChildren)
+                    var controlCollection = controls.Dequeue().Controls;
+                    for (var i = 0; i < controlCollection.Count; i++)
                     {
-                        controls.Enqueue(control);
-                    }
+                        // enqueue the child control if it has children of its own
+                        var control = controlCollection[i];
+                        if (control.HasChildren)
+                        {
+                            controls.Enqueue(control);
+                        }
 
-                    // hookup check and value changes
-                    if (control is RadioButton)
-                    {
-                        ((RadioButton)control).CheckedChanged += UpdateControls;
-                    }
-                    else if (control is CheckBox)
-                    {
-                        ((CheckBox)control).CheckedChanged += UpdateControls;
-                    }
-                    else if (control is NumericUpDown)
-                    {
-                        ((NumericUpDown)control).ValueChanged += UpdateControls;
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                        // hookup check and value changes
+                        if (control is RadioButton)
+                        {
+                            ((RadioButton)control).CheckedChanged += UpdateControls;
+                        }
+                        else if (control is CheckBox)
+                        {
+                            ((CheckBox)control).CheckedChanged += UpdateControls;
+                        }
+                        else if (control is NumericUpDown)
+                        {
+                            ((NumericUpDown)control).ValueChanged += UpdateControls;
+                        }
+                        else
+                        {
+                            continue;
+                        }
 
-                    // add the control to the states
-                    States.Add(control, null);
+                        // add the control to the states
+                        States.Add(control, null);
+                    }
                 }
+
+                // save the initial state
+                SaveState();
+
+                // get the maximum table size and add the padding
+                var groups = Controls.OfType<GroupBox>();
+                var maxGroupWidth = groups.Select(g => g.Controls.OfType<TableLayoutPanel>().Single()).Select(t => t.Left * 2 + t.Width).Max();
+
+                // order and size the groups
+                var offset = Padding.Top;
+                foreach (var group in groups)
+                {
+                    group.Dock = DockStyle.None;
+                    group.Left = Padding.Left;
+                    offset += group.Margin.Top;
+                    group.Top = offset;
+                    var table = group.Controls.OfType<TableLayoutPanel>().Single();
+                    group.AutoSize = false;
+                    group.Width = maxGroupWidth;
+                    group.Height = table.Top + table.Height + table.Margin.Bottom + group.Padding.Top;
+                    offset += group.Height + group.Margin.Bottom;
+                }
+
+                // include the buttons and set the client size
+                offset += flowLayoutPanelButtons.Height + flowLayoutPanelButtons.Margin.Horizontal;
+                offset += Padding.Bottom;
+                ClientSize = new Size(maxGroupWidth + Padding.Horizontal, offset);
             }
 
-            // save the initial state
-            SaveState();
-
-            // get the maximum table size and add the padding
-            var groups = Controls.OfType<GroupBox>();
-            var maxGroupWidth = groups.Select(g => g.Controls.OfType<TableLayoutPanel>().Single()).Select(t => t.Left * 2 + t.Width).Max();
-
-            // order and size the groups
-            var offset = Padding.Top;
-            foreach (var group in groups)
-            {
-                group.Dock = DockStyle.None;
-                group.Left = Padding.Left;
-                offset += group.Margin.Top;
-                group.Top = offset;
-                var table = group.Controls.OfType<TableLayoutPanel>().Single();
-                group.AutoSize = false;
-                group.Width = maxGroupWidth;
-                group.Height = table.Top + table.Height + table.Margin.Bottom + group.Padding.Top;
-                offset += group.Height + group.Margin.Bottom;
-            }
-
-            // include the buttons and set the client size
-            offset += flowLayoutPanelButtons.Height + flowLayoutPanelButtons.Margin.Horizontal;
-            offset += Padding.Bottom;
-            ClientSize = new Size(maxGroupWidth + Padding.Horizontal, offset);
+            // center the dialog
+            CenterToParent();
         }
     }
 }
