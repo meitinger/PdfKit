@@ -409,10 +409,8 @@ namespace Aufbauwerk.Tools.PdfKit
         private readonly string _filterFormatString;
         private readonly string _formatTextFormatString;
         private readonly Dictionary<int, Image> _imageCache = new Dictionary<int, Image>();
-        private readonly Dictionary<int, ListViewItem> _itemCache = new Dictionary<int, ListViewItem>();
         private Tuple<int, int> _imageCacheRange;
         private bool? _lastMultipleFilesUserChoice;
-        private int _pageCount;
         private volatile Preview _preview;
         private Document _renderDocument;
 
@@ -990,7 +988,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private void SetSelection(Converter<int, bool> selectIndex)
         {
             // go over all pages and select the requested ones
-            for (var i = 0; i < _pageCount; i++)
+            for (var i = 0; i < listViewPages.VirtualListSize; i++)
             {
                 if (selectIndex(i))
                 {
@@ -1108,9 +1106,8 @@ namespace Aufbauwerk.Tools.PdfKit
             {
                 Cursor = prevCursor;
             }
-            _pageCount = _document.PageCount;
             listViewPages.VirtualMode = true;
-            listViewPages.VirtualListSize = _pageCount;
+            listViewPages.VirtualListSize = _document.PageCount;
 
             // start the image loader
             var loader = new Thread(ImageLoader);
@@ -1307,8 +1304,7 @@ namespace Aufbauwerk.Tools.PdfKit
             toolStripDropDownButtonZoomOut.Enabled = trackBarZoom.Value > trackBarZoom.Minimum;
             toolStripDropDownButtonZoomIn.Enabled = trackBarZoom.Value < trackBarZoom.Maximum;
 
-            // reset the item and image list
-            _itemCache.Clear();
+            // reset the image list
             imageList.Images.Clear();
             GC.Collect();
             var maxSize = (double)(trackBarZoom.Value * 32);
