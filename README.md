@@ -1,11 +1,18 @@
-Pdf Kit
-=======
+PdfKit
+======
 
 
 Description
 -----------
-This utility combines multiple PDF documents into a single document and
-extracts one or more pages from a single PDF document.
+This utility allows you to
+
+- quickly view PDF documents, (Encapsulated) PostScript, and other image files,
+- convert image files to PDF documents and vice versa,
+- convert (Encapsulated) PostScript files to PDF documents and vice versa
+  (as well as to other image files),
+- combine multiple PDF documents into a single document and
+- extract pages from a PDF document.
+
 Its aim is to be easy to use by supporting drag & drop and providing a simple
 user interface, and to offer great performance as well as seamless integration
 into *Windows Explorer*.
@@ -13,21 +20,25 @@ into *Windows Explorer*.
 
 Requirements
 ------------
-The following two libraries must be downloaded into the `lib` folder:
-- `gsdll32.dll`: [GPL Ghostscript 32bit](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/)
-- `Ghostscript.NET.dll`: [.NET Wrapper](https://github.com/jhabjan/Ghostscript.NET/releases/)
+The utility requires [GPL Ghostscript 32bit](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/)
+for displaying PDF documents and (Encapsulated) PostScript files, as well as
+converting these files to other file formats.
+Please create a folder named `lib`, download Ghostscript and place the file
+`gsdll32.dll` into this folder.
 
-These files are not included in this repository to avoid any licensing issues.
+(The file is not included in this repository to avoid any licensing issues.)
 
 
 Translations
 ------------
 So far the software is available in English and German. If you want to
-provide your own language, please translate the `CombineForm`, `ExtractForm`
-and the installer's `wxl` file.
+provide your own language, please translate the `*.resx` files and `Verbs.rc`.
+Add the culture to the list at the beginning of `Product.wxs` (use `;` as
+separator).
 
 
 Installation
 ------------
-Build the `PdfKitInstaller.wixproj` using [WiX](http://wixtoolset.org/) and run
-the resulting `PdfKit.msi` that matches your system's locale.
+Run `Verbs.bat`, build the `PdfKitInstaller.wixproj` project using the
+[Windows Installer Toolset](http://wixtoolset.org/) and install the resulting
+`PdfKit.msi` file.
