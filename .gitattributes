@@ -1,5 +1,6 @@
 *         text=auto
 *.cs      diff=csharp
+*.ico     binary
 *.sln     merge=union
 *.csproj  merge=union
 *.wixproj merge=union

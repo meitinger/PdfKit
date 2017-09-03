@@ -26,10 +26,6 @@
     <Compile Include="Product.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Product.de-DE.wxl" />
-    <EmbeddedResource Include="Product.en-US.wxl" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="PdfKit.csproj">
       <Name>PdfKit</Name>
       <Project>{b82e57b4-5b08-40e6-9318-1e17be9b7974}</Project>
@@ -38,6 +34,6 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <Target Name="SignMsi" Condition=" '$(Configuration)' == 'Release' ">
-    <Exec Command="signtool.exe sign /a &quot;$(TargetDir)%(CultureGroup.OutputFolder)$(TargetName)$(TargetExt)&quot;" />
+    <Exec Command="signtool.exe sign /t http://timestamp.comodoca.com &quot;$(TargetPath)&quot;" />
   </Target>
 </Project>

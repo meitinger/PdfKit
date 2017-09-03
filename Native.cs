@@ -79,6 +79,7 @@ namespace Aufbauwerk.Tools.PdfKit
             void StopProgressDialog();
             void SetTitle([In, MarshalAs(UnmanagedType.LPWStr)] string pwzTitle);
             void Dummy_SetAnimation();
+            [PreserveSig]
             [return: MarshalAs(UnmanagedType.Bool)]
             bool HasUserCancelled();
             void SetProgress([In] int dwCompleted, [In] int dwTotal);

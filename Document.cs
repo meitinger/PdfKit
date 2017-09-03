@@ -189,12 +189,6 @@ namespace Aufbauwerk.Tools.PdfKit
                                 // set the page settings and run the page
                                 _renderer.Run(string.Format(CultureInfo.InvariantCulture, "<<\n/HWResolution [{0} {1}]\n/Orientation {2}\n>> setpagedevice\n", dpiX * scaleFactor, dpiY * scaleFactor, (rotate / 90) % 4));
                                 DoRunPage(_renderer, pageNumber);
-
-                                // eps files might need a showpage
-                                if (image == null && Type == DocumentType.EncapsulatedPostScript)
-                                {
-                                    _renderer.Run("showpage");
-                                }
                             }
                             finally
                             {
@@ -431,6 +425,13 @@ namespace Aufbauwerk.Tools.PdfKit
             public override DocumentType Type
             {
                 get { return DocumentType.EncapsulatedPostScript; }
+            }
+
+            protected override void DoRunPage(Ghostscript ghostscript, int pageNumber)
+            {
+                // always run showpage
+                base.DoRunPage(ghostscript, pageNumber);
+                ghostscript.Run("showpage");
             }
         }
 
