@@ -36,190 +36,207 @@
     <Feature Id="PdfKit" AllowAdvertise="no">
       <Component Directory="PdfKitFolder">
         <File Source="bin\$(var.Configuration)\PdfKit.exe" KeyPath="yes" />
-        <RegistryKey Root="HKLM" Key="SOFTWARE\Classes">
+        <RegistryKey Root="HKLM" Key="SOFTWARE">
 
-          <!-- View -->
-          <?foreach Extension in pdf;ps;eps?>
-          <RegistryKey Key=".$(var.Extension)">
-            <?if $(var.Extension) != pdf?>
-            <RegistryValue Type="string" Value="PdfKit.$(var.Extension)" />
-            <?endif?>
-            <RegistryKey Key="OpenWithProgids">
-              <RegistryValue Name="PdfKit.$(var.Extension)" Type="string" Value="" />
-            </RegistryKey>
-          </RegistryKey>
-          <RegistryKey Key="PdfKit.$(var.Extension)">
-            <?if $(var.Extension) = pdf?>
-            <RegistryValue Name="FriendlyTypeName" Type="string" Value="@[PdfKitFolder]Verbs.dll,-111" />
-            <RegistryValue Key="DefaultIcon" Type="string" Value="[PdfKitFolder]Verbs.dll,-1" />
-            <?endif?>
-            <?if $(var.Extension) = ps?>
-            <RegistryValue Name="FriendlyTypeName" Type="string" Value="@[PdfKitFolder]Verbs.dll,-112" />
-            <RegistryValue Key="DefaultIcon" Type="string" Value="[PdfKitFolder]Verbs.dll,-2" />
-            <?endif?>
-            <?if $(var.Extension) = eps?>
-            <RegistryValue Name="FriendlyTypeName" Type="string" Value="@[PdfKitFolder]Verbs.dll,-113" />
-            <RegistryValue Key="DefaultIcon" Type="string" Value="[PdfKitFolder]Verbs.dll,-3" />
-            <?endif?>
-            <RegistryKey Key="shell">
-              <RegistryKey Key="preview">
-                <RegistryKey Key="command">
-                  <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; View &quot;%1&quot;" />
-                </RegistryKey>
-              </RegistryKey>
-            </RegistryKey>
-          </RegistryKey>
-          <?endforeach?>
-
-          <!-- -Embedded -->
-          <RegistryKey Key="CLSID">
-            <RegistryKey Key="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}">
-              <RegistryValue Type="string" Value="PdfKit COM Server" />
-              <RegistryKey Key="LocalServer32">
-                <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot;" />
-              </RegistryKey>
+          <!-- Capabilities -->
+          <RegistryValue Key="RegisteredApplications" Name="PdfKit" Type="string" Value="SOFTWARE\PdfKit\Capabilities" />
+          <RegistryKey Key="PdfKit\Capabilities">
+            <RegistryValue Name="ApplicationName" Type="string" Value="@[PdfKitFolder]PdfKit.dll,-101" />
+            <RegistryValue Name="ApplicationDescription" Type="string" Value="@[PdfKitFolder]PdfKit.dll,-102" />
+            <RegistryKey Key="FileAssociations">
+              <?foreach Extension in pdf;ps;eps?>
+              <RegistryValue Name=".$(var.Extension)" Type="string" Value="PdfKit.$(var.Extension)" />
+              <?endforeach?>
             </RegistryKey>
           </RegistryKey>
 
-          <RegistryKey Key="SystemFileAssociations">
+          <RegistryKey Key="Classes">
 
-            <!-- ConvertToPdf -->
-            <?foreach Association in image;.ps;.eps?>
-            <RegistryKey Key="$(var.Association)">
-              <RegistryKey Key="shell">
-                <RegistryKey Key="converttopdf">
-                  <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-121" />
-                  <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]Verbs.dll,-1" />
-                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
-                  <RegistryValue Name="NeverDefault" Type="string" Value="" />
-                  <RegistryKey Key="command">
-                    <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
-                  </RegistryKey>
-                </RegistryKey>
-              </RegistryKey>
-            </RegistryKey>
-            <?endforeach?>
-
-            <!-- ConvertToPs -->
-            <?foreach Association in .pdf;.eps?>
-            <RegistryKey Key="$(var.Association)">
-              <RegistryKey Key="shell">
-                <RegistryKey Key="converttops">
-                  <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-122" />
-                  <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]Verbs.dll,-2" />
-                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
-                  <RegistryValue Name="NeverDefault" Type="string" Value="" />
-                  <RegistryKey Key="command">
-                    <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
-                  </RegistryKey>
-                </RegistryKey>
-              </RegistryKey>
-            </RegistryKey>
-            <?endforeach?>
-
-            <!-- ConvertToEps -->
-            <?foreach Association in .pdf;.ps?>
-            <RegistryKey Key="$(var.Association)">
-              <RegistryKey Key="shell">
-                <RegistryKey Key="converttoeps">
-                  <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-123" />
-                  <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]Verbs.dll,-3" />
-                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
-                  <RegistryValue Name="NeverDefault" Type="string" Value="" />
-                  <RegistryKey Key="command">
-                    <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
-                  </RegistryKey>
-                </RegistryKey>
-              </RegistryKey>
-            </RegistryKey>
-            <?endforeach?>
-
-            <!-- ConvertToPng / ConvertToJpeg / ConvertToTiff / ConvertToBmp -->
+            <!-- View -->
             <?foreach Extension in pdf;ps;eps?>
             <RegistryKey Key=".$(var.Extension)">
+              <?if $(var.Extension) != pdf?>
+              <RegistryValue Type="string" Value="PdfKit.$(var.Extension)" />
+              <?endif?>
+              <RegistryKey Key="OpenWithProgids">
+                <RegistryValue Name="PdfKit.$(var.Extension)" Type="string" Value="" />
+              </RegistryKey>
+            </RegistryKey>
+            <RegistryKey Key="PdfKit.$(var.Extension)">
+              <RegistryValue Type="string" Value="$(var.Extension)" />
+              <?if $(var.Extension) = pdf?>
+              <RegistryValue Name="FriendlyTypeName" Type="string" Value="@[PdfKitFolder]PdfKit.dll,-111" />
+              <RegistryValue Key="DefaultIcon" Type="string" Value="[PdfKitFolder]PdfKit.dll,-1" />
+              <?endif?>
+              <?if $(var.Extension) = ps?>
+              <RegistryValue Name="FriendlyTypeName" Type="string" Value="@[PdfKitFolder]PdfKit.dll,-112" />
+              <RegistryValue Key="DefaultIcon" Type="string" Value="[PdfKitFolder]PdfKit.dll,-2" />
+              <?endif?>
+              <?if $(var.Extension) = eps?>
+              <RegistryValue Name="FriendlyTypeName" Type="string" Value="@[PdfKitFolder]PdfKit.dll,-113" />
+              <RegistryValue Key="DefaultIcon" Type="string" Value="[PdfKitFolder]PdfKit.dll,-3" />
+              <?endif?>
               <RegistryKey Key="shell">
-                <RegistryKey Key="converttoimage">
-                  <RegistryValue Name="MUIVerb" Type="string" Value="@[PdfKitFolder]Verbs.dll,-124" />
-                  <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]Verbs.dll,-4" />
-                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
-                  <RegistryValue Name="NeverDefault" Type="string" Value="" />
-                  <RegistryValue Name="ExtendedSubCommandsKey" Type="string" Value="SystemFileAssociations\.$(var.Extension)\shell\converttoimage" />
-                  <RegistryKey Key="shell">
-                    <RegistryKey Key="converttopng">
-                      <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-125" />
-                      <RegistryKey Key="command">
-                        <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
-                      </RegistryKey>
-                    </RegistryKey>
-                    <RegistryKey Key="converttojpeg">
-                      <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-126" />
-                      <RegistryKey Key="command">
-                        <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
-                      </RegistryKey>
-                    </RegistryKey>
-                    <RegistryKey Key="converttotiff">
-                      <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-127" />
-                      <RegistryKey Key="command">
-                        <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
-                      </RegistryKey>
-                    </RegistryKey>
-                    <RegistryKey Key="converttobmp">
-                      <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-128" />
-                      <RegistryKey Key="command">
-                        <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
-                      </RegistryKey>
-                    </RegistryKey>
+                <RegistryKey Key="preview">
+                  <RegistryKey Key="command">
+                    <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; View &quot;%1&quot;" />
                   </RegistryKey>
                 </RegistryKey>
               </RegistryKey>
             </RegistryKey>
             <?endforeach?>
 
-            <!-- Combine / Extract -->
-            <RegistryKey Key=".pdf">
+            <!-- -Embedded -->
+            <RegistryKey Key="CLSID">
+              <RegistryKey Key="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}">
+                <RegistryValue Type="string" Value="PdfKit COM Server" />
+                <RegistryKey Key="LocalServer32">
+                  <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot;" />
+                </RegistryKey>
+              </RegistryKey>
+            </RegistryKey>
+
+            <RegistryKey Key="SystemFileAssociations">
+
+              <!-- ConvertToPdf -->
+              <?foreach Association in image;.ps;.eps?>
+              <RegistryKey Key="$(var.Association)">
+                <RegistryKey Key="shell">
+                  <RegistryKey Key="converttopdf">
+                    <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-121" />
+                    <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]PdfKit.dll,-1" />
+                    <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
+                    <RegistryValue Name="NeverDefault" Type="string" Value="" />
+                    <RegistryKey Key="command">
+                      <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                    </RegistryKey>
+                  </RegistryKey>
+                </RegistryKey>
+              </RegistryKey>
+              <?endforeach?>
+
+              <!-- ConvertToPs -->
+              <?foreach Association in .pdf;.eps?>
+              <RegistryKey Key="$(var.Association)">
+                <RegistryKey Key="shell">
+                  <RegistryKey Key="converttops">
+                    <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-122" />
+                    <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]PdfKit.dll,-2" />
+                    <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
+                    <RegistryValue Name="NeverDefault" Type="string" Value="" />
+                    <RegistryKey Key="command">
+                      <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                    </RegistryKey>
+                  </RegistryKey>
+                </RegistryKey>
+              </RegistryKey>
+              <?endforeach?>
+
+              <!-- ConvertToEps -->
+              <?foreach Association in .pdf;.ps?>
+              <RegistryKey Key="$(var.Association)">
+                <RegistryKey Key="shell">
+                  <RegistryKey Key="converttoeps">
+                    <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-123" />
+                    <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]PdfKit.dll,-3" />
+                    <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
+                    <RegistryValue Name="NeverDefault" Type="string" Value="" />
+                    <RegistryKey Key="command">
+                      <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                    </RegistryKey>
+                  </RegistryKey>
+                </RegistryKey>
+              </RegistryKey>
+              <?endforeach?>
+
+              <!-- ConvertToPng / ConvertToJpeg / ConvertToTiff / ConvertToBmp -->
+              <?foreach Association in .pdf;.ps;.eps?>
+              <RegistryKey Key="$(var.Association)">
+                <RegistryKey Key="shell">
+                  <RegistryKey Key="converttoimage">
+                    <RegistryValue Name="MUIVerb" Type="string" Value="@[PdfKitFolder]PdfKit.dll,-124" />
+                    <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]PdfKit.dll,-4" />
+                    <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
+                    <RegistryValue Name="NeverDefault" Type="string" Value="" />
+                    <RegistryValue Name="ExtendedSubCommandsKey" Type="string" Value="SystemFileAssociations\$(var.Association)\shell\converttoimage" />
+                    <RegistryKey Key="shell">
+                      <RegistryKey Key="converttopng">
+                        <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-125" />
+                        <RegistryKey Key="command">
+                          <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                        </RegistryKey>
+                      </RegistryKey>
+                      <RegistryKey Key="converttojpeg">
+                        <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-126" />
+                        <RegistryKey Key="command">
+                          <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                        </RegistryKey>
+                      </RegistryKey>
+                      <RegistryKey Key="converttotiff">
+                        <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-127" />
+                        <RegistryKey Key="command">
+                          <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                        </RegistryKey>
+                      </RegistryKey>
+                      <RegistryKey Key="converttobmp">
+                        <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-128" />
+                        <RegistryKey Key="command">
+                          <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                        </RegistryKey>
+                      </RegistryKey>
+                    </RegistryKey>
+                  </RegistryKey>
+                </RegistryKey>
+              </RegistryKey>
+              <?endforeach?>
+
+              <!-- Combine / Extract -->
+              <RegistryKey Key=".pdf">
+                <RegistryKey Key="shell">
+                  <RegistryKey Key="combine">
+                    <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-131" />
+                    <RegistryValue Name="Icon" Type="string" Value="[#PdfKit.exe],0" />
+                    <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
+                    <RegistryValue Name="NeverDefault" Type="string" Value="" />
+                    <RegistryKey Key="command">
+                      <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                    </RegistryKey>
+                  </RegistryKey>
+                  <RegistryKey Key="extract">
+                    <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-132" />
+                    <RegistryValue Name="Icon" Type="string" Value="[#PdfKit.exe],0" />
+                    <RegistryValue Name="MultiSelectModel" Type="string" Value="Document" />
+                    <RegistryValue Name="NeverDefault" Type="string" Value="" />
+                    <RegistryKey Key="command">
+                      <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; Extract &quot;%1&quot;" />
+                    </RegistryKey>
+                  </RegistryKey>
+                </RegistryKey>
+              </RegistryKey>
+
+            </RegistryKey>
+
+            <!-- CombineDirectory -->
+            <RegistryKey Key="Directory">
               <RegistryKey Key="shell">
-                <RegistryKey Key="combine">
-                  <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-131" />
+                <RegistryKey Key="combinepdf">
+                  <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-131" />
                   <RegistryValue Name="Icon" Type="string" Value="[#PdfKit.exe],0" />
-                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
+                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Single" />
                   <RegistryValue Name="NeverDefault" Type="string" Value="" />
                   <RegistryKey Key="command">
-                    <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
-                  </RegistryKey>
-                </RegistryKey>
-                <RegistryKey Key="extract">
-                  <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-132" />
-                  <RegistryValue Name="Icon" Type="string" Value="[#PdfKit.exe],0" />
-                  <RegistryValue Name="MultiSelectModel" Type="string" Value="Document" />
-                  <RegistryValue Name="NeverDefault" Type="string" Value="" />
-                  <RegistryKey Key="command">
-                    <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; Extract &quot;%1&quot;" />
+                    <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; CombineDirectory &quot;%1&quot;" />
                   </RegistryKey>
                 </RegistryKey>
               </RegistryKey>
             </RegistryKey>
 
-          </RegistryKey>
-
-          <!-- CombineDirectory -->
-          <RegistryKey Key="Directory">
-            <RegistryKey Key="shell">
-              <RegistryKey Key="combinepdf">
-                <RegistryValue Type="string" Value="@[PdfKitFolder]Verbs.dll,-131" />
-                <RegistryValue Name="Icon" Type="string" Value="[#PdfKit.exe],0" />
-                <RegistryValue Name="MultiSelectModel" Type="string" Value="Single" />
-                <RegistryValue Name="NeverDefault" Type="string" Value="" />
-                <RegistryKey Key="command">
-                  <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; CombineDirectory &quot;%1&quot;" />
-                </RegistryKey>
-              </RegistryKey>
-            </RegistryKey>
           </RegistryKey>
 
         </RegistryKey>
       </Component>
       <Component Directory="PdfKitFolder">
-        <File Source="bin\Verbs.dll" KeyPath="yes" />
+        <File Source="bin\$(var.Configuration)\PdfKit.dll" KeyPath="yes" />
       </Component>
       <Component Directory="PdfKitFolder">
         <File Source="lib\PdfSharp.dll" KeyPath="yes" />
@@ -229,7 +246,7 @@
         <File Id="PdfKit.exe.$(var.Culture)" Source="bin\$(var.Configuration)\$(var.Culture)\PdfKit.resources.dll" KeyPath="yes" />
       </Component>
       <Component Directory="PdfKitFolder.$(var.Culture)">
-        <File Id="Verbs.dll.$(var.Culture)" Source="bin\Verbs.$(var.Culture).dll" Name="Verbs.dll.mui" KeyPath="yes" />
+        <File Id="PdfKit.dll.$(var.Culture)" Source="bin\$(var.Configuration)\$(var.Culture)\PdfKit.dll.mui" KeyPath="yes" />
       </Component>
       <Component Directory="PdfKitFolder.$(var.Culture)">
         <File Id="PdfSharp.dll.$(var.Culture)" Source="lib\$(var.Culture)\PdfSharp.resources.dll" KeyPath="yes" />
