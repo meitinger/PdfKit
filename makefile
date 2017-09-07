@@ -38,29 +38,30 @@ $(Cultures):
 
 cultures: $(Cultures)
 !IFDEF Cultures
-	!NMAKE Configuration=$(Configuration) Culture=$** all
+	!@NMAKE /NOLOGO Configuration=$(Configuration) Culture=$**
 !ENDIF
 
-sign: $(Cultures)
+clean: $(Cultures)
 !IFDEF Cultures
-	!NMAKE Configuration=$(Configuration) Culture=$** sign
-!ENDIF
-	SIGNTOOL sign /t http://timestamp.comodoca.com $(OutputDll)
-
-clean: directories $(Cultures)
-!IFDEF Cultures
-	!NMAKE Configuration=$(Configuration) Culture=$** clean
+	!@NMAKE /NOLOGO Configuration=$(Configuration) Culture=$** clean
 !ENDIF
 	DEL $(OutputDll) $(IntermediateDll) $(NeutralRes) $(SpecificRes)
 
 $(NeutralDll): $(RcConfig) Verbs.rc
 	RC /nologo /q $(RcConfig) /fm $(SpecificRes) /fo $(NeutralRes) Verbs.rc
-	LINK /NOLOGO /DLL /NOENTRY /MACHINE:X86 /OUT:$(NeutralDll) $(NeutralRes)
+	LINK /NOLOGO /DLL /NOENTRY /MACHINE:X86 /OUT:$(IntermediateDll) $(NeutralRes)
+!IF "$(Configuration)" == "Release"
+	SIGNTOOL sign /t http://timestamp.comodoca.com $(IntermediateDll)
+!ENDIF
+	MOVE /Y $(IntermediateDll) $(NeutralDll)
 
 !IFDEF Culture
 $(OutputDll): $(NeutralDll) $(RcConfig) Verbs.$(Culture).rc
 	RC /nologo /q $(RcConfig) /fm $(SpecificRes) /fo $(NeutralRes) Verbs.$(Culture).rc
 	LINK /NOLOGO /DLL /NOENTRY /MACHINE:X86 /OUT:$(IntermediateDll) $(SpecificRes)
 	MUIRCT -c $(NeutralDll) -e $(IntermediateDll)
+!IF "$(Configuration)" == "Release"
+	SIGNTOOL sign /t http://timestamp.comodoca.com $(IntermediateDll)
+!ENDIF
 	MOVE /Y $(IntermediateDll) $(OutputDll)
 !ENDIF

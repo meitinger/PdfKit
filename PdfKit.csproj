@@ -170,7 +170,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.de.resx" />
+    <EmbeddedResource Include="Properties\Resources.de.resx">
+      <DependentUpon>Resources.resx</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TiffFormatDialog.de.resx">
       <DependentUpon>TiffFormatDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -191,5 +193,7 @@
     <Content Include="PdfKit.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)$(SolutionName).targets" Condition="Exists('$(SolutionDir)$(SolutionName).targets')" />
+  <Target Name="Sign" Condition="'$(Configuration)'=='Release'" BeforeTargets="CopyFilesToOutputDirectory">
+    <Exec Command="signtool.exe sign /t http://timestamp.comodoca.com @(IntermediateAssembly->'&quot;%(FullPath)&quot;',' ') @(IntermediateSatelliteAssembliesWithTargetPath->'&quot;%(FullPath)&quot;',' ')" />
+  </Target>
 </Project>

@@ -34,7 +34,7 @@ Translations
 So far the software is available in English and German. If you want to
 provide your own language, please translate the `*.resx` files and `Verbs.rc`.
 Add the culture to the list at the beginning of `Product.wxs` (use `;` as
-separator) and `makefile` (separated by spaces).
+separator) and the `makefile` (separated by spaces).
 
 
 Installation
