@@ -133,6 +133,9 @@ Wollen Sie den Fehler ignorieren und mit der nächsten Datei fortfahren, die akt
   <data name="Converter_DialogTitle" xml:space="preserve">
     <value>{0} - Nach {1} konvertieren...</value>
   </data>
+  <data name="Converter_FormatOptimizedPdf" xml:space="preserve">
+    <value>PDF (optimiert für das Web)</value>
+  </data>
   <data name="Converter_LoadFileError" xml:space="preserve">
     <value>Folgender Fehler ist beim Laden der Datei {0} aufgetreten:
 

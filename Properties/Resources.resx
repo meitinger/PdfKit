@@ -142,6 +142,9 @@ Do you want to ignore the error and proceed with the next file, retry converting
   <data name="Converter_FormatJpeg" xml:space="preserve">
     <value>JPEG</value>
   </data>
+  <data name="Converter_FormatOptimizedPdf" xml:space="preserve">
+    <value>PDF (optimized for Web)</value>
+  </data>
   <data name="Converter_FormatPdf" xml:space="preserve">
     <value>PDF</value>
   </data>

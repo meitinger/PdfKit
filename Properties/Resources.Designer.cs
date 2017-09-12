@@ -128,6 +128,15 @@ namespace Aufbauwerk.Tools.PdfKit.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PDF (optimized for Web) ähnelt.
+        /// </summary>
+        internal static string Converter_FormatOptimizedPdf {
+            get {
+                return ResourceManager.GetString("Converter_FormatOptimizedPdf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die PDF ähnelt.
         /// </summary>
         internal static string Converter_FormatPdf {

@@ -190,7 +190,7 @@
               </RegistryKey>
               <?endforeach?>
 
-              <!-- Combine / Extract -->
+              <!-- Combine / Extract / Optimize -->
               <RegistryKey Key=".pdf">
                 <RegistryKey Key="shell">
                   <RegistryKey Key="combine">
@@ -211,6 +211,15 @@
                       <RegistryValue Type="string" Value="&quot;[#PdfKit.exe]&quot; Extract &quot;%1&quot;" />
                     </RegistryKey>
                   </RegistryKey>
+                  <RegistryKey Key="optimize">
+                    <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-133" />
+                    <RegistryValue Name="Icon" Type="string" Value="[PdfKitFolder]PdfKit.dll,-1" />
+                    <RegistryValue Name="MultiSelectModel" Type="string" Value="Player" />
+                    <RegistryValue Name="NeverDefault" Type="string" Value="" />
+                    <RegistryKey Key="command">
+                      <RegistryValue Name="DelegateExecute" Type="string" Value="{F0ECDC65-CA33-47DA-991B-2DE627A3566F}" />
+                    </RegistryKey>
+                  </RegistryKey>
                 </RegistryKey>
               </RegistryKey>
 
@@ -220,7 +229,7 @@
             <RegistryKey Key="Directory">
               <RegistryKey Key="shell">
                 <RegistryKey Key="combinepdf">
-                  <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-131" />
+                  <RegistryValue Type="string" Value="@[PdfKitFolder]PdfKit.dll,-134" />
                   <RegistryValue Name="Icon" Type="string" Value="[#PdfKit.exe],0" />
                   <RegistryValue Name="MultiSelectModel" Type="string" Value="Single" />
                   <RegistryValue Name="NeverDefault" Type="string" Value="" />

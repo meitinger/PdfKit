@@ -30,6 +30,7 @@ namespace Aufbauwerk.Tools.PdfKit
         public static readonly ConvertFormat Bmp;
         public static readonly ConvertFormat Eps;
         public static readonly ConvertFormat Jpeg;
+        public static readonly ConvertFormat OptimizedPdf;
         public static readonly ConvertFormat Pdf;
         public static readonly ConvertFormat Png;
         public static readonly ConvertFormat Ps;
@@ -38,6 +39,25 @@ namespace Aufbauwerk.Tools.PdfKit
         static ConvertFormat()
         {
             _formats.Add(Pdf = new ConvertFormat(Resources.Converter_FormatPdf, "pdf", true, DocumentType.Any & ~DocumentType.PortableDocumentFormat, "-sDEVICE=pdfwrite"));
+            _formats.Add(OptimizedPdf = new ConvertFormat(Resources.Converter_FormatOptimizedPdf, "optimized.pdf", true, DocumentType.PortableDocumentFormat,
+                "-dColorConversionStrategy=/RGB",
+                "-dColorImageDownsampleThreshold=1.5", "-dColorImageDownsampleType=/Bicubic", "-dColorImageFilter=/DCTEncode", "-dColorImageResolution=96",
+                "-dCompatibilityLevel=1.4",
+                "-dCompressPages=true",
+                "-dConvertCMYKImagesToRGB=true",
+                "-dDetectDuplicateImages=true",
+                "-dDownsampleColorImages=true", "-dDownsampleGrayImages=true", "-dDownsampleMonoImages=true",
+                "-dEmbedAllFonts=true",
+                "-dFastWebView=true",
+                "-dGrayImageDownsampleThreshold=1.5", "-dGrayImageDownsampleType=/Bicubic", "-dGrayImageFilter=/DCTEncode", "-dGrayImageResolution=96",
+                "-dMaxInlineImageSize=0",
+                "-dMaxShadingBitmapSize=16000",
+                "-dMonoImageDownsampleThreshold=1.5", "-dMonoImageDownsampleType=/Bicubic", "-dMonoImageFilter=/CCITTFaxEncode", "-dMonoImageResolution=192",
+                "-dOptimize=true",
+                "-dUseFlateCompression=true",
+                "-r192",
+                "-sDEVICE=pdfwrite"
+            ));
             _formats.Add(Ps = new ConvertFormat(Resources.Converter_FormatPs, "ps", true, DocumentType.PortableDocumentFormat | DocumentType.EncapsulatedPostScript, "-sDEVICE=ps2write"));
             _formats.Add(Eps = new ConvertFormat(Resources.Converter_FormatEps, "eps", false, DocumentType.PortableDocumentFormat | DocumentType.PostScript, "-sDEVICE=eps2write"));
             _formats.Add(Png = new ConvertFormat(Resources.Converter_FormatPng, "png", false, new PngFormatDialog()));
@@ -92,7 +112,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
 
             // build the Ghostscript command line
-            var list = new List<string>() { "PdfKit", "-dBATCH", "-dNOPAUSE" };
+            var list = new List<string>() { "PdfKit", "-dBATCH", "-dNOPAUSE", "-dEPSCrop", "-dAutoRotatePages=/None" };
             if (_args != null)
             {
                 list.AddRange(_args);

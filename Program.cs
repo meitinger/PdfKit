@@ -127,6 +127,7 @@ namespace Aufbauwerk.Tools.PdfKit
             { "ConvertToPng", files => Converter.Run(files, ConvertFormat.Png) },
             { "ConvertToTiff", files => Converter.Run(files, ConvertFormat.Tiff) },
             { "ConvertToPs", files => Converter.Run(files, ConvertFormat.Ps) },
+            { "Optimize", files => Converter.Run(files, ConvertFormat.OptimizedPdf) },
         };
 
         private static readonly SortedDictionary<string, Action<string>> _singleFileTasks = new SortedDictionary<string, Action<string>>(StringComparer.OrdinalIgnoreCase)
