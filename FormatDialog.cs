@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,17 +40,17 @@ namespace Aufbauwerk.Tools.PdfKit
             // restore the control values
             foreach (var entry in States)
             {
-                if (entry.Key is RadioButton)
+                if (entry.Key is RadioButton radioButton)
                 {
-                    ((RadioButton)entry.Key).Checked = (bool)entry.Value;
+                    radioButton.Checked = (bool)entry.Value;
                 }
-                else if (entry.Key is CheckBox)
+                else if (entry.Key is CheckBox checkBox)
                 {
-                    ((CheckBox)entry.Key).Checked = (bool)entry.Value;
+                    checkBox.Checked = (bool)entry.Value;
                 }
-                else if (entry.Key is NumericUpDown)
+                else if (entry.Key is NumericUpDown numericUpDown)
                 {
-                    ((NumericUpDown)entry.Key).Value = (decimal)entry.Value;
+                    numericUpDown.Value = (decimal)entry.Value;
                 }
             }
         }
@@ -62,17 +62,17 @@ namespace Aufbauwerk.Tools.PdfKit
             States.Keys.CopyTo(controls, 0);
             foreach (var control in controls)
             {
-                if (control is RadioButton)
+                if (control is RadioButton radioButton)
                 {
-                    States[control] = ((RadioButton)control).Checked;
+                    States[control] = radioButton.Checked;
                 }
-                else if (control is CheckBox)
+                else if (control is CheckBox checkBox)
                 {
-                    States[control] = ((CheckBox)control).Checked;
+                    States[control] = checkBox.Checked;
                 }
-                else if (control is NumericUpDown)
+                else if (control is NumericUpDown numericUpDown)
                 {
-                    States[control] = ((NumericUpDown)control).Value;
+                    States[control] = numericUpDown.Value;
                 }
             }
         }
@@ -120,17 +120,17 @@ namespace Aufbauwerk.Tools.PdfKit
                         }
 
                         // hookup check and value changes
-                        if (control is RadioButton)
+                        if (control is RadioButton radioButton)
                         {
-                            ((RadioButton)control).CheckedChanged += UpdateControls;
+                            radioButton.CheckedChanged += UpdateControls;
                         }
-                        else if (control is CheckBox)
+                        else if (control is CheckBox checkBox)
                         {
-                            ((CheckBox)control).CheckedChanged += UpdateControls;
+                            checkBox.CheckedChanged += UpdateControls;
                         }
-                        else if (control is NumericUpDown)
+                        else if (control is NumericUpDown numericUpDown)
                         {
-                            ((NumericUpDown)control).ValueChanged += UpdateControls;
+                            numericUpDown.ValueChanged += UpdateControls;
                         }
                         else
                         {

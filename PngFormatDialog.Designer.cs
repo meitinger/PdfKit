@@ -146,7 +146,7 @@
             this.buttonBackgroundColor.BackColor = System.Drawing.Color.White;
             this.buttonBackgroundColor.Name = "buttonBackgroundColor";
             this.buttonBackgroundColor.UseVisualStyleBackColor = false;
-            this.buttonBackgroundColor.Click += new System.EventHandler(this.buttonBackgroundColor_Click);
+            this.buttonBackgroundColor.Click += new System.EventHandler(this.ButtonBackgroundColor_Click);
             // 
             // labelDownscaleFactor
             // 

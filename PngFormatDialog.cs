@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ namespace Aufbauwerk.Tools.PdfKit
             buttonBackgroundColor.Text = colorValue.ToString("X6");
         }
 
-        private void buttonBackgroundColor_Click(object sender, EventArgs e)
+        private void ButtonBackgroundColor_Click(object sender, EventArgs e)
         {
             // show the color picker and update the control upon success
             var button = (sender as Button);

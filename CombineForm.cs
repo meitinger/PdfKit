@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,12 +43,7 @@ namespace Aufbauwerk.Tools.PdfKit
         public CombineForm(IEnumerable<string> files)
             : this()
         {
-            // store the initial files
-            if (files == null)
-            {
-                throw new ArgumentNullException("files");
-            }
-            _initialFiles = files;
+            _initialFiles = files ?? throw new ArgumentNullException(nameof(files));
         }
 
         #region Methods
@@ -107,8 +102,10 @@ namespace Aufbauwerk.Tools.PdfKit
                     }
 
                     // create the item
-                    var item = new ListViewItem(Path.GetFileName(filePath));
-                    item.Tag = new Tuple<string, int>(filePath, pageCount);
+                    var item = new ListViewItem(Path.GetFileName(filePath))
+                    {
+                        Tag = new Tuple<string, int>(filePath, pageCount)
+                    };
                     item.SubItems.Add(pageCount.ToString());
                     item.SubItems.Add(Path.GetDirectoryName(filePath));
 
@@ -161,7 +158,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     listViewFiles.Items.Insert(indices[i] + delta, selected[i]);
                 }
 
-                // restore the focues item
+                // restore the focused item
                 listViewFiles.FocusedItem = focused;
             });
         }
@@ -221,7 +218,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         #region Event Handlers
 
-        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             // get the arguments and create the combined document
             var worker = sender as BackgroundWorker;
@@ -235,7 +232,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 var totalPages = allFiles[0].Item2;
                 for (var docIndex = 1; docIndex < allFiles.Length; docIndex++)
                 {
-                    // quit if cancelled
+                    // quit if canceled
                     if (worker.CancellationPending)
                     {
                         e.Cancel = true;
@@ -249,7 +246,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         totalPages += document.PageCount - allFiles[docIndex].Item2;
                         for (var pageIndex = 0; pageIndex < document.PageCount; pageIndex++)
                         {
-                            // quit if cancelled
+                            // quit if canceled
                             if (worker.CancellationPending)
                             {
                                 e.Cancel = true;
@@ -280,13 +277,13 @@ namespace Aufbauwerk.Tools.PdfKit
             Process.Start(allFiles[0].Item1);
         }
 
-        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             // set the progress bar
             toolStripProgressBar.Value = e.ProgressPercentage;
         }
 
-        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             // restore the state
             ShowStatus(true);
@@ -294,7 +291,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // handle any potential error
             if (!e.Cancelled && e.Error != null)
             {
-                // display PdfSharp an I/O errors and rethrow others
+                // display PdfSharp an I/O errors and re-throw others
                 if (e.Error is PdfSharpException || e.Error is IOException)
                 {
                     MessageBox.Show(e.Error.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -316,7 +313,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void listViewFiles_DragDrop(object sender, DragEventArgs e)
+        private void ListViewFiles_DragDrop(object sender, DragEventArgs e)
         {
             // get the insertion mark
             var insertIndex = listViewFiles.InsertionMark.Index;
@@ -340,8 +337,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
 
             // get the file names
-            var files = e.Data.GetData(DataFormats.FileDrop, false) as string[];
-            if (files == null)
+            if (!(e.Data.GetData(DataFormats.FileDrop, false) is string[] files))
             {
                 e.Effect = DragDropEffects.None;
                 return;
@@ -351,14 +347,14 @@ namespace Aufbauwerk.Tools.PdfKit
             InsertFiles(files, insertIndex);
         }
 
-        private void listViewFiles_DragLeave(object sender, EventArgs e)
+        private void ListViewFiles_DragLeave(object sender, EventArgs e)
         {
             // hide the insertion mask
             listViewFiles.InsertionMark.Index = -1;
             listViewFiles.InsertionMark.AppearsAfterItem = false;
         }
 
-        private void listViewFiles_DragOver(object sender, DragEventArgs e)
+        private void ListViewFiles_DragOver(object sender, DragEventArgs e)
         {
             // determine what to do with the data
             DragDropEffects effect;
@@ -437,7 +433,7 @@ namespace Aufbauwerk.Tools.PdfKit
             listViewFiles.InsertionMark.AppearsAfterItem = showAfterItem;
         }
 
-        private void listViewFiles_ItemDrag(object sender, ItemDragEventArgs e)
+        private void ListViewFiles_ItemDrag(object sender, ItemDragEventArgs e)
         {
             // get all selected items
             var selected = new ListViewItem[listViewFiles.SelectedItems.Count];
@@ -452,17 +448,17 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void listViewFiles_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        private void ListViewFiles_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             HandleSelectionChange();
         }
 
-        private void toolStripButtonDown_Click(object sender, EventArgs e)
+        private void ToolStripButtonDown_Click(object sender, EventArgs e)
         {
             ChangeSelectedIndices(+1);
         }
 
-        private void toolStripButtonInsert_Click(object sender, EventArgs e)
+        private void ToolStripButtonInsert_Click(object sender, EventArgs e)
         {
             // show the dialog
             if (openFilesDialog.ShowDialog(this) == DialogResult.OK)
@@ -472,7 +468,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void toolStripButtonRemove_Click(object sender, EventArgs e)
+        private void ToolStripButtonRemove_Click(object sender, EventArgs e)
         {
             // remove all selected items
             var selected = new ListViewItem[listViewFiles.SelectedItems.Count];
@@ -480,18 +476,18 @@ namespace Aufbauwerk.Tools.PdfKit
             RemoveFiles(selected);
         }
 
-        private void toolStripButtonUp_Click(object sender, EventArgs e)
+        private void ToolStripButtonUp_Click(object sender, EventArgs e)
         {
             ChangeSelectedIndices(-1);
         }
 
-        private void toolStripDropDownButtonCancel_Click(object sender, EventArgs e)
+        private void ToolStripDropDownButtonCancel_Click(object sender, EventArgs e)
         {
             // cancel the task
             backgroundWorker.CancelAsync();
         }
 
-        private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
+        private void ToolStripDropDownButtonSave_Click(object sender, EventArgs e)
         {
             // show the save file dialog
             if (saveFileDialog.ShowDialog(this) == DialogResult.OK)

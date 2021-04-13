@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the arguments
             if (outputFile == null)
             {
-                throw new ArgumentNullException("outputFile");
+                throw new ArgumentNullException(nameof(outputFile));
             }
 
             // build the Ghostscript command line
@@ -159,11 +159,11 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the arguments
             if (files == null)
             {
-                throw new ArgumentNullException("files");
+                throw new ArgumentNullException(nameof(files));
             }
             if (format == null)
             {
-                throw new ArgumentNullException("format");
+                throw new ArgumentNullException(nameof(format));
             }
 
             // show the dialog and run the converter
@@ -254,7 +254,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             finally
             {
-                // notify the main thread that initialisation is complete
+                // notify the main thread that initialization is complete
                 lock (_files)
                 {
                     _initializationDone = true;
@@ -333,7 +333,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         _dequeuedPageCount += _currentFile.PageCount;
                     }
 
-                    // convert the file
+                // convert the file
                 Retry:
                     if (_aborted)
                     {

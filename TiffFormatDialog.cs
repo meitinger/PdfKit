@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -254,7 +254,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void buttonPostRenderProfile_Click(object sender, EventArgs e)
+        private void ButtonPostRenderProfile_Click(object sender, EventArgs e)
         {
             // query the file name
             var button = (sender as Button);

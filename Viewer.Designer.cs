@@ -58,7 +58,7 @@
             this.panel.BackColor = System.Drawing.SystemColors.ControlDarkDark;
             this.panel.Controls.Add(this.label);
             this.panel.Name = "panel";
-            this.panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.panel_MouseWheel);
+            this.panel.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.Panel_MouseWheel);
             // 
             // label
             // 
@@ -94,14 +94,14 @@
             resources.ApplyResources(this.toolStripButtonFirst, "toolStripButtonFirst");
             this.toolStripButtonFirst.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonFirst.Name = "toolStripButtonFirst";
-            this.toolStripButtonFirst.Click += new System.EventHandler(this.toolStripButtonFirst_Click);
+            this.toolStripButtonFirst.Click += new System.EventHandler(this.ToolStripButtonFirst_Click);
             // 
             // toolStripButtonPrevious
             // 
             resources.ApplyResources(this.toolStripButtonPrevious, "toolStripButtonPrevious");
             this.toolStripButtonPrevious.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonPrevious.Name = "toolStripButtonPrevious";
-            this.toolStripButtonPrevious.Click += new System.EventHandler(this.toolStripButtonPrevious_Click);
+            this.toolStripButtonPrevious.Click += new System.EventHandler(this.ToolStripButtonPrevious_Click);
             // 
             // toolStripSeparator1
             // 
@@ -112,8 +112,8 @@
             // 
             resources.ApplyResources(this.toolStripTextBoxPage, "toolStripTextBoxPage");
             this.toolStripTextBoxPage.Name = "toolStripTextBoxPage";
-            this.toolStripTextBoxPage.KeyDown += new System.Windows.Forms.KeyEventHandler(this.toolStripTextBox_KeyDown);
-            this.toolStripTextBoxPage.Validated += new System.EventHandler(this.toolStripTextBoxPage_Validated);
+            this.toolStripTextBoxPage.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ToolStripTextBox_KeyDown);
+            this.toolStripTextBoxPage.Validated += new System.EventHandler(this.ToolStripTextBoxPage_Validated);
             // 
             // toolStripLabelTotal
             // 
@@ -130,14 +130,14 @@
             resources.ApplyResources(this.toolStripButtonNext, "toolStripButtonNext");
             this.toolStripButtonNext.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonNext.Name = "toolStripButtonNext";
-            this.toolStripButtonNext.Click += new System.EventHandler(this.toolStripButtonNext_Click);
+            this.toolStripButtonNext.Click += new System.EventHandler(this.ToolStripButtonNext_Click);
             // 
             // toolStripButtonLast
             // 
             resources.ApplyResources(this.toolStripButtonLast, "toolStripButtonLast");
             this.toolStripButtonLast.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonLast.Name = "toolStripButtonLast";
-            this.toolStripButtonLast.Click += new System.EventHandler(this.toolStripButtonLast_Click);
+            this.toolStripButtonLast.Click += new System.EventHandler(this.ToolStripButtonLast_Click);
             // 
             // toolStripSeparator3
             // 
@@ -149,21 +149,21 @@
             resources.ApplyResources(this.toolStripButtonZoomOut, "toolStripButtonZoomOut");
             this.toolStripButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonZoomOut.Name = "toolStripButtonZoomOut";
-            this.toolStripButtonZoomOut.Click += new System.EventHandler(this.toolStripButtonZoomOut_Click);
+            this.toolStripButtonZoomOut.Click += new System.EventHandler(this.ToolStripButtonZoomOut_Click);
             // 
             // toolStripButtonZoomIn
             // 
             resources.ApplyResources(this.toolStripButtonZoomIn, "toolStripButtonZoomIn");
             this.toolStripButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonZoomIn.Name = "toolStripButtonZoomIn";
-            this.toolStripButtonZoomIn.Click += new System.EventHandler(this.toolStripButtonZoomIn_Click);
+            this.toolStripButtonZoomIn.Click += new System.EventHandler(this.ToolStripButtonZoomIn_Click);
             // 
             // toolStripTextBoxZoom
             // 
             resources.ApplyResources(this.toolStripTextBoxZoom, "toolStripTextBoxZoom");
             this.toolStripTextBoxZoom.Name = "toolStripTextBoxZoom";
-            this.toolStripTextBoxZoom.KeyDown += new System.Windows.Forms.KeyEventHandler(this.toolStripTextBox_KeyDown);
-            this.toolStripTextBoxZoom.Validated += new System.EventHandler(this.toolStripTextBoxZoom_Validated);
+            this.toolStripTextBoxZoom.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ToolStripTextBox_KeyDown);
+            this.toolStripTextBoxZoom.Validated += new System.EventHandler(this.ToolStripTextBoxZoom_Validated);
             // 
             // toolStripSeparator4
             // 
@@ -175,22 +175,22 @@
             resources.ApplyResources(this.toolStripButtonRotateLeft, "toolStripButtonRotateLeft");
             this.toolStripButtonRotateLeft.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonRotateLeft.Name = "toolStripButtonRotateLeft";
-            this.toolStripButtonRotateLeft.Click += new System.EventHandler(this.toolStripButtonRotateLeft_Click);
+            this.toolStripButtonRotateLeft.Click += new System.EventHandler(this.ToolStripButtonRotateLeft_Click);
             // 
             // toolStripButtonRotateRight
             // 
             resources.ApplyResources(this.toolStripButtonRotateRight, "toolStripButtonRotateRight");
             this.toolStripButtonRotateRight.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonRotateRight.Name = "toolStripButtonRotateRight";
-            this.toolStripButtonRotateRight.Click += new System.EventHandler(this.toolStripButtonRotateRight_Click);
+            this.toolStripButtonRotateRight.Click += new System.EventHandler(this.ToolStripButtonRotateRight_Click);
             // 
             // backgroundWorker
             // 
             this.backgroundWorker.WorkerReportsProgress = true;
             this.backgroundWorker.WorkerSupportsCancellation = true;
-            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerRenderPage_DoWork);
-            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerRenderPage_ProgressChanged);
-            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerRenderPage_RunWorkerCompleted);
+            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerRenderPage_DoWork);
+            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkerRenderPage_ProgressChanged);
+            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerRenderPage_RunWorkerCompleted);
             // 
             // Viewer
             // 

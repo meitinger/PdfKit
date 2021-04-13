@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -192,6 +192,8 @@ namespace Aufbauwerk.Tools.PdfKit
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
         internal delegate int stdout_fn(IntPtr caller_handle, IntPtr buf, int len);
 
+#pragma warning disable IDE1006
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         internal struct display_callback_v1
         {
@@ -228,15 +230,6 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         };
 
-        [DllImport(Dll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
-        internal static extern int CoLockObjectExternal([MarshalAs(UnmanagedType.IUnknown)] object pUnk, bool fLock, bool fLastUnlockReleases);
-
-        [DllImport(Dll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
-        internal static extern void CoRegisterClassObject([MarshalAs(UnmanagedType.LPStruct)] Guid rclsid, [MarshalAs(UnmanagedType.Interface)] IClassFactory pUnk, uint dwClsContext, uint flags, out uint lpdwRegister);
-
-        [DllImport(Dll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
-        internal static extern void CoRevokeClassObject(uint dwRegister);
-
         [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern void gsapi_delete_instance(IntPtr instance);
 
@@ -272,6 +265,17 @@ namespace Aufbauwerk.Tools.PdfKit
 
         [DllImport(Dll.GsDll32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern int gsapi_set_stdio(IntPtr instance, stdin_fn stdin_fn, stdout_fn stdout_fn, stderr_fn stderr_fn);
+
+#pragma warning restore IDE1006
+
+        [DllImport(Dll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
+        internal static extern int CoLockObjectExternal([MarshalAs(UnmanagedType.IUnknown)] object pUnk, bool fLock, bool fLastUnlockReleases);
+
+        [DllImport(Dll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
+        internal static extern void CoRegisterClassObject([MarshalAs(UnmanagedType.LPStruct)] Guid rclsid, [MarshalAs(UnmanagedType.Interface)] IClassFactory pUnk, uint dwClsContext, uint flags, out uint lpdwRegister);
+
+        [DllImport(Dll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode, PreserveSig = false)]
+        internal static extern void CoRevokeClassObject(uint dwRegister);
 
         [DllImport(Dll.User32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern bool IsWindowVisible(IntPtr hWnd);

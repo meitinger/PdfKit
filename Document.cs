@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the argument and get the full path
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             path = Path.GetFullPath(path);
 
@@ -100,12 +100,14 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the argument
             if (pdf == null)
             {
-                throw new ArgumentNullException("pdf");
+                throw new ArgumentNullException(nameof(pdf));
             }
 
-            // quickly create a pdf document
-            var doc = new PortableDocumentFormatDocument(pdf.PageCount);
-            doc.FilePath = pdf.FullPath;
+            // quickly create a PDF document
+            var doc = new PortableDocumentFormatDocument(pdf.PageCount)
+            {
+                FilePath = pdf.FullPath
+            };
             return doc;
         }
 
@@ -137,10 +139,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     for (var i = 0; i < PageCount; i++)
                     {
                         DoRunPage(ghostscript, i + 1);
-                        if (pageCompletedCallback != null)
-                        {
-                            pageCompletedCallback();
-                        }
+                        pageCompletedCallback?.Invoke();
                     }
                 }
             }
@@ -230,7 +229,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         goto Retry;
                     }
 
-                    // rethrow the error
+                    // re-throw the error
                     throw;
                 }
 
@@ -303,7 +302,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     }
                 }
 
-                // load the pdf
+                // load the PDF
                 ghostscript.Run(string.Format(CultureInfo.InvariantCulture, "({0}) (r) file runpdfbegin process_trailer_attrs", escapedFileName));
             }
 
@@ -522,13 +521,13 @@ namespace Aufbauwerk.Tools.PdfKit
 
             protected override void DoConvert(ConvertFormat format, Action pageCompletedCallback, Func<bool> cancellationCallback)
             {
-                // only support pdf conversion
+                // only support PDF conversion
                 if (format != ConvertFormat.Pdf || !format.SupportsSingleFile)
                 {
                     throw new NotSupportedException();
                 }
 
-                // convert all pages into a pdf
+                // convert all pages into a PDF
                 using (var pdfDocument = new PdfDocument())
                 {
                     for (var i = 0; i < PageCount; i++)
@@ -560,10 +559,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         {
                             throw new OperationCanceledException();
                         }
-                        if (pageCompletedCallback != null)
-                        {
-                            pageCompletedCallback();
-                        }
+                        pageCompletedCallback?.Invoke();
                     }
 
                     // save the document
@@ -640,7 +636,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
                 catch
                 {
-                    // dispose the image and rethrow
+                    // dispose the image and re-throw
                     result.Dispose();
                     throw;
                 }
@@ -682,7 +678,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the arguments and state
             if (format == null)
             {
-                throw new ArgumentNullException("format");
+                throw new ArgumentNullException(nameof(format));
             }
 
             // convert the document
@@ -725,7 +721,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the arguments and state
             if (ghostscript == null)
             {
-                throw new ArgumentNullException("ghostscript");
+                throw new ArgumentNullException(nameof(ghostscript));
             }
 
             // perform the action
@@ -736,16 +732,16 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        public void RunPage(Ghostscript ghostscript, int pageNumber, string setPageDevice = null)
+        public void RunPage(Ghostscript ghostscript, int pageNumber)
         {
             // check the arguments and state
             if (ghostscript == null)
             {
-                throw new ArgumentNullException("ghostscript");
+                throw new ArgumentNullException(nameof(ghostscript));
             }
             if (pageNumber < 1 || pageNumber > PageCount)
             {
-                throw new ArgumentOutOfRangeException("pageNumber");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber));
             }
 
             // perform the action
@@ -761,23 +757,23 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the arguments and state
             if (pageNumber < 1 || pageNumber > PageCount)
             {
-                throw new ArgumentOutOfRangeException("pageNumber");
+                throw new ArgumentOutOfRangeException(nameof(pageNumber));
             }
             if (dpiX <= 0)
             {
-                throw new ArgumentOutOfRangeException("dpiX");
+                throw new ArgumentOutOfRangeException(nameof(dpiX));
             }
             if (dpiY <= 0)
             {
-                throw new ArgumentOutOfRangeException("dpiY");
+                throw new ArgumentOutOfRangeException(nameof(dpiY));
             }
             if (scaleFactor <= 0)
             {
-                throw new ArgumentOutOfRangeException("scaleFactor");
+                throw new ArgumentOutOfRangeException(nameof(scaleFactor));
             }
             if (rotate % 90 != 0)
             {
-                throw new ArgumentOutOfRangeException("rotate");
+                throw new ArgumentOutOfRangeException(nameof(rotate));
             }
             rotate %= 360;
             if (rotate < 0)

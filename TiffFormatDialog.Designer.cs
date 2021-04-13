@@ -303,7 +303,7 @@
             resources.ApplyResources(this.buttonPostRenderProfile, "buttonPostRenderProfile");
             this.buttonPostRenderProfile.Name = "buttonPostRenderProfile";
             this.buttonPostRenderProfile.UseVisualStyleBackColor = true;
-            this.buttonPostRenderProfile.Click += new System.EventHandler(this.buttonPostRenderProfile_Click);
+            this.buttonPostRenderProfile.Click += new System.EventHandler(this.ButtonPostRenderProfile_Click);
             // 
             // tableLayoutPanelMonochrome
             // 

@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ namespace Aufbauwerk.Tools.PdfKit
     {
         private static IntPtr[] BuildArgs(string[] args)
         {
-            // convert every arg to utf8
+            // convert every argument to utf8
             var argsBuffer = new IntPtr[args.Length];
             try
             {
@@ -71,7 +71,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private static void FreeArgs(IntPtr[] args)
         {
-            // free every arg
+            // free every argument
             for (var i = 0; i < args.Length; i++)
             {
                 if (args[i] != IntPtr.Zero)
@@ -144,10 +144,10 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the arguments array
             if (arguments == null)
             {
-                throw new ArgumentNullException("arguments");
+                throw new ArgumentNullException(nameof(arguments));
             }
 
-            // initialize ghostscript
+            // initialize Ghostscript
             try
             {
                 Prepare();
@@ -228,7 +228,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             _initialized = true;
 
-            // initialize ghostscript
+            // initialize Ghostscript
             var argumentsBuffer = BuildArgs(arguments);
             try
             {
@@ -242,7 +242,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private int PollFunction(IntPtr caller_handle)
         {
-            // if already cancelled or disposed then interrupt immediatelly
+            // if already canceled or disposed then interrupt immediately
             if (_cancelled || _instance == IntPtr.Zero)
             {
                 return Native.gs_error_interrupt;
@@ -299,7 +299,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the arguments and state
             if (commandString == null)
             {
-                throw new ArgumentNullException("commandString");
+                throw new ArgumentNullException(nameof(commandString));
             }
             CheckDisposed();
 
@@ -312,7 +312,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // check the arguments and state
             if (commandBuffer == null)
             {
-                throw new ArgumentNullException("commandBuffer");
+                throw new ArgumentNullException(nameof(commandBuffer));
             }
             CheckDisposed();
 
@@ -321,26 +321,25 @@ namespace Aufbauwerk.Tools.PdfKit
             try
             {
                 // check if the string is too long for a single call
-                int exitCode;
                 const int maxSize = ushort.MaxValue - 5;
                 if (commandBuffer.Length > maxSize)
                 {
                     // run the string in parts
-                    CheckResult("gsapi_run_string_begin", Native.gsapi_run_string_begin(_instance, 0, out exitCode));
+                    CheckResult("gsapi_run_string_begin", Native.gsapi_run_string_begin(_instance, 0, out _));
                     for (var offset = 0; offset < commandBuffer.Length; offset += maxSize)
                     {
-                        var result = Native.gsapi_run_string_continue(_instance, handle.AddrOfPinnedObject() + offset, Math.Min(commandBuffer.Length - offset, maxSize), 0, out exitCode);
+                        var result = Native.gsapi_run_string_continue(_instance, handle.AddrOfPinnedObject() + offset, Math.Min(commandBuffer.Length - offset, maxSize), 0, out _);
                         if (result == Native.gs_error_NeedInput)
                         {
                             continue;
                         }
                         CheckResult("gsapi_run_string_continue", result);
                     }
-                    CheckResult("gsapi_run_string_end", Native.gsapi_run_string_end(_instance, 0, out exitCode));
+                    CheckResult("gsapi_run_string_end", Native.gsapi_run_string_end(_instance, 0, out _));
                 }
                 else
                 {
-                    CheckResult("gsapi_run_string_with_length", Native.gsapi_run_string_with_length(_instance, handle.AddrOfPinnedObject(), commandBuffer.Length, 0, out exitCode));
+                    CheckResult("gsapi_run_string_with_length", Native.gsapi_run_string_with_length(_instance, handle.AddrOfPinnedObject(), commandBuffer.Length, 0, out _));
                 }
             }
             finally
@@ -523,15 +522,13 @@ namespace Aufbauwerk.Tools.PdfKit
             try
             {
                 // create the new source image
-                _temporaryImage = new Bitmap(width, height, raster, PixelFormat.Format32bppRgb, pimage);
-                _temporaryImage.Tag = true;
+                _temporaryImage = new Bitmap(width, height, raster, PixelFormat.Format32bppRgb, pimage)
+                {
+                    Tag = true
+                };
 
                 // notify the update listeners
-                var update = Update;
-                if (update != null)
-                {
-                    update(this, new GhostscriptRendererEventArgs(_temporaryImage));
-                }
+                Update?.Invoke(this, new GhostscriptRendererEventArgs(_temporaryImage));
             }
             catch (Exception e)
             {

@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,8 +163,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     case 1:
                     {
                         // try to find and run the standalone task
-                        Action action;
-                        if (_standaloneTasks.TryGetValue(args[0], out action))
+                        if (_standaloneTasks.TryGetValue(args[0], out var action))
                         {
                             action();
                             return;
@@ -174,8 +173,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     case 2:
                     {
                         // try to run a single file task or a multi file task with only one file
-                        Action<string> action;
-                        if (_singleFileTasks.TryGetValue(args[0], out action))
+                        if (_singleFileTasks.TryGetValue(args[0], out var action))
                         {
                             action(args[1]);
                             return;
@@ -185,8 +183,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     default:
                     {
                         // try to run a multi file task with all remaining arguments
-                        Action<IEnumerable<string>> action;
-                        if (_multiFileTasks.TryGetValue(args[0], out action))
+                        if (_multiFileTasks.TryGetValue(args[0], out var action))
                         {
                             action(args.Skip(1));
                             return;
@@ -229,8 +226,7 @@ namespace Aufbauwerk.Tools.PdfKit
             // create and register the com server
             Application.OleRequired();
             var comServer = new EmbeddedComServer();
-            uint cookie;
-            Native.CoRegisterClassObject(comServer.GetType().GUID, comServer, Native.CLSCTX_LOCAL_SERVER, Native.REGCLS_SINGLEUSE, out cookie);
+            Native.CoRegisterClassObject(comServer.GetType().GUID, comServer, Native.CLSCTX_LOCAL_SERVER, Native.REGCLS_SINGLEUSE, out var cookie);
             try
             {
                 // wait for it to be ready
@@ -257,8 +253,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 MessageBox.Show(Resources.Program_NoCommand, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            Action<IEnumerable<string>> action;
-            if (!_multiFileTasks.TryGetValue(comServer.Command, out action))
+            if (!_multiFileTasks.TryGetValue(comServer.Command, out var action))
             {
                 MessageBox.Show(string.Format(Resources.Program_UnknownVerb, comServer.Command, string.Join(", ", _multiFileTasks)), Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;

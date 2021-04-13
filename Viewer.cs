@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
             protected override void OnMouseDown(MouseEventArgs e)
             {
-                // focus the picture and start draging
+                // focus the picture and start dragging
                 Focus();
                 _doDrag = true;
                 _dragLocation = Cursor.Position;
@@ -102,7 +102,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
             protected override void OnMouseUp(MouseEventArgs e)
             {
-                // stop draging
+                // stop dragging
                 _doDrag = false;
             }
 
@@ -132,7 +132,7 @@ namespace Aufbauwerk.Tools.PdfKit
             internal void UpdateImage()
             {
                 // check if the image has changed
-                var newImage = _page != null ? _page.Image : null;
+                var newImage = _page?.Image;
                 if (newImage != _image)
                 {
                     // simply set empty and complete images
@@ -188,7 +188,7 @@ namespace Aufbauwerk.Tools.PdfKit
         private int _pageNumber;
         private int _rotate;
         private readonly string _totalPagesFormat;
-        private GhostscriptImage _view;
+        private readonly GhostscriptImage _view;
         private double _zoom;
         private readonly string _zoomFormat;
 
@@ -212,7 +212,7 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             get
             {
-                return _document != null ? _document.FilePath : null;
+                return _document?.FilePath;
             }
             set
             {
@@ -255,8 +255,7 @@ namespace Aufbauwerk.Tools.PdfKit
                     Cursor = prevCursor;
 
                     // set the bookmarked variables
-                    Bookmark bookmark;
-                    var hasBookmark = _bookmarks.TryGetValue(newFilePath, out bookmark);
+                    var hasBookmark = _bookmarks.TryGetValue(newFilePath, out var bookmark);
                     _pageNumber = hasBookmark ? Math.Min(_document == null ? 1 : _document.PageCount, bookmark.PageNumber) : 1;
                     _zoom = hasBookmark ? bookmark.Zoom : ZoomDefault;
                     _rotate = hasBookmark ? bookmark.Rotate : 0;
@@ -290,8 +289,7 @@ namespace Aufbauwerk.Tools.PdfKit
             SyncStates();
 
             // store the current view
-            Bookmark bookmark;
-            if (!_bookmarks.TryGetValue(_document.FilePath, out bookmark))
+            if (!_bookmarks.TryGetValue(_document.FilePath, out var bookmark))
             {
                 _bookmarks.Add(_document.FilePath, bookmark = new Bookmark());
             }
@@ -377,7 +375,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         #region Event Handlers
 
-        private void backgroundWorkerRenderPage_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorkerRenderPage_DoWork(object sender, DoWorkEventArgs e)
         {
             // render the page
             var page = (Page)e.Argument;
@@ -396,13 +394,13 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void backgroundWorkerRenderPage_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void BackgroundWorkerRenderPage_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             // update the image
             _view.UpdateImage();
         }
 
-        private void backgroundWorkerRenderPage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorkerRenderPage_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             // handle the different results
             if (!e.Cancelled)
@@ -418,11 +416,11 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
             }
 
-            // rerender if necessary
+            // re-render if necessary
             StartRenderIfNecessary();
         }
 
-        private void panel_MouseWheel(object sender, MouseEventArgs e)
+        private void Panel_MouseWheel(object sender, MouseEventArgs e)
         {
             // zoom instead of scroll if CTRL is pressed
             if ((ModifierKeys & Keys.Control) != 0)
@@ -439,47 +437,47 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void toolStripButtonFirst_Click(object sender, EventArgs e)
+        private void ToolStripButtonFirst_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _pageNumber, 1);
         }
 
-        private void toolStripButtonLast_Click(object sender, EventArgs e)
+        private void ToolStripButtonLast_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _pageNumber, _document.PageCount);
         }
 
-        private void toolStripButtonNext_Click(object sender, EventArgs e)
+        private void ToolStripButtonNext_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _pageNumber, Math.Min(_document.PageCount, _pageNumber + 1));
         }
 
-        private void toolStripButtonPrevious_Click(object sender, EventArgs e)
+        private void ToolStripButtonPrevious_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _pageNumber, Math.Max(1, _pageNumber - 1));
         }
 
-        private void toolStripButtonRotateLeft_Click(object sender, EventArgs e)
+        private void ToolStripButtonRotateLeft_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _rotate, _rotate + 90);
         }
 
-        private void toolStripButtonRotateRight_Click(object sender, EventArgs e)
+        private void ToolStripButtonRotateRight_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _rotate, _rotate - 90);
         }
 
-        private void toolStripButtonZoomIn_Click(object sender, EventArgs e)
+        private void ToolStripButtonZoomIn_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _zoom, Math.Min(ZoomMaximum, _zoom + ZoomStep));
         }
 
-        private void toolStripButtonZoomOut_Click(object sender, EventArgs e)
+        private void ToolStripButtonZoomOut_Click(object sender, EventArgs e)
         {
             SetRenderAttribute(ref _zoom, Math.Max(ZoomMinimum, _zoom - ZoomStep));
         }
 
-        private void toolStripTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void ToolStripTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             // focus the panel if enter is pressed
             if (e.KeyCode == Keys.Enter)
@@ -490,22 +488,20 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void toolStripTextBoxPage_Validated(object sender, EventArgs e)
+        private void ToolStripTextBoxPage_Validated(object sender, EventArgs e)
         {
             // parse the text and constrain the page number within its bounds
-            int page;
-            if (int.TryParse(toolStripTextBoxPage.Text, out page))
+            if (int.TryParse(toolStripTextBoxPage.Text, out var page))
             {
                 SetRenderAttribute(ref _pageNumber, Math.Max(1, Math.Min(_document.PageCount, page)));
             }
             SyncStates();
         }
 
-        private void toolStripTextBoxZoom_Validated(object sender, EventArgs e)
+        private void ToolStripTextBoxZoom_Validated(object sender, EventArgs e)
         {
             // parse the text and constrain the zoom factor within its bounds
-            double zoom;
-            if (double.TryParse((sender as ToolStripTextBox).Text.Replace('%', ' '), out zoom))
+            if (double.TryParse((sender as ToolStripTextBox).Text.Replace('%', ' '), out var zoom))
             {
                 SetRenderAttribute(ref _zoom, Math.Max(ZoomMinimum, Math.Min(ZoomMaximum, zoom)));
             }

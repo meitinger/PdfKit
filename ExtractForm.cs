@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -189,12 +189,12 @@ namespace Aufbauwerk.Tools.PdfKit
             private bool _disposed = false;
             private readonly Form _form;
             private Image _image;
-            private Cursor _prevCursor;
+            private readonly Cursor _prevCursor;
             private readonly ToolTip _toolTip;
 
             public Preview(Form form, int itemIndex, Func<Point, int> currentIndex)
             {
-                // set the variables and create the tooltip
+                // set the variables and create the tool-tip
                 _form = form;
                 _currentIndex = currentIndex;
                 ItemIndex = itemIndex;
@@ -269,11 +269,6 @@ namespace Aufbauwerk.Tools.PdfKit
 
             public void Initialize(Image image)
             {
-                // check the arguments and state
-                if (image == null)
-                {
-                    throw new ArgumentNullException("image");
-                }
                 if (_disposed)
                 {
                     throw new ObjectDisposedException(GetType().ToString());
@@ -284,7 +279,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
 
                 // set the image and restore the cursor
-                _image = image;
+                _image = image ?? throw new ArgumentNullException(nameof(image));
                 _form.Cursor = _prevCursor;
 
                 // get the best fit next to the window
@@ -350,7 +345,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
             private void Popup(object sender, PopupEventArgs e)
             {
-                // set the tooltip size
+                // set the tool-tip size
                 e.ToolTipSize = _calculatedSize;
             }
         }
@@ -391,16 +386,11 @@ namespace Aufbauwerk.Tools.PdfKit
 
             public void SetPath(string path)
             {
-                // ensure the argument and state are valid before setting the path
-                if (path == null)
-                {
-                    throw new ArgumentNullException("path");
-                }
                 if (_path != null)
                 {
                     throw new InvalidOperationException();
                 }
-                _path = path;
+                _path = path ?? throw new ArgumentNullException(nameof(path));
             }
         }
 
@@ -416,7 +406,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         public ExtractForm(string path)
         {
-            // intialize the components
+            // initialize the components
             InitializeComponent();
             InitializeAdditionalStatusStripComponents();
 
@@ -436,9 +426,9 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             SetFormat(ConvertFormat.Pdf);
 
-            // simulate a selection and trackbar change
-            listViewPages_SelectedIndexChanged(this, EventArgs.Empty);
-            trackBarZoom_ValueChanged(this, EventArgs.Empty);
+            // simulate a selection and track-bar change
+            ListViewPages_SelectedIndexChanged(this, EventArgs.Empty);
+            TrackBarZoom_ValueChanged(this, EventArgs.Empty);
 
             // hide the status elements
             ShowStatus(false, false);
@@ -451,26 +441,32 @@ namespace Aufbauwerk.Tools.PdfKit
             // suspend the layout
             statusStrip.SuspendLayout();
 
-            // create the single file checkbox
+            // create the single file check-box
             checkBoxMultipleFiles = new CheckBox();
-            var checkboxHost = new ToolStripControlHost(checkBoxMultipleFiles);
-            checkboxHost.ToolTipText = toolStripStatusLabelMultipleFiles.ToolTipText;
+            var checkboxHost = new ToolStripControlHost(checkBoxMultipleFiles)
+            {
+                ToolTipText = toolStripStatusLabelMultipleFiles.ToolTipText
+            };
             toolStripStatusLabelMultipleFiles.ToolTipText = null;
-            checkboxHost.Margin = checkboxHost.Margin + new Padding(8, 4, 0, 0);
+            checkboxHost.Margin += new Padding(8, 4, 0, 0);
             statusStrip.Items.Insert(statusStrip.Items.IndexOf(toolStripStatusLabelMultipleFiles), checkboxHost);
             toolStripStatusLabelMultipleFiles.Click += (s, e) => { checkBoxMultipleFiles.Checked = !checkBoxMultipleFiles.Checked; };
 
-            // create the zoom trackbar
-            trackBarZoom = new TrackBar();
-            trackBarZoom.TickStyle = TickStyle.None;
+            // create the zoom track-bar
+            trackBarZoom = new TrackBar
+            {
+                TickStyle = TickStyle.None
+            };
             trackBarZoom.MaximumSize = new Size(trackBarZoom.Width, toolStripDropDownButtonSave.Height);
             trackBarZoom.Minimum = 1;
             trackBarZoom.Maximum = 8;
             trackBarZoom.Value = 4;
-            trackBarZoom.ValueChanged += trackBarZoom_ValueChanged;
-            var trackbarHost = new ToolStripControlHost(trackBarZoom);
-            trackbarHost.ToolTipText = new StringBuilder().Append(toolStripDropDownButtonZoomOut.ToolTipText).Append("/").Append(toolStripDropDownButtonZoomIn.ToolTipText).ToString();
-            trackbarHost.Alignment = ToolStripItemAlignment.Right;
+            trackBarZoom.ValueChanged += TrackBarZoom_ValueChanged;
+            var trackbarHost = new ToolStripControlHost(trackBarZoom)
+            {
+                ToolTipText = new StringBuilder().Append(toolStripDropDownButtonZoomOut.ToolTipText).Append("/").Append(toolStripDropDownButtonZoomIn.ToolTipText).ToString(),
+                Alignment = ToolStripItemAlignment.Right
+            };
             statusStrip.Items.Insert(statusStrip.Items.IndexOf(toolStripDropDownButtonZoomOut), trackbarHost);
 
             // resume and perform layout
@@ -508,7 +504,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 }
             }
 
-            // an error occured
+            // an error occurred
             return null;
         }
 
@@ -519,7 +515,7 @@ namespace Aufbauwerk.Tools.PdfKit
             var progress = 0;
             for (var i = 0; i < work.Indices.Length; i++)
             {
-                // return if cancelled
+                // return if canceled
                 if (isCanelled())
                 {
                     if (i > 0)
@@ -576,13 +572,13 @@ namespace Aufbauwerk.Tools.PdfKit
             reportStatus(0, fileName);
             if (work.Format == ConvertFormat.Pdf)
             {
-                // create the resulting pdf
+                // create the resulting PDF
                 using (var combinedDocument = new PdfDocument())
                 {
                     var prevProgress = 0;
                     for (var i = 0; i < work.Indices.Length; i++)
                     {
-                        // return if cancelled
+                        // return if canceled
                         if (isCanelled())
                         {
                             return false;
@@ -816,8 +812,7 @@ namespace Aufbauwerk.Tools.PdfKit
         {
             // get the folder pidl
             var desktop = Native.SHGetDesktopFolder();
-            IntPtr folderPidl;
-            desktop.ParseDisplayName(IntPtr.Zero, IntPtr.Zero, folder, IntPtr.Zero, out folderPidl, IntPtr.Zero);
+            desktop.ParseDisplayName(IntPtr.Zero, IntPtr.Zero, folder, IntPtr.Zero, out var folderPidl, IntPtr.Zero);
             try
             {
                 // check if there are any files to select
@@ -831,8 +826,7 @@ namespace Aufbauwerk.Tools.PdfKit
                         // get all child pidls
                         foreach (var file in files)
                         {
-                            IntPtr filePidl;
-                            folderObject.ParseDisplayName(IntPtr.Zero, IntPtr.Zero, file, IntPtr.Zero, out filePidl, IntPtr.Zero);
+                            folderObject.ParseDisplayName(IntPtr.Zero, IntPtr.Zero, file, IntPtr.Zero, out var filePidl, IntPtr.Zero);
                             filesPidl.Add(filePidl);
                         }
 
@@ -882,11 +876,11 @@ namespace Aufbauwerk.Tools.PdfKit
             }
             catch (Exception e)
             {
-                // display PdfSharp an I/O errors and rethrow others
+                // display PdfSharp an I/O errors and re-throw others
                 if (e is PdfSharpException || e is IOException)
                 {
                     MessageBox.Show(e.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return default(T);
+                    return default;
                 }
                 throw;
             }
@@ -957,7 +951,7 @@ namespace Aufbauwerk.Tools.PdfKit
                 _preview = null;
             }
 
-            // check if a tooltip should be shown
+            // check if a tool-tip should be shown
             if (itemIndex > -1)
             {
                 // create the preview and check if the image needs to be loaded
@@ -1003,7 +997,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         private void ShowStatus(bool visible, bool cancelable)
         {
-            // set the visibilty and enabled states
+            // set the visibility and enabled states
             toolStripProgressBarExtract.Visible = visible;
             toolStripStatusLabelExtract.Visible = visible;
             toolStripDropDownButtonCancel.Visible = visible;
@@ -1026,7 +1020,7 @@ namespace Aufbauwerk.Tools.PdfKit
 
         #region Event Handlers
 
-        private void backgroundWorkerExtract_DoWork(object sender, DoWorkEventArgs e)
+        private void BackgroundWorkerExtract_DoWork(object sender, DoWorkEventArgs e)
         {
             var work = (Work)e.Argument;
             if (work.MultipleFiles)
@@ -1058,20 +1052,20 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void backgroundWorkerExtract_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void BackgroundWorkerExtract_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             // update the status bar
             toolStripProgressBarExtract.Value = e.ProgressPercentage;
             toolStripStatusLabelExtract.Text = (string)e.UserState;
         }
 
-        private void backgroundWorkerExtract_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorkerExtract_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             // hide the status elements and handle any potential error
             ShowStatus(false, true);
             if (!e.Cancelled && e.Error != null)
             {
-                // display PdfSharp an I/O errors and rethrow others
+                // display PdfSharp an I/O errors and re-throw others
                 if (e.Error is PdfSharpException || e.Error is IOException)
                 {
                     MessageBox.Show(e.Error.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1110,12 +1104,14 @@ namespace Aufbauwerk.Tools.PdfKit
             listViewPages.VirtualListSize = _document.PageCount;
 
             // start the image loader
-            var loader = new Thread(ImageLoader);
-            loader.IsBackground = true;
+            var loader = new Thread(ImageLoader)
+            {
+                IsBackground = true
+            };
             loader.Start();
         }
 
-        private void listViewPages_CacheVirtualItems(object sender, CacheVirtualItemsEventArgs e)
+        private void ListViewPages_CacheVirtualItems(object sender, CacheVirtualItemsEventArgs e)
         {
             // do nothing if the new range is smaller than the old one
             if (_imageCacheRange != null && _imageCacheRange.Item1 <= e.StartIndex && e.EndIndex <= _imageCacheRange.Item2)
@@ -1147,9 +1143,9 @@ namespace Aufbauwerk.Tools.PdfKit
             GC.Collect();
         }
 
-        private void listViewPages_ItemDrag(object sender, ItemDragEventArgs e)
+        private void ListViewPages_ItemDrag(object sender, ItemDragEventArgs e)
         {
-            // hide the tooltip
+            // hide the tool-tip
             SetPreview(-1);
 
             // perform the operation
@@ -1162,19 +1158,19 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void listViewPages_MouseLeave(object sender, EventArgs e)
+        private void ListViewPages_MouseLeave(object sender, EventArgs e)
         {
             // hide the preview
             SetPreview(-1);
         }
 
-        private void listViewPages_MouseMove(object sender, MouseEventArgs e)
+        private void ListViewPages_MouseMove(object sender, MouseEventArgs e)
         {
             // show the preview
             SetPreview(GetItemIndexWithImageAt((sender as Control).PointToScreen(e.Location)));
         }
 
-        private void listViewPages_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
+        private void ListViewPages_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
         {
             // check if the thumb needs to be added
             var imageName = string.Format(CultureInfo.InvariantCulture, ImageNameFormat, e.ItemIndex);
@@ -1209,25 +1205,25 @@ namespace Aufbauwerk.Tools.PdfKit
             e.Item = new ListViewItem((e.ItemIndex + 1).ToString(), imageList.Images.IndexOfKey(imageName));
         }
 
-        private void listViewPages_SelectedIndexChanged(object sender, EventArgs e)
+        private void ListViewPages_SelectedIndexChanged(object sender, EventArgs e)
         {
             // update the save button state
             toolStripDropDownButtonSave.Enabled = listViewPages.SelectedIndices.Count > 0;
         }
 
-        private void listViewPages_VirtualItemsSelectionRangeChanged(object sender, ListViewVirtualItemsSelectionRangeChangedEventArgs e)
+        private void ListViewPages_VirtualItemsSelectionRangeChanged(object sender, ListViewVirtualItemsSelectionRangeChangedEventArgs e)
         {
             // do the same as a single selection change
-            listViewPages_SelectedIndexChanged(sender, e);
+            ListViewPages_SelectedIndexChanged(sender, e);
         }
 
-        private void toolStripDropDownButtonCancel_Click(object sender, EventArgs e)
+        private void ToolStripDropDownButtonCancel_Click(object sender, EventArgs e)
         {
             // cancel the extraction
             backgroundWorkerExtract.CancelAsync();
         }
 
-        private void toolStripDropDownButtonFormat_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        private void ToolStripDropDownButtonFormat_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             // change the format
             var format = (ConvertFormat)e.ClickedItem.Tag;
@@ -1237,7 +1233,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
         }
 
-        private void toolStripDropDownButtonSave_Click(object sender, EventArgs e)
+        private void ToolStripDropDownButtonSave_Click(object sender, EventArgs e)
         {
             // get the selection and check what to do
             var work = new Work(this);
@@ -1268,37 +1264,37 @@ namespace Aufbauwerk.Tools.PdfKit
             backgroundWorkerExtract.RunWorkerAsync(work);
         }
 
-        private void toolStripDropDownButtonZoomIn_Click(object sender, EventArgs e)
+        private void ToolStripDropDownButtonZoomIn_Click(object sender, EventArgs e)
         {
             trackBarZoom.Value++;
         }
 
-        private void toolStripDropDownButtonZoomOut_Click(object sender, EventArgs e)
+        private void ToolStripDropDownButtonZoomOut_Click(object sender, EventArgs e)
         {
             trackBarZoom.Value--;
         }
 
-        private void toolStripMenuItemSelectAll_Click(object sender, EventArgs e)
+        private void ToolStripMenuItemSelectAll_Click(object sender, EventArgs e)
         {
             SetSelection(i => true);
         }
 
-        private void toolStripMenuItemSelectEven_Click(object sender, EventArgs e)
+        private void ToolStripMenuItemSelectEven_Click(object sender, EventArgs e)
         {
             SetSelection(i => (i + 1) % 2 == 0);
         }
 
-        private void toolStripMenuItemSelectInvert_Click(object sender, EventArgs e)
+        private void ToolStripMenuItemSelectInvert_Click(object sender, EventArgs e)
         {
             SetSelection(i => !listViewPages.SelectedIndices.Contains(i));
         }
 
-        private void toolStripMenuItemSelectOdd_Click(object sender, EventArgs e)
+        private void ToolStripMenuItemSelectOdd_Click(object sender, EventArgs e)
         {
             SetSelection(i => (i + 1) % 2 != 0);
         }
 
-        private void trackBarZoom_ValueChanged(object sender, EventArgs e)
+        private void TrackBarZoom_ValueChanged(object sender, EventArgs e)
         {
             // set the enabled state
             toolStripDropDownButtonZoomOut.Enabled = trackBarZoom.Value > trackBarZoom.Minimum;

@@ -85,12 +85,12 @@
             this.listViewFiles.Name = "listViewFiles";
             this.listViewFiles.UseCompatibleStateImageBehavior = false;
             this.listViewFiles.View = System.Windows.Forms.View.Details;
-            this.listViewFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.listViewFiles_ItemDrag);
-            this.listViewFiles.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewFiles_ItemSelectionChanged);
-            this.listViewFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.listViewFiles_DragDrop);
-            this.listViewFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.listViewFiles_DragOver);
-            this.listViewFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.listViewFiles_DragOver);
-            this.listViewFiles.DragLeave += new System.EventHandler(this.listViewFiles_DragLeave);
+            this.listViewFiles.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ListViewFiles_ItemDrag);
+            this.listViewFiles.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.ListViewFiles_ItemSelectionChanged);
+            this.listViewFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.ListViewFiles_DragDrop);
+            this.listViewFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.ListViewFiles_DragOver);
+            this.listViewFiles.DragOver += new System.Windows.Forms.DragEventHandler(this.ListViewFiles_DragOver);
+            this.listViewFiles.DragLeave += new System.EventHandler(this.ListViewFiles_DragLeave);
             // 
             // columnHeaderName
             // 
@@ -121,14 +121,14 @@
             resources.ApplyResources(this.toolStripButtonInsert, "toolStripButtonInsert");
             this.toolStripButtonInsert.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonInsert.Name = "toolStripButtonInsert";
-            this.toolStripButtonInsert.Click += new System.EventHandler(this.toolStripButtonInsert_Click);
+            this.toolStripButtonInsert.Click += new System.EventHandler(this.ToolStripButtonInsert_Click);
             // 
             // toolStripButtonRemove
             // 
             resources.ApplyResources(this.toolStripButtonRemove, "toolStripButtonRemove");
             this.toolStripButtonRemove.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonRemove.Name = "toolStripButtonRemove";
-            this.toolStripButtonRemove.Click += new System.EventHandler(this.toolStripButtonRemove_Click);
+            this.toolStripButtonRemove.Click += new System.EventHandler(this.ToolStripButtonRemove_Click);
             // 
             // toolStripSeparator4
             // 
@@ -140,14 +140,14 @@
             resources.ApplyResources(this.toolStripButtonUp, "toolStripButtonUp");
             this.toolStripButtonUp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonUp.Name = "toolStripButtonUp";
-            this.toolStripButtonUp.Click += new System.EventHandler(this.toolStripButtonUp_Click);
+            this.toolStripButtonUp.Click += new System.EventHandler(this.ToolStripButtonUp_Click);
             // 
             // toolStripButtonDown
             // 
             resources.ApplyResources(this.toolStripButtonDown, "toolStripButtonDown");
             this.toolStripButtonDown.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButtonDown.Name = "toolStripButtonDown";
-            this.toolStripButtonDown.Click += new System.EventHandler(this.toolStripButtonDown_Click);
+            this.toolStripButtonDown.Click += new System.EventHandler(this.ToolStripButtonDown_Click);
             // 
             // viewer
             // 
@@ -169,9 +169,9 @@
             // 
             this.backgroundWorker.WorkerReportsProgress = true;
             this.backgroundWorker.WorkerSupportsCancellation = true;
-            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker_DoWork);
-            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker_ProgressChanged);
-            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
+            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorker_DoWork);
+            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorker_ProgressChanged);
+            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorker_RunWorkerCompleted);
             // 
             // statusStrip
             // 
@@ -194,7 +194,7 @@
             this.toolStripDropDownButtonCancel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButtonCancel.Name = "toolStripDropDownButtonCancel";
             this.toolStripDropDownButtonCancel.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonCancel.Click += new System.EventHandler(this.toolStripDropDownButtonCancel_Click);
+            this.toolStripDropDownButtonCancel.Click += new System.EventHandler(this.ToolStripDropDownButtonCancel_Click);
             // 
             // toolStripDropDownButtonSave
             // 
@@ -202,7 +202,7 @@
             this.toolStripDropDownButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripDropDownButtonSave.Name = "toolStripDropDownButtonSave";
             this.toolStripDropDownButtonSave.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonSave.Click += new System.EventHandler(this.toolStripDropDownButtonSave_Click);
+            this.toolStripDropDownButtonSave.Click += new System.EventHandler(this.ToolStripDropDownButtonSave_Click);
             // 
             // CombineForm
             // 

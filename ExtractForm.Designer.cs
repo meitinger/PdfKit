@@ -63,13 +63,13 @@
             this.listViewPages.LargeImageList = this.imageList;
             this.listViewPages.Name = "listViewPages";
             this.listViewPages.UseCompatibleStateImageBehavior = false;
-            this.listViewPages.CacheVirtualItems += new System.Windows.Forms.CacheVirtualItemsEventHandler(this.listViewPages_CacheVirtualItems);
-            this.listViewPages.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.listViewPages_ItemDrag);
-            this.listViewPages.MouseLeave += new System.EventHandler(this.listViewPages_MouseLeave);
-            this.listViewPages.MouseMove += new System.Windows.Forms.MouseEventHandler(this.listViewPages_MouseMove);
-            this.listViewPages.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.listViewPages_RetrieveVirtualItem);
-            this.listViewPages.SelectedIndexChanged += new System.EventHandler(this.listViewPages_SelectedIndexChanged);
-            this.listViewPages.VirtualItemsSelectionRangeChanged += new System.Windows.Forms.ListViewVirtualItemsSelectionRangeChangedEventHandler(this.listViewPages_VirtualItemsSelectionRangeChanged);
+            this.listViewPages.CacheVirtualItems += new System.Windows.Forms.CacheVirtualItemsEventHandler(this.ListViewPages_CacheVirtualItems);
+            this.listViewPages.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.ListViewPages_ItemDrag);
+            this.listViewPages.MouseLeave += new System.EventHandler(this.ListViewPages_MouseLeave);
+            this.listViewPages.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ListViewPages_MouseMove);
+            this.listViewPages.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.ListViewPages_RetrieveVirtualItem);
+            this.listViewPages.SelectedIndexChanged += new System.EventHandler(this.ListViewPages_SelectedIndexChanged);
+            this.listViewPages.VirtualItemsSelectionRangeChanged += new System.Windows.Forms.ListViewVirtualItemsSelectionRangeChangedEventHandler(this.ListViewPages_VirtualItemsSelectionRangeChanged);
             // 
             // contextMenuStrip
             // 
@@ -88,13 +88,13 @@
             // 
             resources.ApplyResources(this.toolStripMenuItemSelectOdd, "toolStripMenuItemSelectOdd");
             this.toolStripMenuItemSelectOdd.Name = "toolStripMenuItemSelectOdd";
-            this.toolStripMenuItemSelectOdd.Click += new System.EventHandler(this.toolStripMenuItemSelectOdd_Click);
+            this.toolStripMenuItemSelectOdd.Click += new System.EventHandler(this.ToolStripMenuItemSelectOdd_Click);
             // 
             // toolStripMenuItemSelectEven
             // 
             resources.ApplyResources(this.toolStripMenuItemSelectEven, "toolStripMenuItemSelectEven");
             this.toolStripMenuItemSelectEven.Name = "toolStripMenuItemSelectEven";
-            this.toolStripMenuItemSelectEven.Click += new System.EventHandler(this.toolStripMenuItemSelectEven_Click);
+            this.toolStripMenuItemSelectEven.Click += new System.EventHandler(this.ToolStripMenuItemSelectEven_Click);
             // 
             // toolStripSeparator1
             // 
@@ -105,7 +105,7 @@
             // 
             resources.ApplyResources(this.toolStripMenuItemSelectAll, "toolStripMenuItemSelectAll");
             this.toolStripMenuItemSelectAll.Name = "toolStripMenuItemSelectAll";
-            this.toolStripMenuItemSelectAll.Click += new System.EventHandler(this.toolStripMenuItemSelectAll_Click);
+            this.toolStripMenuItemSelectAll.Click += new System.EventHandler(this.ToolStripMenuItemSelectAll_Click);
             // 
             // toolStripSeparator2
             // 
@@ -116,7 +116,7 @@
             // 
             resources.ApplyResources(this.toolStripMenuItemSelectInvert, "toolStripMenuItemSelectInvert");
             this.toolStripMenuItemSelectInvert.Name = "toolStripMenuItemSelectInvert";
-            this.toolStripMenuItemSelectInvert.Click += new System.EventHandler(this.toolStripMenuItemSelectInvert_Click);
+            this.toolStripMenuItemSelectInvert.Click += new System.EventHandler(this.ToolStripMenuItemSelectInvert_Click);
             // 
             // imageList
             // 
@@ -155,7 +155,7 @@
             this.toolStripDropDownButtonZoomIn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripDropDownButtonZoomIn.Name = "toolStripDropDownButtonZoomIn";
             this.toolStripDropDownButtonZoomIn.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonZoomIn.Click += new System.EventHandler(this.toolStripDropDownButtonZoomIn_Click);
+            this.toolStripDropDownButtonZoomIn.Click += new System.EventHandler(this.ToolStripDropDownButtonZoomIn_Click);
             // 
             // toolStripDropDownButtonZoomOut
             // 
@@ -164,7 +164,7 @@
             this.toolStripDropDownButtonZoomOut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripDropDownButtonZoomOut.Name = "toolStripDropDownButtonZoomOut";
             this.toolStripDropDownButtonZoomOut.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonZoomOut.Click += new System.EventHandler(this.toolStripDropDownButtonZoomOut_Click);
+            this.toolStripDropDownButtonZoomOut.Click += new System.EventHandler(this.ToolStripDropDownButtonZoomOut_Click);
             // 
             // toolStripDropDownButtonSave
             // 
@@ -172,14 +172,14 @@
             this.toolStripDropDownButtonSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripDropDownButtonSave.Name = "toolStripDropDownButtonSave";
             this.toolStripDropDownButtonSave.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonSave.Click += new System.EventHandler(this.toolStripDropDownButtonSave_Click);
+            this.toolStripDropDownButtonSave.Click += new System.EventHandler(this.ToolStripDropDownButtonSave_Click);
             // 
             // toolStripDropDownButtonFormat
             // 
             resources.ApplyResources(this.toolStripDropDownButtonFormat, "toolStripDropDownButtonFormat");
             this.toolStripDropDownButtonFormat.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButtonFormat.Name = "toolStripDropDownButtonFormat";
-            this.toolStripDropDownButtonFormat.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolStripDropDownButtonFormat_DropDownItemClicked);
+            this.toolStripDropDownButtonFormat.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.ToolStripDropDownButtonFormat_DropDownItemClicked);
             // 
             // toolStripStatusLabelMultipleFiles
             // 
@@ -202,15 +202,15 @@
             this.toolStripDropDownButtonCancel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButtonCancel.Name = "toolStripDropDownButtonCancel";
             this.toolStripDropDownButtonCancel.ShowDropDownArrow = false;
-            this.toolStripDropDownButtonCancel.Click += new System.EventHandler(this.toolStripDropDownButtonCancel_Click);
+            this.toolStripDropDownButtonCancel.Click += new System.EventHandler(this.ToolStripDropDownButtonCancel_Click);
             // 
             // backgroundWorkerExtract
             // 
             this.backgroundWorkerExtract.WorkerReportsProgress = true;
             this.backgroundWorkerExtract.WorkerSupportsCancellation = true;
-            this.backgroundWorkerExtract.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerExtract_DoWork);
-            this.backgroundWorkerExtract.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerExtract_ProgressChanged);
-            this.backgroundWorkerExtract.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerExtract_RunWorkerCompleted);
+            this.backgroundWorkerExtract.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerExtract_DoWork);
+            this.backgroundWorkerExtract.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkerExtract_ProgressChanged);
+            this.backgroundWorkerExtract.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerExtract_RunWorkerCompleted);
             // 
             // ExtractForm
             // 
