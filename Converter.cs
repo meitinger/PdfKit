@@ -14,12 +14,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Aufbauwerk.Tools.PdfKit.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using Aufbauwerk.Tools.PdfKit.Properties;
 
 namespace Aufbauwerk.Tools.PdfKit
 {

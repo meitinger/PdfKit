@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Aufbauwerk.Tools.PdfKit.Properties;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -21,7 +22,6 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
-using Aufbauwerk.Tools.PdfKit.Properties;
 
 namespace Aufbauwerk.Tools.PdfKit
 {

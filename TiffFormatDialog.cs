@@ -22,7 +22,7 @@ using System.Windows.Forms;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public partial class TiffFormatDialog : Aufbauwerk.Tools.PdfKit.ImageFormatDialog
+    public partial class TiffFormatDialog : ImageFormatDialog
     {
         private bool _adjustWidthSet = false;
 

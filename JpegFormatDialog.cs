@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2017, Manuel Meitinger
+﻿/* Copyright (C) 2016-2021, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ using System.Globalization;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public partial class JpegFormatDialog : Aufbauwerk.Tools.PdfKit.ImageFormatDialog
+    public partial class JpegFormatDialog : ImageFormatDialog
     {
         public JpegFormatDialog()
         {

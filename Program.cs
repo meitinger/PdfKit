@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Aufbauwerk.Tools.PdfKit.Properties;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -22,7 +23,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
-using Aufbauwerk.Tools.PdfKit.Properties;
 
 namespace Aufbauwerk.Tools.PdfKit
 {

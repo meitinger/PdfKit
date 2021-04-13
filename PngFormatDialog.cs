@@ -22,7 +22,7 @@ using System.Windows.Forms;
 
 namespace Aufbauwerk.Tools.PdfKit
 {
-    public partial class PngFormatDialog : Aufbauwerk.Tools.PdfKit.ImageFormatDialog
+    public partial class PngFormatDialog : ImageFormatDialog
     {
         public PngFormatDialog()
         {
