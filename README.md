@@ -20,13 +20,18 @@ into *Windows Explorer*.
 
 Requirements
 ------------
-The utility requires [GPL Ghostscript 32bit](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/)
+The utility requires [GPL Ghostscript](https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/)
 for displaying PDF documents and (Encapsulated) PostScript files, as well as
 converting these files to other file formats.
-Please create a folder named `lib`, download Ghostscript and place the file
-`gsdll32.dll` into this folder.
+Please create a folder named `lib`, download Ghostscript and place the files
+`gsdll32.dll` and `gsdll64.dll` into this folder.
 
-(The file is not included in this repository to avoid any licensing issues.)
+The [PDFsharp](https://www.nuget.org/packages/PDFsharp) library is required as
+well, so `PdfSharp.dll` has to be placed in the `lib`. Any localized satellite
+library (`PdfSharp.resources.dll`) has to be placed into a sub-folder under
+`lib`.
+
+(The files are not included in this repository to avoid any licensing issues.)
 
 
 Translations
