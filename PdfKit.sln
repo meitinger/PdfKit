@@ -1,32 +1,51 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfKit", "PdfKit.csproj", "{B82E57B4-5B08-40E6-9318-1E17BE9B7974}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32106.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfKit", "src\PdfKit.csproj", "{B82E57B4-5B08-40E6-9318-1E17BE9B7974}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PdfKitInstaller", "PdfKitInstaller.wixproj", "{A368E3EC-199A-47C4-A09B-43C97821A6B6}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PdfKitInstaller", "installer\PdfKitInstaller.wixproj", "{A368E3EC-199A-47C4-A09B-43C97821A6B6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PdfKitNative", "PdfKitNative.vcxproj", "{5571B46F-A538-4CBD-B6E9-75998B6ECE04}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PdfKitMUI", "res\PdfKitMUI.vcxproj", "{5571B46F-A538-4CBD-B6E9-75998B6ECE04}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B82E57B4-5B08-40E6-9318-1E17BE9B7974}.Debug|x64.ActiveCfg = Debug|x64
+		{B82E57B4-5B08-40E6-9318-1E17BE9B7974}.Debug|x64.Build.0 = Debug|x64
 		{B82E57B4-5B08-40E6-9318-1E17BE9B7974}.Debug|x86.ActiveCfg = Debug|x86
 		{B82E57B4-5B08-40E6-9318-1E17BE9B7974}.Debug|x86.Build.0 = Debug|x86
+		{B82E57B4-5B08-40E6-9318-1E17BE9B7974}.Release|x64.ActiveCfg = Release|x64
+		{B82E57B4-5B08-40E6-9318-1E17BE9B7974}.Release|x64.Build.0 = Release|x64
 		{B82E57B4-5B08-40E6-9318-1E17BE9B7974}.Release|x86.ActiveCfg = Release|x86
 		{B82E57B4-5B08-40E6-9318-1E17BE9B7974}.Release|x86.Build.0 = Release|x86
+		{A368E3EC-199A-47C4-A09B-43C97821A6B6}.Debug|x64.ActiveCfg = Debug|x86
+		{A368E3EC-199A-47C4-A09B-43C97821A6B6}.Debug|x64.Build.0 = Debug|x86
 		{A368E3EC-199A-47C4-A09B-43C97821A6B6}.Debug|x86.ActiveCfg = Debug|x86
 		{A368E3EC-199A-47C4-A09B-43C97821A6B6}.Debug|x86.Build.0 = Debug|x86
+		{A368E3EC-199A-47C4-A09B-43C97821A6B6}.Release|x64.ActiveCfg = Release|x86
+		{A368E3EC-199A-47C4-A09B-43C97821A6B6}.Release|x64.Build.0 = Release|x86
 		{A368E3EC-199A-47C4-A09B-43C97821A6B6}.Release|x86.ActiveCfg = Release|x86
 		{A368E3EC-199A-47C4-A09B-43C97821A6B6}.Release|x86.Build.0 = Release|x86
+		{5571B46F-A538-4CBD-B6E9-75998B6ECE04}.Debug|x64.ActiveCfg = Debug|Win32
+		{5571B46F-A538-4CBD-B6E9-75998B6ECE04}.Debug|x64.Build.0 = Debug|Win32
 		{5571B46F-A538-4CBD-B6E9-75998B6ECE04}.Debug|x86.ActiveCfg = Debug|Win32
 		{5571B46F-A538-4CBD-B6E9-75998B6ECE04}.Debug|x86.Build.0 = Debug|Win32
+		{5571B46F-A538-4CBD-B6E9-75998B6ECE04}.Release|x64.ActiveCfg = Release|Win32
+		{5571B46F-A538-4CBD-B6E9-75998B6ECE04}.Release|x64.Build.0 = Release|Win32
 		{5571B46F-A538-4CBD-B6E9-75998B6ECE04}.Release|x86.ActiveCfg = Release|Win32
 		{5571B46F-A538-4CBD-B6E9-75998B6ECE04}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {82CE8BA7-790B-405C-8417-4B96F1DC803C}
 	EndGlobalSection
 EndGlobal

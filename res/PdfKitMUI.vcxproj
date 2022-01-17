@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5571B46F-A538-4CBD-B6E9-75998B6ECE04}</ProjectGuid>
+    <OutDir>..\bin\$(Configuration)\mui\</OutDir>
+    <IntDir>..\obj\$(Configuration)\mui\</IntDir>
+    <ConfigurationType>Makefile</ConfigurationType>
+    <NMakeBuildCommandLine>nmake.exe Configuration=$(Configuration)</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>nmake.exe Configuration=$(Configuration) clean</NMakeCleanCommandLine>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="makefile" />
+    <None Include="rc.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Verbs.de.rc" />
+    <ResourceCompile Include="Verbs.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2021, Manuel Meitinger
+﻿/* Copyright (C) 2016-2022, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,13 @@ namespace Aufbauwerk.Tools.PdfKit
     {
         private static class Dll
         {
+#if X86
             public const string GsDll32 = "gsdll32.dll";
+#elif X64
+            public const string GsDll32 = "gsdll64.dll";
+#else
+#error Unknown target architecture.
+#endif
             public const string Kernel32 = "Kernel32.dll";
             public const string Ole32 = "Ole32.dll";
             public const string Shell32 = "Shell32.dll";

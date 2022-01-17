@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2021, Manuel Meitinger
+﻿/* Copyright (C) 2016-2017, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,17 +14,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using System.Windows.Forms;
+using System.Reflection;
+using System.Resources;
+using System.Runtime.InteropServices;
 
-namespace Aufbauwerk.Tools.PdfKit
-{
-    public partial class ViewForm : Form
-    {
-        public ViewForm(string path)
-        {
-            InitializeComponent();
-            Text = string.Format(Text, Application.ProductName, path);
-            viewer.Path = path;
-        }
-    }
-}
+[assembly: AssemblyTitle("PdfKit")]
+[assembly: AssemblyDescription("Combines, converts, extracts and views PDFs.")]
+[assembly: AssemblyCompany("AufBauWerk - Unternehmen für junge Menschen")]
+[assembly: AssemblyCopyright("Copyright © 2016-2022 by Manuel Meitinger")]
+[assembly: AssemblyVersion("1.3.4")]
+[assembly: ComVisible(false)]
+[assembly: NeutralResourcesLanguage("en")]

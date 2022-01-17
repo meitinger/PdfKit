@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2021, Manuel Meitinger
+﻿/* Copyright (C) 2016-2022, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -397,6 +397,7 @@ namespace Aufbauwerk.Tools.PdfKit
             "PdfKit",
             "-dNOPAUSE",
             "-dQUIET",
+            "-dNOSAFER",
             "-sDEVICE=display",
             "-dDisplayFormat=" + (Native.DISPLAY_COLORS_RGB | Native.DISPLAY_UNUSED_LAST | Native.DISPLAY_DEPTH_8 | Native.DISPLAY_LITTLEENDIAN).ToString(CultureInfo.InvariantCulture),
             "-dTextAlphaBits=4",

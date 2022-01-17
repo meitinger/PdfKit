@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <!--
-  Copyright (C) 2016-2017, Manuel Meitinger
+  Copyright (C) 2016-2022, Manuel Meitinger
   
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,6 +16,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <?define Cultures = de?>
+<?if $(var.Platform) = x86?>
+<?define TargetFolder = ProgramFilesFolder?>
+<?define GhostScriptDll = gsdll32.dll?>
+<?elseif $(var.Platform) = x64?>
+<?define TargetFolder = ProgramFiles64Folder?>
+<?define GhostScriptDll = gsdll64.dll?>
+<?else?>
+<?error Unknown target platform.?>
+<?endif?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*" Name="PdfKit" Language="0" Version="!(bind.fileVersion.PdfKit.exe)" Manufacturer="AufBauWerk - Unternehmen für junge Menschen" UpgradeCode="85E7C6F3EF01438891CC93387E0659B9" Codepage="1252">
     <Package Id="*" InstallerVersion="200" Compressed="yes" Platform="$(var.Platform)" InstallPrivileges="elevated" InstallScope="perMachine" />
@@ -23,9 +32,9 @@
     <Property Id="ARPNOMODIFY" Value="1" />
     <Property Id="ARPPRODUCTICON" Value="PdfKit.ico" />
     <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-    <Icon Id="PdfKit.ico" SourceFile="PdfKit.ico" />
+    <Icon Id="PdfKit.ico" SourceFile="..\res\PdfKit.ico" />
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder">
+      <Directory Id="$(var.TargetFolder)">
         <Directory Id="PdfKitFolder" Name="PdfKit">
           <?foreach Culture in $(var.Cultures)?>
           <Directory Id="PdfKitFolder.$(var.Culture)" Name="$(var.Culture)" />
@@ -35,7 +44,7 @@
     </Directory>
     <Feature Id="PdfKit" AllowAdvertise="no">
       <Component Directory="PdfKitFolder">
-        <File Source="bin\$(var.Configuration)\PdfKit.exe" KeyPath="yes" />
+        <File Source="..\bin\$(var.Configuration)\$(var.Platform)\PdfKit.exe" KeyPath="yes" />
         <RegistryKey Root="HKLM" Key="SOFTWARE">
 
           <!-- Capabilities -->
@@ -245,27 +254,27 @@
         </RegistryKey>
       </Component>
       <Component Directory="PdfKitFolder">
-        <File Source="bin\$(var.Configuration)\PdfKit.dll" KeyPath="yes" />
+        <File Source="..\bin\$(var.Configuration)\mui\PdfKit.dll" KeyPath="yes" />
       </Component>
       <Component Directory="PdfKitFolder">
-        <File Source="lib\PdfSharp.dll" KeyPath="yes" />
+        <File Source="..\lib\PdfSharp.dll" KeyPath="yes" />
       </Component>
       <?foreach Culture in $(var.Cultures)?>
       <Component Directory="PdfKitFolder.$(var.Culture)">
-        <File Id="PdfKit.exe.$(var.Culture)" Source="bin\$(var.Configuration)\$(var.Culture)\PdfKit.resources.dll" KeyPath="yes" />
+        <File Id="PdfKit.exe.$(var.Culture)" Source="..\bin\$(var.Configuration)\$(var.Platform)\$(var.Culture)\PdfKit.resources.dll" KeyPath="yes" />
       </Component>
       <Component Directory="PdfKitFolder.$(var.Culture)">
-        <File Id="PdfKit.dll.$(var.Culture)" Source="bin\$(var.Configuration)\$(var.Culture)\PdfKit.dll.mui" KeyPath="yes" />
+        <File Id="PdfKit.dll.$(var.Culture)" Source="..\bin\$(var.Configuration)\mui\$(var.Culture)\PdfKit.dll.mui" KeyPath="yes" />
       </Component>
       <Component Directory="PdfKitFolder.$(var.Culture)">
-        <File Id="PdfSharp.dll.$(var.Culture)" Source="lib\$(var.Culture)\PdfSharp.resources.dll" KeyPath="yes" />
+        <File Id="PdfSharp.dll.$(var.Culture)" Source="..\lib\$(var.Culture)\PdfSharp.resources.dll" KeyPath="yes" />
       </Component>
       <?endforeach?>
       <Component Directory="PdfKitFolder">
-        <File Source="bin\$(var.Configuration)\PdfKit.pdb" KeyPath="yes" />
+        <File Source="..\bin\$(var.Configuration)\$(var.Platform)\PdfKit.pdb" KeyPath="yes" />
       </Component>
       <Component Directory="PdfKitFolder">
-        <File Source="lib\gsdll32.dll" KeyPath="yes" />
+        <File Source="..\lib\$(var.GhostScriptDll)" KeyPath="yes" />
       </Component>
     </Feature>
   </Product>

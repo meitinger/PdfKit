@@ -1,46 +1,39 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{B82E57B4-5B08-40E6-9318-1E17BE9B7974}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Aufbauwerk.Tools.PdfKit</RootNamespace>
     <AssemblyName>PdfKit</AssemblyName>
+    <OutputType>WinExe</OutputType>
+    <ApplicationIcon>..\res\PdfKit.ico</ApplicationIcon>
+    <RootNamespace>Aufbauwerk.Tools.PdfKit</RootNamespace>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <WarningLevel>4</WarningLevel>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <OutputPath>..\bin\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\obj\$(Configuration)\$(Platform)\</IntermediateOutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+  <PropertyGroup Condition=" '$(Platform)' == 'x86' ">
     <PlatformTarget>x86</PlatformTarget>
+    <DefineConstants>X86</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DefineConstants>X64</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <IntermediateOutputPath>obj\Debug\</IntermediateOutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <IntermediateOutputPath>obj\Release\</IntermediateOutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>PdfKit.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PdfSharp">
-      <HintPath>lib\PdfSharp.dll</HintPath>
+      <HintPath>..\lib\PdfSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -57,21 +50,33 @@
     <Compile Include="BmpFormatDialog.Designer.cs">
       <DependentUpon>BmpFormatDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="CombineForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CombineForm.Designer.cs">
+      <DependentUpon>CombineForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Converter.cs" />
     <Compile Include="Document.cs" />
+    <Compile Include="ExtractForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExtractForm.Designer.cs">
+      <DependentUpon>ExtractForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormatDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FormatDialog.Designer.cs">
       <DependentUpon>FormatDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Ghostscript.cs" />
     <Compile Include="ImageFormatDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ImageFormatDialog.Designer.cs">
       <DependentUpon>ImageFormatDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Ghostscript.cs" />
     <Compile Include="JpegFormatDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -85,20 +90,8 @@
     <Compile Include="PngFormatDialog.Designer.cs">
       <DependentUpon>PngFormatDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CombineForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CombineForm.Designer.cs">
-      <DependentUpon>CombineForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ExtractForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ExtractForm.Designer.cs">
-      <DependentUpon>ExtractForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -130,18 +123,6 @@
     <EmbeddedResource Include="BmpFormatDialog.resx">
       <DependentUpon>BmpFormatDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormatDialog.de.resx">
-      <DependentUpon>FormatDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormatDialog.resx">
-      <DependentUpon>FormatDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ImageFormatDialog.de.resx">
-      <DependentUpon>ImageFormatDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ImageFormatDialog.resx">
-      <DependentUpon>ImageFormatDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="CombineForm.de.resx">
       <DependentUpon>CombineForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -153,6 +134,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ExtractForm.resx">
       <DependentUpon>ExtractForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormatDialog.de.resx">
+      <DependentUpon>FormatDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormatDialog.resx">
+      <DependentUpon>FormatDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImageFormatDialog.de.resx">
+      <DependentUpon>ImageFormatDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImageFormatDialog.resx">
+      <DependentUpon>ImageFormatDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="JpegFormatDialog.de.resx">
       <DependentUpon>JpegFormatDialog.cs</DependentUpon>
@@ -190,10 +183,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="PdfKit.ico" />
+    <Content Include="..\res\PdfKit.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="Sign" Condition="'$(Configuration)'=='Release'" BeforeTargets="CopyFilesToOutputDirectory">
-    <Exec Command="signtool.exe sign /t http://timestamp.comodoca.com @(IntermediateAssembly->'&quot;%(FullPath)&quot;',' ') @(IntermediateSatelliteAssembliesWithTargetPath->'&quot;%(FullPath)&quot;',' ')" />
+    <Exec Command="signtool.exe sign /fd SHA256 /t http://timestamp.comodoca.com @(IntermediateAssembly->'&quot;%(FullPath)&quot;',' ') @(IntermediateSatelliteAssembliesWithTargetPath->'&quot;%(FullPath)&quot;',' ')" />
   </Target>
 </Project>

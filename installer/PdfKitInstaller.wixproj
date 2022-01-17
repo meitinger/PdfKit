@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{a368e3ec-199a-47c4-a09b-43c97821a6b6}</ProjectGuid>
+    <ProductVersion>3.5</ProductVersion>
+    <OutputName>PdfKit</OutputName>
+    <OutputType>Package</OutputType>
+    <OutputPath>..\bin\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\obj\$(Configuration)\$(Platform)\</IntermediateOutputPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>Debug</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <SuppressBuildInfo>true</SuppressBuildInfo>
+    <SignOutput>true</SignOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\PdfKit.csproj">
+      <Name>PdfKit</Name>
+      <Project>{b82e57b4-5b08-40e6-9318-1e17be9b7974}</Project>
+      <DoNotHarvest>True</DoNotHarvest>
+    </ProjectReference>
+    <ProjectReference Include="..\res\PdfKitMUI.vcxproj">
+      <Name>PdfKitMUI</Name>
+      <Project>{5571b46f-a538-4cbd-b6e9-75998b6ece04}</Project>
+      <DoNotHarvest>True</DoNotHarvest>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\lib\gsdll32.dll" />
+    <Content Include="..\lib\gsdll64.dll" />
+    <Content Include="..\lib\PdfSharp.dll" />
+    <Content Include="..\res\PdfKit.ico" />
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" />
+  <Target Name="SignMsi" Condition=" '$(Configuration)' == 'Release' ">
+    <Exec Command="signtool.exe sign /fd SHA256 /t http://timestamp.comodoca.com &quot;$(TargetPath)&quot;" />
+  </Target>
+</Project>

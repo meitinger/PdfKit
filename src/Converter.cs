@@ -1,4 +1,4 @@
-﻿/* Copyright (C) 2016-2021, Manuel Meitinger
+﻿/* Copyright (C) 2016-2022, Manuel Meitinger
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,7 +112,7 @@ namespace Aufbauwerk.Tools.PdfKit
             }
 
             // build the Ghostscript command line
-            var list = new List<string>() { "PdfKit", "-dBATCH", "-dNOPAUSE", "-dEPSCrop", "-dAutoRotatePages=/None" };
+            var list = new List<string>() { "PdfKit", "-dBATCH", "-dNOPAUSE", "-dNOSAFER", "-dEPSCrop", "-dAutoRotatePages=/None" };
             if (_args != null)
             {
                 list.AddRange(_args);

@@ -1,21 +1,15 @@
-!include <win32.mak>
-
 Cultures=de
 
 RcConfig=rc.config
-!IFNDEF Configuration
-Configuration=Debug
-!ENDIF
-OutputPath=bin\$(Configuration)
-IntermediateOutputPath=obj\$(Configuration)
+OutputPath=..\bin\$(Configuration)\mui
+IntermediateOutputPath=..\obj\$(Configuration)\mui
+NeutralDll=$(OutputPath)\PdfKit.dll
 !IFDEF Culture
 OutputPath=$(OutputPath)\$(Culture)
 IntermediateOutputPath=$(IntermediateOutputPath)\$(Culture)
-NeutralDll=$(OutputPath)\..\PdfKit.dll
 OutputDll=$(OutputPath)\PdfKit.dll.mui
 !UNDEF Cultures
 !ELSE
-NeutralDll=$(OutputPath)\PdfKit.dll
 OutputDll=$(NeutralDll)
 !ENDIF
 IntermediateDll=$(IntermediateOutputPath)\PdfKit.dll
@@ -51,7 +45,7 @@ $(NeutralDll): $(RcConfig) Verbs.rc
 	RC /nologo /q $(RcConfig) /fm $(SpecificRes) /fo $(NeutralRes) Verbs.rc
 	LINK /NOLOGO /DLL /NOENTRY /MACHINE:X86 /OUT:$(IntermediateDll) $(NeutralRes)
 !IF "$(Configuration)" == "Release"
-	SIGNTOOL sign /t http://timestamp.comodoca.com $(IntermediateDll)
+	SIGNTOOL sign /fd SHA256 /t http://timestamp.comodoca.com $(IntermediateDll)
 !ENDIF
 	MOVE /Y $(IntermediateDll) $(NeutralDll)
 
@@ -61,7 +55,7 @@ $(OutputDll): $(NeutralDll) $(RcConfig) Verbs.$(Culture).rc
 	LINK /NOLOGO /DLL /NOENTRY /MACHINE:X86 /OUT:$(IntermediateDll) $(SpecificRes)
 	MUIRCT -c $(NeutralDll) -e $(IntermediateDll)
 !IF "$(Configuration)" == "Release"
-	SIGNTOOL sign /t http://timestamp.comodoca.com $(IntermediateDll)
+	SIGNTOOL sign /fd SHA256 /t http://timestamp.comodoca.com $(IntermediateDll)
 !ENDIF
 	MOVE /Y $(IntermediateDll) $(OutputDll)
 !ENDIF
