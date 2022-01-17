@@ -23,7 +23,7 @@
 <?define TargetFolder = ProgramFiles64Folder?>
 <?define GhostScriptDll = gsdll64.dll?>
 <?else?>
-<?error Unknown target platform.?>
+<?error Platform '$(var.Platform)' is not supported.?>
 <?endif?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Product Id="*" Name="PdfKit" Language="0" Version="!(bind.fileVersion.PdfKit.exe)" Manufacturer="AufBauWerk - Unternehmen für junge Menschen" UpgradeCode="85E7C6F3EF01438891CC93387E0659B9" Codepage="1252">
